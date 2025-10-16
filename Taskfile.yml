@@ -1,0 +1,26 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  test:
+    deps: [generate]
+    cmds:
+      - grc go test ./... -count=1 -race
+    silent: true
+  watch:
+    deps: [generate]
+    cmds:
+      - ls **/*.go | entr grc go test ./... -count=1
+  generate:
+    cmds:
+      - go generate ./...
+    silent: true
+  lint:
+    cmds:
+      - golangci-lint run
+    silent: true
+
