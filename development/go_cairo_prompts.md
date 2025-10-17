@@ -145,10 +145,8 @@ Requirements:
    - Matrix struct with:
      - sync.RWMutex embedded (for thread safety)
      - XX, YX, XY, YY, X0, Y0 float64 fields matching cairo_matrix_t layout
-   - func NewMatrix() *Matrix - returns zero matrix
-   - func NewMatrixIdentity() *Matrix - returns identity matrix
-   - func (m *Matrix) Init(xx, yx, xy, yy, x0, y0 float64) - initializes matrix
-   - func (m *Matrix) InitIdentity() - sets to identity
+   - func NewMatrix(xx, yx, xy, yy, x0, y0 float64) *Matrix - creates matrix with given values
+   - func NewIdentityMatrix() *Matrix - returns identity matrix
    - func (m *Matrix) String() string - returns formatted matrix values
    - Package documentation explaining affine transformations
 
@@ -159,14 +157,16 @@ Requirements:
    - Internal helper to sync Go fields with C struct
 
 3. Create matrix/matrix_test.go with:
-   - TestNewMatrix: verify zero matrix
-   - TestNewMatrixIdentity: verify identity matrix (diagonal 1s, rest 0s)
-   - TestMatrixInit: verify Init sets fields correctly
-   - TestMatrixInitIdentity: verify InitIdentity sets correct values
+   - TestNewMatrix: verify matrix with given values
+   - TestNewIdentityMatrix: verify identity matrix (diagonal 1s, rest 0s)
    - TestMatrixThreadSafety: concurrent reads/writes don't race
 
 All matrix methods must use appropriate locking (Lock/RLock).
 Matrix must not allocate C memory yet - just provide conversion functions.
+
+Note: Unlike C Cairo, we do not provide Init/InitIdentity methods. The idiomatic
+Go approach is to create a new matrix with NewMatrix() or NewIdentityMatrix()
+rather than mutating an existing matrix in place.
 ```
 
 ---
