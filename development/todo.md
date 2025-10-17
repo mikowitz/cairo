@@ -17,56 +17,47 @@ graphics library through 34 incremental prompts.
 
 ### Prompt 1: Project Foundation
 
-- [ ] Initialize Go module at `github.com/username/cairo`
-- [ ] Create directory structure:
-  - [ ] `cairo/` (root)
-  - [ ] `status/`
-  - [ ] `matrix/`
-  - [ ] `surface/`
-  - [ ] `context/`
-  - [ ] `pattern/`
-  - [ ] `font/`
-  - [ ] `examples/`
-- [ ] Create `go.mod` requiring Go 1.23
-- [ ] Create `README.md` explaining CGO wrapper for Cairo
-- [ ] Create `Taskfile.yaml` with tasks:
-  - [ ] `test`: run `go test -race ./...`
-  - [ ] `generate`: run `go generate ./...`
-  - [ ] `lint`: run `golangci-lint run`
-- [ ] Create `.gitignore` for Go projects
-- [ ] Create `DESIGN.md` linking to Cairo C API docs
+- [x] Initialize Go module at `github.com/username/cairo`
+- [x] Create `go.mod` requiring Go 1.23
+- [x] Create `README.md` explaining CGO wrapper for Cairo
+- [x] Create `Taskfile.yaml` with tasks:
+  - [x] `test`: run `go test -race ./...`
+  - [x] `generate`: run `go generate ./...`
+  - [x] `lint`: run `golangci-lint run`
+- [x] Create `.gitignore` for Go projects
+- [x] Create `DESIGN.md` linking to Cairo C API docs
 
 ### Prompt 2: Status Package - Types and Constants
 
-- [ ] Create `status/status.go`:
-  - [ ] `Status` type as int
-  - [ ] Constants for all `cairo_status_t` values (minimum 23 constants)
-  - [ ] `//go:generate stringer -type=Status`
-  - [ ] `func (s Status) Error() string` method
-  - [ ] `func (s Status) ToError() error` method
-  - [ ] Package documentation
-- [ ] Create `status/status_test.go`:
-  - [ ] `TestStatusError`: verify Error() returns non-empty strings
-  - [ ] `TestStatusToError`: verify nil for StatusSuccess, error for others
-  - [ ] `TestStatusSuccess`: verify StatusSuccess equals 0
-- [ ] Verify complete test coverage
-- [ ] Verify code compiles without warnings
+- [x] Create `status/status.go`:
+  - [x] `Status` type as int
+  - [x] Constants for all `cairo_status_t` values (minimum 23 constants)
+  - [x] `//go:generate stringer -type=Status`
+  - [x] `func (s Status) Error() string` method
+  - [x] `func (s Status) ToError() error` method
+  - [x] Package documentation
+- [x] Create `status/status_test.go`:
+  - [x] `TestStatusError`: verify Error() returns non-empty strings
+  - [x] `TestStatusToError`: verify nil for StatusSuccess, error for others
+  - [x] `TestStatusSuccess`: verify StatusSuccess equals 0
+- [x] Verify complete test coverage
+- [x] Verify code compiles without warnings
 
 ### Prompt 3: Status Package - CGO Integration
 
-- [ ] Create `status/status_cgo.go`:
-  - [ ] CGO preamble with `#include <cairo.h>`
-  - [ ] `#cgo pkg-config: cairo`
-  - [ ] `import "C"`
-  - [ ] `func statusFromC(cStatus C.cairo_status_t) Status`
-  - [ ] `func (s Status) toC() C.cairo_status_t`
-- [ ] Update `status/status_test.go`:
-  - [ ] `TestCGOStatusConversion`: verify round-trip conversion
-  - [ ] Test StatusSuccess, StatusNoMemory, StatusInvalidRestore
-  - [ ] Use `C.cairo_status_to_string()` to verify mapping
-- [ ] Add build tags if needed for platform-specific CGO flags
-- [ ] Verify tests pass on Linux and macOS
-- [ ] Run `go generate ./...` to generate stringer code
+- [x] Create `status/status_cgo.go`:
+  - [x] CGO preamble with `#include <cairo.h>`
+  - [x] `#cgo pkg-config: cairo`
+  - [x] `import "C"`
+  - [x] `func statusFromC(cStatus C.cairo_status_t) Status`
+  - [x] `func (s Status) toC() C.cairo_status_t`
+- [x] Update `status/status_test.go`:
+  - [x] `TestCGOStatusConversion`: verify round-trip conversion
+  - [x] Test StatusSuccess, StatusNoMemory, StatusInvalidRestore
+  - [x] Use `C.cairo_status_to_string()` to verify mapping
+- [x] Add build tags if needed for platform-specific CGO flags
+- [x] Verify tests pass on Linux and macOS
+- [x] Run `go generate ./...` to generate stringer code
 
 ---
 

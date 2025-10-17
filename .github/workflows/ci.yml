@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test and Lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        go-version: ['1.23', '1.24', '1.25']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Cache Cairo dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+        packages: libcairo2-dev pkg-config
+
+    - name: Cache Cairo dependencies (macOS)
+      if: matrix.os == 'macos-latest'
+      id: cache-cairo-macos
+      uses: actions/cache@v4
+      with:
+        path: |
+          /opt/homebrew/lib/libcairo*
+          /opt/homebrew/lib/pkgconfig/cairo.pc
+          /opt/homebrew/include/cairo/
+          /usr/local/lib/libcairo*
+          /usr/local/lib/pkgconfig/cairo.pc
+          /usr/local/include/cairo/
+        key: macos-cairo-${{ runner.os }}-${{ hashFiles('/opt/homebrew/lib/pkgconfig/cairo.pc', '/usr/local/lib/pkgconfig/cairo.pc') }}
+        restore-keys: |
+          macos-cairo-${{ runner.os }}-
+
+    - name: Install Cairo dependencies (macOS)
+      if: matrix.os == 'macos-latest' && steps.cache-cairo-macos.outputs.cache-hit != 'true'
+      run: |
+        brew install cairo pkg-config
+
+    - name: Verify Cairo installation
+      run: |
+        pkg-config --exists cairo
+        pkg-config --cflags --libs cairo
+
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-${{ matrix.go-version }}-
+          ${{ runner.os }}-go-
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Verify dependencies
+      run: go mod verify
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Run tests
+      run: go test -race ./...
+
+    - name: Run golangci-lint
+      if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.25'
+      uses: golangci/golangci-lint-action@v8
+      with:
+        version: v2.2
+        args: --timeout=5m
+
