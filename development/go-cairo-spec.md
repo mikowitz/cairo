@@ -364,7 +364,8 @@ import "C"
 
 2. **Matrix package** - Depends on Status
    - Matrix type with C struct layout
-   - Basic operations (Init, InitIdentity, Multiply)
+   - Constructor functions (NewMatrix, NewIdentityMatrix)
+   - Basic operations (Multiply, transformations)
 
 3. **Pattern package (minimal)** - Depends on Status, Matrix
    - Pattern interface
