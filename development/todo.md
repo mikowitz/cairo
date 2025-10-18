@@ -85,29 +85,41 @@ Note: Unlike C Cairo, we do not provide Init/InitIdentity methods. The idiomatic
 Go approach is to create a new matrix with NewMatrix() or NewIdentityMatrix()
 rather than mutating an existing matrix in place.
 
-### Prompt 5: Matrix Package - Transformations
+### Prompt 5: Matrix Package - Transformations ✅ COMPLETE
 
-- [ ] Update `matrix/matrix.go`:
-  - [ ] `func (m *Matrix) Multiply(other *Matrix)`
-  - [ ] `func (m *Matrix) TransformPoint(x, y float64) (float64, float64)`
-  - [ ] `func (m *Matrix) TransformDistance(dx, dy float64) (float64, float64)`
-  - [ ] `func (m *Matrix) Translate(tx, ty float64)`
-  - [ ] `func (m *Matrix) Scale(sx, sy float64)`
-  - [ ] `func (m *Matrix) Rotate(radians float64)`
-  - [ ] `func (m *Matrix) Invert() error`
-  - [ ] All methods use proper locking
-- [ ] Update `matrix/matrix_cgo.go`:
-  - [ ] CGO wrappers for cairo_matrix_* functions
-  - [ ] `func (m *Matrix) invert() Status`
-- [ ] Update `matrix/matrix_test.go`:
-  - [ ] `TestMatrixMultiply`
-  - [ ] `TestMatrixTransformPoint`
-  - [ ] `TestMatrixTransformDistance`
-  - [ ] `TestMatrixTranslate`
-  - [ ] `TestMatrixScale`
-  - [ ] `TestMatrixRotate`: test with 90 degrees
-  - [ ] `TestMatrixInvert`: verify inversion and singular matrix error
-  - [ ] `TestMatrixOperationsCombined`
+- [x] Update `matrix/matrix.go`:
+  - [x] `func (m *Matrix) Multiply(other *Matrix)` - returns new matrix
+  - [x] `func (m *Matrix) TransformPoint(x, y float64) (float64, float64)`
+  - [x] `func (m *Matrix) TransformDistance(dx, dy float64) (float64, float64)`
+  - [x] `func (m *Matrix) Translate(tx, ty float64)`
+  - [x] `func (m *Matrix) Scale(sx, sy float64)`
+  - [x] `func (m *Matrix) Rotate(radians float64)`
+  - [x] `func (m *Matrix) Invert() error`
+  - [x] All methods use proper locking
+  - [x] BONUS: `func NewTranslationMatrix(tx, ty float64) *Matrix`
+  - [x] BONUS: `func NewScalingMatrix(sx, sy float64) *Matrix`
+  - [x] BONUS: `func NewRotationMatrix(radians float64) *Matrix`
+- [x] Update `matrix/matrix_cgo.go`:
+  - [x] CGO wrappers for cairo_matrix_* functions
+  - [x] `func matrixInvert(m *Matrix) error` - uses status package
+  - [x] `func matrixInitTranslate(tx, ty float64) *Matrix`
+  - [x] `func matrixInitScale(sx, sy float64) *Matrix`
+  - [x] `func matrixInitRotate(radians float64) *Matrix`
+  - [x] `func (m *Matrix) updateFromC()` helper method
+- [x] Update `matrix/matrix_test.go`:
+  - [x] `TestMatrixMultiply` - identity and simple multiplication
+  - [x] `TestMatrixTransformPoint` - identity, translation, scaling
+  - [x] `TestMatrixTransformDistance` - verifies translation has no effect
+  - [x] `TestMatrixTranslate` - simple, negative, zero translation
+  - [x] `TestMatrixScale` - uniform, non-uniform, fractional scaling
+  - [x] `TestMatrixRotate` - 0°, 90°, 180° rotations
+  - [x] `TestMatrixInvert` - identity, scaling, singular matrix error
+  - [x] `TestMatrixOperationsCombined` - complex transformation chains
+  - [x] BONUS: `TestNewTranslationMatrix` - 4 test cases
+  - [x] BONUS: `TestNewScalingMatrix` - 5 test cases
+  - [x] BONUS: `TestNewRotationMatrix` - 4 test cases with 45° included
+- [x] All operations match Cairo's semantics exactly
+- [x] Uses status package for error handling in Invert()
 
 ### Prompt 6: Surface Package - Interface and Base Types
 
