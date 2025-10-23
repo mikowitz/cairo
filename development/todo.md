@@ -121,53 +121,70 @@ rather than mutating an existing matrix in place.
 - [x] All operations match Cairo's semantics exactly
 - [x] Uses status package for error handling in Invert()
 
-### Prompt 6: Surface Package - Interface and Base Types
+### Prompt 6: Surface Package - Interface and Base Types ✅ COMPLETE
 
-- [ ] Create `surface/surface.go`:
-  - [ ] `Surface` interface with methods: Close(), Status(), Flush(), MarkDirty(),
+- [x] Create `surface/surface.go`:
+  - [x] `Surface` interface with methods: Close(), Status(), Flush(), MarkDirty(),
     MarkDirtyRectangle()
-  - [ ] `BaseSurface` struct with `sync.RWMutex`, ptr, closed flag
-  - [ ] Package documentation explaining surface lifetime
-- [ ] Create `surface/format.go`:
-  - [ ] `Format` type as int
-  - [ ] Constants: FormatInvalid, FormatARGB32, FormatRGB24, FormatA8, FormatA1,
+  - [x] `BaseSurface` struct with `sync.RWMutex`, ptr, closed flag
+  - [x] `newBaseSurface()` helper function
+  - [x] Finalizer setup with `runtime.SetFinalizer` in `newBaseSurface()` (line 29)
+  - [x] Comprehensive documentation on all public methods explaining Cairo semantics
+  - [x] Package documentation in `surface/doc.go`
+- [x] Create `surface/format.go`:
+  - [x] `Format` type as int
+  - [x] Constants: FormatInvalid, FormatARGB32, FormatRGB24, FormatA8, FormatA1,
     FormatRGB16_565, FormatRGB30
-  - [ ] `//go:generate stringer -type=Format`
-  - [ ] `func (f Format) StrideForWidth(width int) int`
-- [ ] Create `surface/surface_cgo.go`:
-  - [ ] CGO preamble
-  - [ ] BaseSurface CGO methods for all interface methods
-- [ ] Create `surface/surface_test.go`:
-  - [ ] Tests for Format constants
-  - [ ] `TestFormatStrideForWidth`
-- [ ] Run `go generate ./...` to generate stringer code
+  - [x] `//go:generate stringer -type=Format`
+  - [x] `func (f Format) StrideForWidth(width int) int`
+- [x] Create `surface/surface_cgo.go`:
+  - [x] CGO preamble with `#cgo pkg-config: cairo`
+  - [x] BaseSurface CGO methods for all interface methods
+  - [x] All methods check closed flag (check for nil ptr)
+- [x] Create `surface/surface_test.go`:
+  - [x] Tests for Format constants (PASSING)
+  - [x] `TestFormatStrideForWidth` (PASSING)
+  - [x] Comprehensive test structure with 19 tests (ALL PASSING)
+  - [x] Thread safety tests with race detector
+  - [x] Finalizer tests
+- [x] Run `go generate ./...` to generate stringer code
 
-### Prompt 7: Surface Package - ImageSurface Creation
+✅ **Status: 100% COMPLETE - All requirements met, all tests passing**
 
-- [ ] Update `surface/surface.go`:
-  - [ ] `ImageSurface` struct embedding BaseSurface
-  - [ ] `func NewImageSurface(format Format, width, height int) (*ImageSurface, error)`
-  - [ ] `func (s *ImageSurface) GetFormat() Format`
-  - [ ] `func (s *ImageSurface) GetWidth() int`
-  - [ ] `func (s *ImageSurface) GetHeight() int`
-  - [ ] `func (s *ImageSurface) GetStride() int`
-  - [ ] All methods use proper locking
-- [ ] Update `surface/surface_cgo.go`:
-  - [ ] `func newImageSurface(format Format, width, height int) (*ImageSurface, error)`
-  - [ ] Calls `cairo_image_surface_create`
-  - [ ] Sets up finalizer with `runtime.SetFinalizer`
-  - [ ] CGO implementations for GetFormat, GetWidth, GetHeight, GetStride
-- [ ] Update `surface/surface_test.go`:
-  - [ ] `TestNewImageSurface`
-  - [ ] `TestNewImageSurfaceInvalidFormat`
-  - [ ] `TestNewImageSurfaceInvalidSize`
-  - [ ] `TestImageSurfaceGetters`
-  - [ ] `TestImageSurfaceClose`
-  - [ ] `TestImageSurfaceStatusAfterClose`
-- [ ] Update `cairo/cairo.go`:
-  - [ ] Re-export Format type and constants
-  - [ ] Re-export NewImageSurface function
-  - [ ] Re-export Surface interface
+### Prompt 7: Surface Package - ImageSurface Creation ⚠️ MOSTLY COMPLETE
+
+- [x] Create `surface/image_surface.go`:
+  - [x] `ImageSurface` struct embedding `*BaseSurface` (uses pointer embedding)
+  - [x] `func NewImageSurface(format Format, width, height int) (*ImageSurface, error)` ✅
+    - [x] Returns error type as required
+    - [x] Checks status after creation and returns error if not Success (line 13-17)
+    - [x] Calls `newBaseSurface()` which sets up finalizer automatically (line 19)
+  - [x] `func (s *ImageSurface) GetFormat() Format`
+  - [x] `func (s *ImageSurface) GetWidth() int`
+  - [x] `func (s *ImageSurface) GetHeight() int`
+  - [x] `func (s *ImageSurface) GetStride() int`
+  - [x] All methods use proper locking (RLock/RUnlock)
+- [x] Update `surface/surface_cgo.go`:
+  - [x] `func imageSurfaceCreate(format Format, width, height int) SurfacePtr`
+  - [x] Calls `cairo_image_surface_create`
+  - [x] Finalizer setup via `newBaseSurface()` helper (inherited)
+  - [x] CGO implementations for surface operations (inherited from BaseSurface)
+- [x] Update `surface/surface_test.go`:
+  - [x] `TestNewImageSurface` (PASSING)
+  - [x] `TestNewImageSurfaceInvalidFormat` (part of TestImageSurfaceInvalidParameters - PASSING)
+  - [x] `TestNewImageSurfaceInvalidSize` (part of TestImageSurfaceInvalidParameters - PASSING)
+  - [x] `TestImageSurfaceGetters` (PASSING)
+  - [x] Close behavior tested via `TestBaseSurfaceClose` (PASSING)
+  - [x] Status behavior tested via `TestBaseSurfaceStatus` (PASSING)
+- [x] Create `cairo.go` at package root:
+  - [x] Basic file exists with NewImageSurface wrapper
+  - [ ] ⚠️ Re-export Format type and constants (MISSING)
+  - [ ] ⚠️ Re-export Surface interface (MISSING)
+  - [ ] ⚠️ Add comprehensive package documentation (MINIMAL)
+  - [ ] ⚠️ Add usage example showing surface lifecycle (MISSING)
+  - [ ] ⚠️ Document Close() requirement and finalizer behavior (MISSING)
+
+**Status: Core implementation 100% complete. cairo.go exists but needs enhancement for public API.**
 
 ### Prompt 8: Surface Package - PNG Support
 

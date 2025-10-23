@@ -3,7 +3,10 @@
     "allow": [
       "Bash(gh pr view:*)",
       "Bash(gh pr diff:*)",
-      "WebFetch(domain:www.cairographics.org)"
+      "Bash(go build .)",
+      "Bash(go test:*)",
+      "WebFetch(domain:www.cairographics.org)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []
