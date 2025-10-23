@@ -14,7 +14,7 @@ func Example() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer surface.Close()
+	defer surface.Close() //nolint:errcheck
 
 	// Get surface properties
 	fmt.Printf("Format: %v\n", surface.GetFormat())
@@ -51,7 +51,7 @@ func Example_formatTypes() {
 			log.Fatal(err)
 		}
 		fmt.Printf("%s: stride=%d\n", f.format, surface.GetStride())
-		surface.Close()
+		surface.Close() //nolint:errcheck
 	}
 
 	// Output:
@@ -68,7 +68,7 @@ func Example_memoryManagement() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer surface.Close() // Ensures resources are freed
+	defer surface.Close() //nolint:errcheck
 
 	// Use the surface...
 	fmt.Printf("Surface created: %dx%d\n", surface.GetWidth(), surface.GetHeight())

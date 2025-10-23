@@ -101,6 +101,7 @@ func (b *BaseSurface) close() error {
 	if b.ptr != nil {
 		surfaceClose(b.ptr)
 		runtime.SetFinalizer(b, nil)
+		b.closed = true
 		b.ptr = nil
 	}
 

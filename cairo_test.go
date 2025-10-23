@@ -11,7 +11,7 @@ import (
 // TestFormatReexport verifies that Format type is re-exported correctly
 func TestFormatReexport(t *testing.T) {
 	// Verify we can use Format type from cairo package
-	var format cairo.Format = cairo.FormatARGB32
+	format := cairo.FormatARGB32
 	assert.Equal(t, cairo.FormatARGB32, format)
 }
 
@@ -44,7 +44,10 @@ func TestNewImageSurface(t *testing.T) {
 	surface, err := cairo.NewImageSurface(cairo.FormatARGB32, 100, 100)
 	require.NoError(t, err)
 	require.NotNil(t, surface)
-	defer surface.Close()
+	defer func() {
+		err := surface.Close()
+		require.NoError(t, err, "Surface should close without error")
+	}()
 
 	// Verify surface properties
 	assert.Equal(t, cairo.FormatARGB32, surface.GetFormat())
@@ -68,7 +71,10 @@ func TestNewImageSurfaceWithDifferentFormats(t *testing.T) {
 			surface, err := cairo.NewImageSurface(format, 50, 50)
 			require.NoError(t, err)
 			require.NotNil(t, surface)
-			defer surface.Close()
+			defer func() {
+				err := surface.Close()
+				require.NoError(t, err, "Surface should close without error")
+			}()
 
 			assert.Equal(t, format, surface.GetFormat())
 		})
@@ -80,4 +86,55 @@ func TestNewImageSurfaceInvalidFormat(t *testing.T) {
 	surface, err := cairo.NewImageSurface(cairo.FormatInvalid, 100, 100)
 	assert.Error(t, err)
 	assert.Nil(t, surface)
+}
+
+// TestSurfaceInterfaceReexport verifies that Surface interface is re-exported
+func TestSurfaceInterfaceReexport(t *testing.T) {
+	// Create a surface using the re-exported function
+	surface, err := cairo.NewImageSurface(cairo.FormatARGB32, 100, 100)
+	require.NoError(t, err)
+	require.NotNil(t, surface)
+	defer func() {
+		err := surface.Close()
+		require.NoError(t, err, "Surface should close without error")
+	}()
+
+	// Verify the surface can be used as a cairo.Surface interface
+	var _ cairo.Surface = surface
+
+	// Test Surface interface methods are accessible
+	surface.Flush()
+	surface.MarkDirty()
+	surface.MarkDirtyRectangle(0, 0, 50, 50)
+
+	// Test Status method
+	status := surface.Status()
+	assert.Equal(t, 0, int(status)) // StatusSuccess should be 0
+}
+
+// TestSurfaceLifecycle demonstrates proper resource management
+func TestSurfaceLifecycle(t *testing.T) {
+	// Create a surface
+	surface, err := cairo.NewImageSurface(cairo.FormatARGB32, 200, 200)
+	require.NoError(t, err, "Should create surface successfully")
+	require.NotNil(t, surface, "Surface should not be nil")
+
+	// Verify surface is usable
+	assert.Equal(t, 200, surface.GetWidth())
+	assert.Equal(t, 200, surface.GetHeight())
+	assert.Equal(t, cairo.FormatARGB32, surface.GetFormat())
+
+	// Flush any pending operations
+	surface.Flush()
+
+	// Mark surface as dirty (simulating external modification)
+	surface.MarkDirty()
+
+	// Close the surface explicitly
+	err = surface.Close()
+	require.NoError(t, err, "Should close without error")
+
+	// Attempting to close again should be safe (idempotent)
+	err = surface.Close()
+	require.NoError(t, err, "Closing again should be safe")
 }

@@ -34,6 +34,16 @@ const (
 	FormatRGB30 = surface.FormatRGB30
 )
 
+// Surface represents a destination for drawing operations.
+//
+// A Surface is the abstract type representing all different drawing targets
+// that Cairo can render to. The actual drawing is done using a Context
+// (available in later prompts).
+//
+// All Surface implementations must be explicitly closed when finished to free
+// Cairo resources, or the finalizer will clean them up during garbage collection.
+type Surface = surface.Surface
+
 // NewImageSurface creates an image surface of the specified format and dimensions.
 // The initial contents of the surface are set to transparent black (all pixels are
 // fully transparent with RGBA values of 0,0,0,0).

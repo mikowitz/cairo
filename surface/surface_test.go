@@ -50,7 +50,10 @@ func TestSurfaceInterfaceCompleteness(t *testing.T) {
 func TestBaseSurfaceCreation(t *testing.T) {
 	// Create a test surface (will use ImageSurface once available)
 	s := createTestSurface(t, FormatARGB32, 100, 100)
-	defer s.Close()
+	defer func() {
+		err := s.Close()
+		require.NoError(t, err, "Surface should close without error")
+	}()
 
 	// Verify surface is not nil
 	require.NotNil(t, s, "Surface should not be nil")
@@ -98,7 +101,10 @@ func TestBaseSurfaceStatus(t *testing.T) {
 // TestBaseSurfaceFlush verifies Flush() method behavior
 func TestBaseSurfaceFlush(t *testing.T) {
 	s := createTestSurface(t, FormatARGB32, 100, 100)
-	defer s.Close()
+	defer func() {
+		err := s.Close()
+		require.NoError(t, err, "Surface should close without error")
+	}()
 
 	// Flush should complete without error on valid surface
 	s.Flush()
@@ -115,7 +121,10 @@ func TestBaseSurfaceFlush(t *testing.T) {
 // TestBaseSurfaceMarkDirty verifies MarkDirty() method behavior
 func TestBaseSurfaceMarkDirty(t *testing.T) {
 	s := createTestSurface(t, FormatARGB32, 100, 100)
-	defer s.Close()
+	defer func() {
+		err := s.Close()
+		require.NoError(t, err, "Surface should close without error")
+	}()
 
 	// MarkDirty should be callable on valid surface
 	s.MarkDirty()
@@ -132,7 +141,10 @@ func TestBaseSurfaceMarkDirty(t *testing.T) {
 // TestBaseSurfaceMarkDirtyRectangle verifies MarkDirtyRectangle() method behavior
 func TestBaseSurfaceMarkDirtyRectangle(t *testing.T) {
 	s := createTestSurface(t, FormatARGB32, 100, 100)
-	defer s.Close()
+	defer func() {
+		err := s.Close()
+		require.NoError(t, err, "Surface should close without error")
+	}()
 
 	tests := []struct {
 		name   string
@@ -193,7 +205,10 @@ func TestBaseSurfaceClosedState(t *testing.T) {
 // Run with: go test -race
 func TestBaseSurfaceThreadSafety(t *testing.T) {
 	s := createTestSurface(t, FormatARGB32, 100, 100)
-	defer s.Close()
+	defer func() {
+		err := s.Close()
+		require.NoError(t, err, "Surface should close without error")
+	}()
 
 	const goroutines = 10
 	const iterations = 100
@@ -332,7 +347,10 @@ func TestImageSurfaceCreation(t *testing.T) {
 	s, err := NewImageSurface(FormatARGB32, 100, 100)
 	require.NotNil(t, s, "ImageSurface should not be nil")
 	require.NoError(t, err, "Successful image surface creation should not return an error")
-	defer s.Close()
+	defer func() {
+		err := s.Close()
+		require.NoError(t, err, "Surface should close without error")
+	}()
 
 	st := s.Status()
 	assert.Equal(t, status.Success, st, "New surface should have Success status")
@@ -341,7 +359,10 @@ func TestImageSurfaceCreation(t *testing.T) {
 // TestImageSurfaceGetters will test ImageSurface getter methods
 func TestImageSurfaceGetters(t *testing.T) {
 	s, _ := NewImageSurface(FormatARGB32, 200, 150)
-	defer s.Close()
+	defer func() {
+		err := s.Close()
+		require.NoError(t, err, "Surface should close without error")
+	}()
 
 	// Test GetFormat
 	format := s.GetFormat()
@@ -395,7 +416,11 @@ func TestImageSurfaceWriteToPNG(t *testing.T) {
 	t.Skip("Will be implemented in Prompt 8 when PNG support is added")
 
 	s, err := NewImageSurface(FormatARGB32, 100, 100)
-	defer s.Close()
+	assert.NoError(t, err, "Should not return an error from successful image create")
+	defer func() {
+		err := s.Close()
+		require.NoError(t, err, "Surface should close without error")
+	}()
 
 	// Flush before writing
 	s.Flush()
@@ -425,21 +450,21 @@ func createTestSurface(t *testing.T, format Format, width, height int) Surface {
 	return s
 }
 
-// assertSurfaceValid verifies a surface is in valid state
-func assertSurfaceValid(t *testing.T, s Surface) {
-	t.Helper()
-	require.NotNil(t, s, "Surface should not be nil")
-
-	st := s.Status()
-	assert.Equal(t, status.Success, st, "Surface should be in success state")
-}
-
-// assertSurfaceClosed verifies a surface is properly closed
-func assertSurfaceClosed(t *testing.T, s Surface) {
-	t.Helper()
-	require.NotNil(t, s, "Surface should not be nil")
-
-	// Status should still work after close, but might not be Success
-	st := s.Status()
-	assert.NotEqual(t, status.InvalidStatus, st, "Status should be valid even on closed surface")
-}
+// // assertSurfaceValid verifies a surface is in valid state
+// func assertSurfaceValid(t *testing.T, s Surface) {
+// 	t.Helper()
+// 	require.NotNil(t, s, "Surface should not be nil")
+//
+// 	st := s.Status()
+// 	assert.Equal(t, status.Success, st, "Surface should be in success state")
+// }
+//
+// // assertSurfaceClosed verifies a surface is properly closed
+// func assertSurfaceClosed(t *testing.T, s Surface) {
+// 	t.Helper()
+// 	require.NotNil(t, s, "Surface should not be nil")
+//
+// 	// Status should still work after close, but might not be Success
+// 	st := s.Status()
+// 	assert.NotEqual(t, status.InvalidStatus, st, "Status should be valid even on closed surface")
+// }
