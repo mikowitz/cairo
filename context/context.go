@@ -35,6 +35,7 @@ func NewContext(surface surface.Surface) (*Context, error) {
 	return c, nil
 }
 
+// Status checks whether an error has previously occurred for this context.
 func (c *Context) Status() status.Status {
 	c.RLock()
 	defer c.RUnlock()
@@ -50,6 +51,15 @@ func (c *Context) Close() error {
 	return c.close()
 }
 
+// Save makes a copy of the current state of the context and saves it on an
+// internal stack of saved states for the context. When [Context.Restore] is called,
+// the context will be restored to the saved state. Multiple calls to Save
+// and Restore can be nested; each call to Restore restores the state from
+// the matching paired Save.
+//
+// It isn't necessary to clear all saved states before a [Context] is closed.
+// If the reference count of a [Context] drops to zero in response to a call to
+// [Context.Close], any saved states will be freed along with the [Context].
 func (c *Context) Save() {
 	c.Lock()
 	defer c.Unlock()

@@ -2,6 +2,7 @@ package surface
 
 import (
 	"os"
+	"path/filepath"
 	"runtime"
 	"sync"
 	"testing"
@@ -50,7 +51,7 @@ func TestSurfaceInterfaceCompleteness(t *testing.T) {
 // TestBaseSurfaceCreation tests that BaseSurface can be instantiated
 func TestBaseSurfaceCreation(t *testing.T) {
 	// Create a test surface (will use ImageSurface once available)
-	s := createTestSurface(t, FormatARGB32, 100, 100)
+	s := createTestSurface(t)
 	defer func() {
 		err := s.Close()
 		require.NoError(t, err, "Surface should close without error")
@@ -66,7 +67,7 @@ func TestBaseSurfaceCreation(t *testing.T) {
 
 // TestBaseSurfaceClose verifies Close() method behavior
 func TestBaseSurfaceClose(t *testing.T) {
-	s := createTestSurface(t, FormatARGB32, 100, 100)
+	s := createTestSurface(t)
 
 	// First close should succeed
 	err := s.Close()
@@ -83,7 +84,7 @@ func TestBaseSurfaceClose(t *testing.T) {
 
 // TestBaseSurfaceStatus verifies Status() method behavior
 func TestBaseSurfaceStatus(t *testing.T) {
-	s := createTestSurface(t, FormatARGB32, 100, 100)
+	s := createTestSurface(t)
 
 	// Status should work before close
 	st := s.Status()
@@ -101,7 +102,7 @@ func TestBaseSurfaceStatus(t *testing.T) {
 
 // TestBaseSurfaceFlush verifies Flush() method behavior
 func TestBaseSurfaceFlush(t *testing.T) {
-	s := createTestSurface(t, FormatARGB32, 100, 100)
+	s := createTestSurface(t)
 	defer func() {
 		err := s.Close()
 		require.NoError(t, err, "Surface should close without error")
@@ -121,7 +122,7 @@ func TestBaseSurfaceFlush(t *testing.T) {
 
 // TestBaseSurfaceMarkDirty verifies MarkDirty() method behavior
 func TestBaseSurfaceMarkDirty(t *testing.T) {
-	s := createTestSurface(t, FormatARGB32, 100, 100)
+	s := createTestSurface(t)
 	defer func() {
 		err := s.Close()
 		require.NoError(t, err, "Surface should close without error")
@@ -141,7 +142,7 @@ func TestBaseSurfaceMarkDirty(t *testing.T) {
 
 // TestBaseSurfaceMarkDirtyRectangle verifies MarkDirtyRectangle() method behavior
 func TestBaseSurfaceMarkDirtyRectangle(t *testing.T) {
-	s := createTestSurface(t, FormatARGB32, 100, 100)
+	s := createTestSurface(t)
 	defer func() {
 		err := s.Close()
 		require.NoError(t, err, "Surface should close without error")
@@ -175,7 +176,7 @@ func TestBaseSurfaceMarkDirtyRectangle(t *testing.T) {
 
 // TestBaseSurfaceClosedState verifies operations on closed surface
 func TestBaseSurfaceClosedState(t *testing.T) {
-	s := createTestSurface(t, FormatARGB32, 100, 100)
+	s := createTestSurface(t)
 
 	// Close the surface
 	err := s.Close()
@@ -205,7 +206,7 @@ func TestBaseSurfaceClosedState(t *testing.T) {
 // TestBaseSurfaceThreadSafety verifies concurrent access is safe
 // Run with: go test -race
 func TestBaseSurfaceThreadSafety(t *testing.T) {
-	s := createTestSurface(t, FormatARGB32, 100, 100)
+	s := createTestSurface(t)
 	defer func() {
 		err := s.Close()
 		require.NoError(t, err, "Surface should close without error")
@@ -285,7 +286,7 @@ func TestBaseSurfaceThreadSafety(t *testing.T) {
 
 // TestBaseSurfaceThreadSafeClose verifies concurrent Close is safe
 func TestBaseSurfaceThreadSafeClose(t *testing.T) {
-	s := createTestSurface(t, FormatARGB32, 100, 100)
+	s := createTestSurface(t)
 
 	const goroutines = 10
 	var wg sync.WaitGroup
@@ -317,7 +318,7 @@ func TestBaseSurfaceFinalizer(t *testing.T) {
 	for range iterations {
 		// Create surface without calling Close
 		// Finalizer should clean it up
-		_ = createTestSurface(t, FormatARGB32, 100, 100)
+		_ = createTestSurface(t)
 	}
 
 	// Force garbage collection
@@ -328,7 +329,7 @@ func TestBaseSurfaceFinalizer(t *testing.T) {
 	// Note: This is not a perfect test, but it's the best we can do for finalizers
 
 	// Now test that finalizer is safe after explicit Close
-	s := createTestSurface(t, FormatARGB32, 100, 100)
+	s := createTestSurface(t)
 	err := s.Close()
 	require.NoError(t, err)
 
@@ -431,6 +432,7 @@ func TestImageSurfaceWriteToPNG(t *testing.T) {
 			// Create a temporary directory for test output
 			tmpDir := t.TempDir()
 			filename := tmpDir + "/test_output.png"
+			filepath.Clean(filename)
 
 			// Create surface
 			surf, err := NewImageSurface(tt.format, tt.width, tt.height)
@@ -691,10 +693,10 @@ func TestImageSurfaceWriteToPNGWithDifferentFormats(t *testing.T) {
 
 // createTestSurface creates a test surface for use in tests
 // This will be implemented once we have ImageSurface
-func createTestSurface(t *testing.T, format Format, width, height int) Surface {
+func createTestSurface(t *testing.T) *ImageSurface {
 	t.Helper()
 
-	s, err := NewImageSurface(format, width, height)
+	s, err := NewImageSurface(FormatARGB32, 100, 100)
 	require.NoError(t, err, "Test surface should not return error")
 	require.NotNil(t, s, "Test surface should not be nil")
 

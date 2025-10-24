@@ -227,36 +227,37 @@ rather than mutating an existing matrix in place.
 
 ### Prompt 9: Context Package - Creation and Lifecycle
 
-- [ ] Create `context/context.go`:
-  - [ ] `Context` struct with `sync.RWMutex`, ptr, closed flag
-  - [ ] `func NewContext(surface Surface) (*Context, error)`
-  - [ ] `func (c *Context) Close() error`
-  - [ ] `func (c *Context) Status() Status`
-  - [ ] `func (c *Context) Save()`
-  - [ ] `func (c *Context) Restore()`
+- [x] Create `context/context.go`:
+  - [x] `Context` struct with `sync.RWMutex`, ptr, closed flag (line 12-16)
+  - [x] `func NewContext(surface Surface) (*Context, error)` (line 18-36)
+  - [x] `func (c *Context) Close() error` (line 49-51)
+  - [x] `func (c *Context) Status() Status` (line 38-47)
+  - [x] `func (c *Context) Save()` (line 53-61)
+  - [x] `func (c *Context) Restore()` (line 63-71)
   - [ ] Package documentation explaining Context purpose
-- [ ] Create `context/context_cgo.go`:
-  - [ ] CGO preamble
-  - [ ] `func newContext(surface Surface) (*Context, error)`
-  - [ ] Calls `cairo_create`
-  - [ ] Sets up finalizer
-  - [ ] CGO implementations for Close, Status, Save, Restore
-  - [ ] Helper to extract C surface pointer
+- [x] Create `context/context_cgo.go`:
+  - [x] CGO preamble (line 3-5)
+  - [x] `func contextCreate(sPtr unsafe.Pointer) ContextPtr` (line 15-17)
+  - [x] Calls `cairo_create` (line 16)
+  - [x] Sets up finalizer (in NewContext line 33)
+  - [x] CGO implementations for Close, Status, Save, Restore (lines 19-33)
+  - [x] Helper to extract C surface pointer (uses surface.Ptr() method)
 - [x] Create `context/context_test.go`:
-  - [x] `TestNewContext` - creates context from ImageSurface
-  - [x] `TestNewContextNilSurface` - tests error handling for nil surface
-  - [x] `TestContextClose` - verifies close and double-close safety
-  - [x] `TestContextStatus` - verifies status reporting
-  - [x] `TestContextSaveRestore` - verifies save/restore stack
-  - [x] `TestContextSaveRestoreImbalance` - tests restore without save
-  - [x] BONUS: `TestContextCloseIndependentOfSurface` - verifies context/surface independence
-  - [x] BONUS: `TestContextMultipleContextsOnSameSurface` - tests multiple contexts on one surface
-  - [x] BONUS: `TestContextCreationWithDifferentSurfaceFormats` - tests all surface formats
-- [ ] Update `cairo/cairo.go`:
+  - [x] `TestNewContext` - creates context from ImageSurface ✅ PASSING
+  - [x] `TestNewContextNilSurface` - tests error handling for nil surface ✅ PASSING
+  - [x] `TestContextClose` - verifies close and double-close safety ✅ PASSING
+  - [x] `TestContextStatus` - verifies status reporting ✅ PASSING
+  - [x] `TestContextSaveRestore` - verifies save/restore stack ✅ PASSING
+  - [x] `TestContextSaveRestoreImbalance` - tests restore without save ✅ PASSING
+  - [x] BONUS: `TestContextCloseIndependentOfSurface` - verifies context/surface independence ✅ PASSING
+  - [x] BONUS: `TestContextMultipleContextsOnSameSurface` - tests multiple contexts on one surface ✅ PASSING
+  - [x] BONUS: `TestContextCreationWithDifferentSurfaceFormats` - tests all surface formats ✅ PASSING
+- [ ] Update `cairo.go`:
   - [ ] Re-export NewContext function
   - [ ] Document Context usage pattern
 
-**Tests Status**: ✅ All tests written and failing as expected (TDD practice - implementation pending)
+**Implementation Status**: ✅ Core implementation complete, all 9 tests passing
+**Remaining**: Package documentation and cairo.go re-exports
 
 ### Prompt 10: Context Package - Source Colors
 

@@ -301,6 +301,8 @@ func TestMatrixMultiply(t *testing.T) {
 }
 
 // TestMatrixTransformPoint verifies point transformation
+//
+//nolint:dupl // Similar to TestMatrixTransformPoint but tests different transformation
 func TestMatrixTransformPoint(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -338,6 +340,8 @@ func TestMatrixTransformPoint(t *testing.T) {
 }
 
 // TestMatrixTransformDistance verifies distance vector transformation
+//
+//nolint:dupl // Similar to TestMatrixTransformPoint but tests different transformation
 func TestMatrixTransformDistance(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -585,7 +589,7 @@ func TestMatrixThreadSafety(t *testing.T) {
 		go func(val float64) {
 			defer wg.Done()
 			for range iterations {
-				// m.NewMatrix(val, val, val, val, val, val)
+				m.Translate(val, val)
 			}
 		}(float64(i))
 	}
