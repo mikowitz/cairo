@@ -31,10 +31,33 @@
 // For best performance, consider creating separate surfaces/contexts per goroutine
 // when performing concurrent rendering.
 //
+// # PNG Export
+//
+// ImageSurface supports writing to PNG files via the WriteToPNG method.
+// The surface should be flushed before writing to ensure all drawing operations
+// are complete:
+//
+//	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 640, 480)
+//	if err != nil {
+//		return err
+//	}
+//	defer surf.Close()
+//
+//	// ... perform drawing operations ...
+//
+//	surf.Flush() // Ensure all drawing is complete
+//	err = surf.WriteToPNG("output.png")
+//	if err != nil {
+//		return err
+//	}
+//
+// PNG export is available for all image surface formats (ARGB32, RGB24, A8, A1,
+// RGB16_565, RGB30). The resulting PNG file will preserve the pixel data according
+// to the surface's format.
+//
 // # Basic Usage Example
 //
-// The following example demonstrates creating a surface, drawing a simple shape,
-// and saving the result to a PNG file:
+// The following example demonstrates creating a surface and saving it to a PNG file:
 //
 //	// Create a 400x400 pixel image surface
 //	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 400, 400)
@@ -43,17 +66,17 @@
 //	}
 //	defer surf.Close()
 //
-//	// TODO: Drawing operations will be added with Context package (Prompt 9)
-//	// For now, we can work directly with the surface
+//	// Drawing operations will be added with Context package (Prompt 9)
+//	// For now, we can create and save an empty surface
 //
 //	// Ensure all drawing is flushed before writing
 //	surf.Flush()
 //
-//	// Write the surface to a PNG file (available in Prompt 8)
-//	// err = surf.WriteToPNG("output.png")
-//	// if err != nil {
-//	//     return err
-//	// }
+//	// Write the surface to a PNG file
+//	err = surf.WriteToPNG("output.png")
+//	if err != nil {
+//		return err
+//	}
 //
 // # Error Handling
 //
