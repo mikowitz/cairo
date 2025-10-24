@@ -1,6 +1,9 @@
 package cairo
 
-import "github.com/mikowitz/cairo/surface"
+import (
+	"github.com/mikowitz/cairo/context"
+	"github.com/mikowitz/cairo/surface"
+)
 
 // Format is used to identify the memory format of image data.
 type Format = surface.Format
@@ -52,4 +55,98 @@ type Surface = surface.Surface
 // A finalizer is registered as a safety net, but explicit cleanup is recommended.
 func NewImageSurface(format Format, width, height int) (*surface.ImageSurface, error) {
 	return surface.NewImageSurface(format, width, height)
+}
+
+// Context is the main object used for drawing operations in Cairo.
+//
+// A Context maintains the graphics state including transformations, clip region,
+// line width and style, colors, font properties, and more. All drawing operations
+// are performed through a Context.
+//
+// # Basic Usage Pattern
+//
+// The standard workflow for using a Context:
+//
+//  1. Create a Surface (drawing target)
+//  2. Create a Context for that Surface
+//  3. Perform drawing operations
+//  4. Close both Context and Surface
+//
+// Example:
+//
+//	// Create a 400x300 ARGB32 image surface
+//	surface, err := cairo.NewImageSurface(cairo.FormatARGB32, 400, 300)
+//	if err != nil {
+//	    return err
+//	}
+//	defer surface.Close()
+//
+//	// Create drawing context
+//	ctx, err := cairo.NewContext(surface)
+//	if err != nil {
+//	    return err
+//	}
+//	defer ctx.Close()
+//
+//	// Drawing operations will be added in subsequent prompts:
+//	// - Set colors with SetSourceRGB/SetSourceRGBA
+//	// - Create paths with MoveTo, LineTo, Rectangle, Arc, etc.
+//	// - Render with Fill, Stroke, Paint
+//	// - Transform with Translate, Scale, Rotate
+//
+// # Resource Management
+//
+// Always close the Context when finished to release Cairo resources:
+//
+//	ctx, err := cairo.NewContext(surface)
+//	if err != nil {
+//	    return err
+//	}
+//	defer ctx.Close()  // Ensures cleanup
+//
+// While a finalizer is registered as a safety net, explicit cleanup with Close()
+// is strongly recommended, especially in long-running programs.
+//
+// # State Stack
+//
+// The Context maintains a stack of graphics states. Use Save() to push the current
+// state and Restore() to pop it back:
+//
+//	ctx.Save()
+//	// Modify state (transformations, colors, etc.)
+//	// ...
+//	ctx.Restore()  // Returns to saved state
+//
+// # Thread Safety
+//
+// Context is safe for concurrent use. All methods are protected by appropriate
+// locking. However, for optimal performance, avoid concurrent drawing operations
+// on the same Context from multiple goroutines.
+type Context = context.Context
+
+// NewContext creates a new Context for drawing on the given Surface.
+//
+// The Context maintains all graphics state for drawing operations. It must be
+// explicitly closed with Close() when finished, or rely on the finalizer for
+// cleanup during garbage collection.
+//
+// Returns an error if the surface is nil or if Context creation fails.
+//
+// Example:
+//
+//	surface, err := cairo.NewImageSurface(cairo.FormatARGB32, 640, 480)
+//	if err != nil {
+//	    return err
+//	}
+//	defer surface.Close()
+//
+//	ctx, err := cairo.NewContext(surface)
+//	if err != nil {
+//	    return err
+//	}
+//	defer ctx.Close()
+//
+//	// Use ctx for drawing operations...
+func NewContext(surface Surface) (*Context, error) {
+	return context.NewContext(surface)
 }
