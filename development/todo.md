@@ -242,16 +242,21 @@ rather than mutating an existing matrix in place.
   - [ ] Sets up finalizer
   - [ ] CGO implementations for Close, Status, Save, Restore
   - [ ] Helper to extract C surface pointer
-- [ ] Create `context/context_test.go`:
-  - [ ] `TestNewContext`
-  - [ ] `TestNewContextNilSurface`
-  - [ ] `TestContextClose`
-  - [ ] `TestContextStatus`
-  - [ ] `TestContextSaveRestore`
-  - [ ] `TestContextSaveRestoreImbalance`
+- [x] Create `context/context_test.go`:
+  - [x] `TestNewContext` - creates context from ImageSurface
+  - [x] `TestNewContextNilSurface` - tests error handling for nil surface
+  - [x] `TestContextClose` - verifies close and double-close safety
+  - [x] `TestContextStatus` - verifies status reporting
+  - [x] `TestContextSaveRestore` - verifies save/restore stack
+  - [x] `TestContextSaveRestoreImbalance` - tests restore without save
+  - [x] BONUS: `TestContextCloseIndependentOfSurface` - verifies context/surface independence
+  - [x] BONUS: `TestContextMultipleContextsOnSameSurface` - tests multiple contexts on one surface
+  - [x] BONUS: `TestContextCreationWithDifferentSurfaceFormats` - tests all surface formats
 - [ ] Update `cairo/cairo.go`:
   - [ ] Re-export NewContext function
   - [ ] Document Context usage pattern
+
+**Tests Status**: ✅ All tests written and failing as expected (TDD practice - implementation pending)
 
 ### Prompt 10: Context Package - Source Colors
 
