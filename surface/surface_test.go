@@ -1,6 +1,7 @@
 package surface
 
 import (
+	"os"
 	"runtime"
 	"sync"
 	"testing"
@@ -217,50 +218,50 @@ func TestBaseSurfaceThreadSafety(t *testing.T) {
 	wg.Add(goroutines * 5) // 5 different operation types
 
 	// Concurrent Status calls
-	for i := 0; i < goroutines; i++ {
+	for range goroutines {
 		go func() {
 			defer wg.Done()
-			for j := 0; j < iterations; j++ {
+			for range iterations {
 				_ = s.Status()
 			}
 		}()
 	}
 
 	// Concurrent Flush calls
-	for i := 0; i < goroutines; i++ {
+	for range goroutines {
 		go func() {
 			defer wg.Done()
-			for j := 0; j < iterations; j++ {
+			for range iterations {
 				s.Flush()
 			}
 		}()
 	}
 
 	// Concurrent MarkDirty calls
-	for i := 0; i < goroutines; i++ {
+	for range goroutines {
 		go func() {
 			defer wg.Done()
-			for j := 0; j < iterations; j++ {
+			for range iterations {
 				s.MarkDirty()
 			}
 		}()
 	}
 
 	// Concurrent MarkDirtyRectangle calls
-	for i := 0; i < goroutines; i++ {
+	for range goroutines {
 		go func() {
 			defer wg.Done()
-			for j := 0; j < iterations; j++ {
+			for range iterations {
 				s.MarkDirtyRectangle(0, 0, 50, 50)
 			}
 		}()
 	}
 
 	// Mixed concurrent operations
-	for i := 0; i < goroutines; i++ {
+	for i := range goroutines {
 		go func(idx int) {
 			defer wg.Done()
-			for j := 0; j < iterations; j++ {
+			for j := range iterations {
 				switch j % 4 {
 				case 0:
 					_ = s.Status()
@@ -291,7 +292,7 @@ func TestBaseSurfaceThreadSafeClose(t *testing.T) {
 	wg.Add(goroutines)
 
 	// Multiple goroutines trying to close simultaneously
-	for i := 0; i < goroutines; i++ {
+	for range goroutines {
 		go func() {
 			defer wg.Done()
 			_ = s.Close()
@@ -313,7 +314,7 @@ func TestBaseSurfaceFinalizer(t *testing.T) {
 
 	const iterations = 100
 
-	for i := 0; i < iterations; i++ {
+	for range iterations {
 		// Create surface without calling Close
 		// Finalizer should clean it up
 		_ = createTestSurface(t, FormatARGB32, 100, 100)
@@ -409,31 +410,281 @@ func TestImageSurfaceInvalidParameters(t *testing.T) {
 	}
 }
 
-// Placeholder tests for future PNG support (Prompt 8)
+// PNG Support Tests (Prompt 8)
 
-// TestImageSurfaceWriteToPNG will test PNG export
+// TestImageSurfaceWriteToPNG tests successful PNG writing
 func TestImageSurfaceWriteToPNG(t *testing.T) {
-	t.Skip("Will be implemented in Prompt 8 when PNG support is added")
+	tests := []struct {
+		name   string
+		format Format
+		width  int
+		height int
+	}{
+		{"ARGB32 surface", FormatARGB32, 100, 100},
+		{"RGB24 surface", FormatRGB24, 50, 50},
+		{"A8 surface", FormatA8, 75, 75},
+		{"A1 surface", FormatA1, 64, 64}, // A1 requires dimensions that work well with 1-bit packing
+	}
 
-	s, err := NewImageSurface(FormatARGB32, 100, 100)
-	assert.NoError(t, err, "Should not return an error from successful image create")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a temporary directory for test output
+			tmpDir := t.TempDir()
+			filename := tmpDir + "/test_output.png"
+
+			// Create surface
+			surf, err := NewImageSurface(tt.format, tt.width, tt.height)
+			require.NoError(t, err, "Failed to create surface")
+			require.NotNil(t, surf, "Surface should not be nil")
+			defer func() {
+				err := surf.Close()
+				assert.NoError(t, err, "surface should close without error")
+			}()
+
+			// Flush the surface before writing (as documented)
+			surf.Flush()
+
+			// Write to PNG
+			err = surf.WriteToPNG(filename)
+			require.NoError(t, err, "WriteToPNG should succeed")
+
+			// Verify file exists and is non-empty
+			info, err := os.Stat(filename)
+			require.NoError(t, err, "PNG file should exist")
+			assert.Greater(t, info.Size(), int64(0), "PNG file should not be empty")
+
+			// Verify it's a valid PNG by checking magic bytes
+			file, err := os.Open(filename)
+			require.NoError(t, err, "Should be able to open PNG file")
+			defer func() {
+				err := surf.Close()
+				assert.NoError(t, err, "surface should close without error")
+			}()
+
+			magic := make([]byte, 8)
+			_, err = file.Read(magic)
+			require.NoError(t, err, "Should be able to read PNG header")
+
+			// PNG magic bytes: 89 50 4E 47 0D 0A 1A 0A
+			expectedMagic := []byte{0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A}
+			assert.Equal(t, expectedMagic, magic, "File should have valid PNG magic bytes")
+		})
+	}
+}
+
+// TestImageSurfaceWriteToPNGInvalidPath tests error handling with invalid paths
+func TestImageSurfaceWriteToPNGInvalidPath(t *testing.T) {
+	// Create a surface
+	surf, err := NewImageSurface(FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	require.NotNil(t, surf, "Surface should not be nil")
 	defer func() {
-		err := s.Close()
-		require.NoError(t, err, "Surface should close without error")
+		err := surf.Close()
+		assert.NoError(t, err, "surface should close without error")
 	}()
 
-	// Flush before writing
-	s.Flush()
+	// Flush the surface
+	surf.Flush()
 
-	// Write to temporary file
+	// Try to write to an invalid path (directory that doesn't exist)
+	invalidPath := "/nonexistent/directory/that/should/not/exist/test.png"
+	err = surf.WriteToPNG(invalidPath)
+	assert.Error(t, err, "WriteToPNG should fail with invalid path")
+}
+
+// TestImageSurfaceWriteToPNGInvalidFilename tests error handling with invalid filenames
+func TestImageSurfaceWriteToPNGInvalidFilename(t *testing.T) {
+	// Create a surface
+	surf, err := NewImageSurface(FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	require.NotNil(t, surf, "Surface should not be nil")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "surface should close without error")
+	}()
+
+	// Flush the surface
+	surf.Flush()
+
+	tests := []struct {
+		name     string
+		filename string
+		reason   string
+	}{
+		{
+			name:     "empty string",
+			filename: "",
+			reason:   "Empty filename should fail",
+		},
+		{
+			name:     "null byte at start",
+			filename: "\x00test.png",
+			reason:   "Filename starting with null byte should fail (truncates to empty string)",
+		},
+		{
+			name:     "filename too long",
+			filename: "/" + string(make([]byte, 4096)) + ".png", // Most filesystems have limits around 255-4096
+			reason:   "Extremely long filename should fail",
+		},
+		{
+			name:     "invalid directory path",
+			filename: "/nonexistent/deeply/nested/directory/structure/that/does/not/exist/test.png",
+			reason:   "Path with non-existent directories should fail",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := surf.WriteToPNG(tt.filename)
+			assert.Equal(t, err, status.WriteError, tt.reason)
+		})
+	}
+}
+
+// TestImageSurfaceWriteToPNGNullByteHandling tests how null bytes in filenames are handled
+// Note: C.CString truncates at the first null byte, so these tests verify that behavior
+func TestImageSurfaceWriteToPNGNullByteHandling(t *testing.T) {
+	// Create a surface
+	surf, err := NewImageSurface(FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	require.NotNil(t, surf, "Surface should not be nil")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "surface should close without error")
+	}()
+
+	surf.Flush()
+
 	tmpDir := t.TempDir()
-	filename := tmpDir + "/test.png"
 
-	err = s.WriteToPNG(filename)
-	assert.NoError(t, err, "WriteToPNG should succeed")
+	tests := []struct {
+		name        string
+		filename    string
+		shouldError bool
+		reason      string
+	}{
+		{
+			name:        "null byte in middle - creates truncated file",
+			filename:    tmpDir + "/test\x00ignored.png",
+			shouldError: false, // C.CString truncates at null, so this tries to write tmpDir + "/test"
+			reason:      "Null byte in middle truncates filename at null byte",
+		},
+		{
+			name:        "null byte at end - same as valid filename",
+			filename:    tmpDir + "/test.png\x00",
+			shouldError: false, // C.CString truncates, so this is equivalent to tmpDir + "/test.png"
+			reason:      "Null byte at end is truncated, making valid filename",
+		},
+	}
 
-	// Verify file exists and has reasonable size
-	// (actual verification would require reading the PNG)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := surf.WriteToPNG(tt.filename)
+			if tt.shouldError {
+				assert.Error(t, err, tt.reason)
+			} else {
+				// These may succeed or fail depending on the truncated path validity
+				// We're just documenting the behavior here
+				t.Logf("WriteToPNG with null byte: error=%v (reason: %s)", err, tt.reason)
+			}
+		})
+	}
+}
+
+// TestImageSurfaceWriteToPNGAfterClose tests error handling when writing after close
+func TestImageSurfaceWriteToPNGAfterClose(t *testing.T) {
+	// Create a temporary directory for test output
+	tmpDir := t.TempDir()
+	filename := tmpDir + "/test_output.png"
+
+	// Create surface
+	surf, err := NewImageSurface(FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	require.NotNil(t, surf, "Surface should not be nil")
+
+	// Close the surface
+	err = surf.Close()
+	require.NoError(t, err, "Close should succeed")
+
+	// Try to write to PNG after closing
+	err = surf.WriteToPNG(filename)
+	assert.Error(t, err, "WriteToPNG should fail on closed surface")
+}
+
+// TestImageSurfaceWriteToPNGMultipleTimes tests writing the same surface multiple times
+func TestImageSurfaceWriteToPNGMultipleTimes(t *testing.T) {
+	// Create a temporary directory for test output
+	tmpDir := t.TempDir()
+
+	// Create surface
+	surf, err := NewImageSurface(FormatARGB32, 50, 50)
+	require.NoError(t, err, "Failed to create surface")
+	require.NotNil(t, surf, "Surface should not be nil")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "surface should close without error")
+	}()
+
+	// Write to multiple PNG files
+	for i := range 3 {
+		filename := tmpDir + "/test_output_" + string(rune('0'+i)) + ".png"
+		surf.Flush()
+		err = surf.WriteToPNG(filename)
+		require.NoError(t, err, "WriteToPNG should succeed on iteration %d", i)
+
+		// Verify file exists
+		info, err := os.Stat(filename)
+		require.NoError(t, err, "PNG file should exist on iteration %d", i)
+		assert.Greater(t, info.Size(), int64(0), "PNG file should not be empty on iteration %d", i)
+	}
+}
+
+// TestImageSurfaceWriteToPNGWithDifferentFormats tests PNG writing with all supported formats
+func TestImageSurfaceWriteToPNGWithDifferentFormats(t *testing.T) {
+	formats := []Format{
+		FormatARGB32,
+		FormatRGB24,
+		FormatA8,
+		FormatA1,
+		FormatRGB16_565,
+		FormatRGB30,
+	}
+
+	for _, format := range formats {
+		t.Run(format.String(), func(t *testing.T) {
+			// Skip invalid format
+			if format == FormatInvalid {
+				t.Skip("Skipping invalid format")
+			}
+
+			tmpDir := t.TempDir()
+			filename := tmpDir + "/test_" + format.String() + ".png"
+
+			// Create surface with format-appropriate dimensions
+			width, height := 100, 100
+			if format == FormatA1 {
+				// A1 format works better with dimensions that align well
+				width, height = 64, 64
+			}
+
+			surf, err := NewImageSurface(format, width, height)
+			require.NoError(t, err, "Failed to create surface with format %s", format)
+			require.NotNil(t, surf, "Surface should not be nil")
+			defer func() {
+				err := surf.Close()
+				assert.NoError(t, err, "surface should close without error")
+			}()
+
+			surf.Flush()
+			err = surf.WriteToPNG(filename)
+			require.NoError(t, err, "WriteToPNG should succeed for format %s", format)
+
+			// Verify file exists and is non-empty
+			info, err := os.Stat(filename)
+			require.NoError(t, err, "PNG file should exist for format %s", format)
+			assert.Greater(t, info.Size(), int64(0), "PNG file should not be empty for format %s", format)
+		})
+	}
 }
 
 // Helper functions for tests

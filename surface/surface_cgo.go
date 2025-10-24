@@ -2,8 +2,14 @@ package surface
 
 // #cgo pkg-config: cairo
 // #include <cairo.h>
+// #include <stdlib.h>
 import "C"
-import "github.com/mikowitz/cairo/status"
+
+import (
+	"unsafe"
+
+	"github.com/mikowitz/cairo/status"
+)
 
 type SurfacePtr *C.cairo_surface_t
 
@@ -39,4 +45,16 @@ func imageSurfaceCreate(format Format, width, height int) SurfacePtr {
 			C.int(height),
 		),
 	)
+}
+
+func surfaceWriteToPNG(ptr SurfacePtr, filepath string) error {
+	cFilepath := C.CString(filepath)
+	defer C.free(unsafe.Pointer(cFilepath))
+	st := C.cairo_surface_write_to_png(ptr, cFilepath)
+
+	s := status.Status(st)
+	if s == status.Success {
+		return nil
+	}
+	return s
 }

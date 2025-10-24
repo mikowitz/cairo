@@ -52,7 +52,3 @@ func (s *ImageSurface) GetStride() int {
 
 	return s.format.StrideForWidth(s.width)
 }
-
-func (s *ImageSurface) WriteToPNG(filepath string) error {
-	return nil
-}

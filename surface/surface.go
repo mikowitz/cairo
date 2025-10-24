@@ -94,6 +94,40 @@ func (b *BaseSurface) MarkDirtyRectangle(x, y, width, height int) {
 	surfaceMarkDirtyRectangle(b.ptr, x, y, width, height)
 }
 
+// WriteToPNG writes the contents of the surface to a new PNG file at the specified filepath.
+//
+// The surface should be flushed with Flush() before calling WriteToPNG to ensure all
+// pending drawing operations are completed. This is particularly important if the surface
+// has been modified through direct memory access or external APIs.
+//
+// The filepath is converted to a C string, so it will be truncated at the first null byte
+// if present. Empty filepaths or paths to non-existent directories will result in an error.
+//
+// Returns an error if the surface is closed or if Cairo encounters an error writing the file
+// (such as invalid path, insufficient permissions, or disk full).
+//
+// Example:
+//
+//	surf, err := NewImageSurface(FormatARGB32, 640, 480)
+//	if err != nil {
+//		return err
+//	}
+//	defer surf.Close()
+//
+//	// ... draw to surface ...
+//
+//	surf.Flush() // Ensure all drawing is complete
+//	err = surf.WriteToPNG("output.png")
+//	if err != nil {
+//		return err
+//	}
+func (b *BaseSurface) WriteToPNG(filepath string) error {
+	if b.ptr == nil {
+		return status.NullPointer
+	}
+	return surfaceWriteToPNG(b.ptr, filepath)
+}
+
 func (b *BaseSurface) close() error {
 	b.Lock()
 	defer b.Unlock()
