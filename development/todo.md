@@ -225,33 +225,48 @@ rather than mutating an existing matrix in place.
 
 ## Phase 3: Context & Drawing (Prompts 9-12)
 
-### Prompt 9: Context Package - Creation and Lifecycle
+### Prompt 9: Context Package - Creation and Lifecycle ✅ COMPLETE
 
-- [ ] Create `context/context.go`:
-  - [ ] `Context` struct with `sync.RWMutex`, ptr, closed flag
-  - [ ] `func NewContext(surface Surface) (*Context, error)`
-  - [ ] `func (c *Context) Close() error`
-  - [ ] `func (c *Context) Status() Status`
-  - [ ] `func (c *Context) Save()`
-  - [ ] `func (c *Context) Restore()`
-  - [ ] Package documentation explaining Context purpose
-- [ ] Create `context/context_cgo.go`:
-  - [ ] CGO preamble
-  - [ ] `func newContext(surface Surface) (*Context, error)`
-  - [ ] Calls `cairo_create`
-  - [ ] Sets up finalizer
-  - [ ] CGO implementations for Close, Status, Save, Restore
-  - [ ] Helper to extract C surface pointer
-- [ ] Create `context/context_test.go`:
-  - [ ] `TestNewContext`
-  - [ ] `TestNewContextNilSurface`
-  - [ ] `TestContextClose`
-  - [ ] `TestContextStatus`
-  - [ ] `TestContextSaveRestore`
-  - [ ] `TestContextSaveRestoreImbalance`
-- [ ] Update `cairo/cairo.go`:
-  - [ ] Re-export NewContext function
-  - [ ] Document Context usage pattern
+- [x] Create `context/context.go`:
+  - [x] `Context` struct with `sync.RWMutex`, ptr, closed flag (line 70-74)
+  - [x] `func NewContext(surface Surface) (*Context, error)` (line 76-93)
+  - [x] `func (c *Context) Close() error` (line 108-110)
+  - [x] `func (c *Context) Status() Status` (line 96-106)
+  - [x] `func (c *Context) Save()` (line 112-121)
+  - [x] `func (c *Context) Restore()` (line 123-132)
+  - [x] Package documentation explaining Context purpose (lines 1-58)
+    - [x] Explains Context as central drawing object
+    - [x] Documents drawing pipeline (6-step workflow)
+    - [x] Covers lifecycle and resource management with example
+    - [x] Explains state management (Save/Restore)
+    - [x] Documents thread safety guarantees
+- [x] Create `context/context_cgo.go`:
+  - [x] CGO preamble
+  - [x] `func contextCreate(sPtr unsafe.Pointer) ContextPtr`
+  - [x] Calls `cairo_create`
+  - [x] Sets up finalizer (in NewContext)
+  - [x] CGO implementations for Close, Status, Save, Restore
+  - [x] Helper to extract C surface pointer (uses surface.Ptr() method)
+- [x] Create `context/context_test.go`:
+  - [x] `TestNewContext` - creates context from ImageSurface ✅ PASSING
+  - [x] `TestNewContextNilSurface` - tests error handling for nil surface ✅ PASSING
+  - [x] `TestContextClose` - verifies close and double-close safety ✅ PASSING
+  - [x] `TestContextStatus` - verifies status reporting ✅ PASSING
+  - [x] `TestContextSaveRestore` - verifies save/restore stack ✅ PASSING
+  - [x] `TestContextSaveRestoreImbalance` - tests restore without save ✅ PASSING
+  - [x] BONUS: `TestContextCloseIndependentOfSurface` - verifies context/surface independence ✅ PASSING
+  - [x] BONUS: `TestContextMultipleContextsOnSameSurface` - tests multiple contexts on one surface ✅ PASSING
+  - [x] BONUS: `TestContextCreationWithDifferentSurfaceFormats` - tests all surface formats ✅ PASSING
+- [x] Update `cairo.go`:
+  - [x] Import context package (line 4)
+  - [x] Re-export Context type with comprehensive documentation (lines 60-125)
+    - [x] Basic usage pattern section
+    - [x] Resource management section with example
+    - [x] State stack section
+    - [x] Thread safety documentation
+  - [x] Re-export NewContext function with documentation and example (lines 127-152)
+
+✅ **Status: 100% COMPLETE - All requirements met, all tests passing, comprehensive documentation added**
 
 ### Prompt 10: Context Package - Source Colors
 

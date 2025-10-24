@@ -8,6 +8,7 @@ import (
 )
 
 type Surface interface {
+	Ptr() SurfacePtr
 	Close() error
 	Status() status.Status
 	Flush()
@@ -29,6 +30,11 @@ func newBaseSurface(ptr SurfacePtr) *BaseSurface {
 	runtime.SetFinalizer(b, (*BaseSurface).close)
 
 	return b
+}
+
+// Ptr returns the underlying pointer for the surface.
+func (b *BaseSurface) Ptr() SurfacePtr {
+	return b.ptr
 }
 
 // Close closes the surface, ensuring that any reserved memory related to
