@@ -268,22 +268,28 @@ rather than mutating an existing matrix in place.
 
 ✅ **Status: 100% COMPLETE - All requirements met, all tests passing, comprehensive documentation added**
 
-### Prompt 10: Context Package - Source Colors
+### Prompt 10: Context Package - Source Colors ✅ COMPLETE
 
-- [ ] Update `context/context.go`:
-  - [ ] `func (c *Context) SetSourceRGB(r, g, b float64)`
-  - [ ] `func (c *Context) SetSourceRGBA(r, g, b, a float64)`
-  - [ ] Document that r, g, b, a are in range [0.0, 1.0]
-  - [ ] Both methods use proper locking
-- [ ] Update `context/context_cgo.go`:
-  - [ ] `func (c *Context) setSourceRGB(r, g, b float64)`
-  - [ ] `func (c *Context) setSourceRGBA(r, g, b, a float64)`
-- [ ] Update `context/context_test.go`:
-  - [ ] `TestContextSetSourceRGB`
-  - [ ] `TestContextSetSourceRGBA`
-  - [ ] `TestContextSetSourceAfterClose`
-- [ ] Update `cairo/cairo.go`:
-  - [ ] Add example showing source color setting
+- [x] Update `context/context.go`:
+  - [x] `func (c *Context) SetSourceRGB(r, g, b float64)` (line 150-158) ✅
+  - [x] `func (c *Context) SetSourceRGBA(r, g, b, a float64)` (line 172-180) ✅
+  - [x] Document that r, g, b, a are in range [0.0, 1.0] - comprehensive docs ✅
+  - [x] Both methods use proper locking (Lock/Unlock with nil pointer checks) ✅
+- [x] Update `context/context_cgo.go`:
+  - [x] `func contextSetSourceRGB(ptr ContextPtr, r, g, b float64)` (line 35-40) ✅
+  - [x] `func contextSetSourceRGBA(ptr ContextPtr, r, g, b, a float64)` (line 42-47) ✅
+  - [x] Both call appropriate cairo_set_source_* functions (cairo_set_source_rgb/rgba) ✅
+- [x] Update `context/context_test.go`:
+  - [x] `TestContextSetSourceRGB` - tests 6 color combinations ✅ PASSING
+  - [x] `TestContextSetSourceRGBA` - tests 5 color/alpha combinations ✅ PASSING
+  - [x] `TestContextSetSourceAfterClose` - verifies safe no-op behavior ✅ PASSING
+  - [x] Integration test included in above tests (create context, set source, check status) ✅
+- [x] Update `cairo/cairo.go`:
+  - [x] Add complete example showing source color setting (lines 91-95) ✅
+    - [x] Shows SetSourceRGB usage (opaque red)
+    - [x] Shows SetSourceRGBA usage (semi-transparent blue)
+
+✅ **Status: 100% COMPLETE - All requirements met, all 3 tests passing, documentation complete**
 
 ### Prompt 11: Context Package - Basic Path Operations
 

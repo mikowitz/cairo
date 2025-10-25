@@ -138,6 +138,47 @@ func (c *Context) Restore() {
 	contextRestore(c.ptr)
 }
 
+// SetSourceRGB sets the source pattern within the context to an opaque color.
+// This opaque color will then be used for any subsequent drawing operation
+// until a new source pattern is set.
+//
+// The color components are floating point numbers in the range 0 to 1. If
+// the values passed in are outside that range, they will be clamped.
+//
+// The default source pattern is opaque black, (that is, it is equivalent
+// to context.SetSourceRGB(0, 0, 0)).
+func (c *Context) SetSourceRGB(r, g, b float64) {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.ptr == nil {
+		return
+	}
+	contextSetSourceRGB(c.ptr, r, g, b)
+}
+
+// SetSourceRGBA sets the source pattern within the context to a translucent
+// color. This color will then be used for any subsequent drawing operation
+// until a new source pattern is set.
+//
+// The color and alpha components are floating point numbers in the range
+// 0 to 1. If the values passed in are outside that range, they will be
+// clamped.
+//
+// Note that the color and alpha values are not premultiplied.
+//
+// The default source pattern is opaque black, (that is, it is equivalent
+// to context.SetSourceRGBA(0, 0, 0, 1)).
+func (c *Context) SetSourceRGBA(r, g, b, a float64) {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.ptr == nil {
+		return
+	}
+	contextSetSourceRGBA(c.ptr, r, g, b, a)
+}
+
 func (c *Context) close() error {
 	c.Lock()
 	defer c.Unlock()
