@@ -251,3 +251,103 @@ func TestContextCreationWithDifferentSurfaceFormats(t *testing.T) {
 		})
 	}
 }
+
+// TestContextSetSourceRGB verifies that SetSourceRGB sets a color and maintains success status.
+func TestContextSetSourceRGB(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Test various color combinations
+	testCases := []struct {
+		name    string
+		r, g, b float64
+	}{
+		{"Red", 1.0, 0.0, 0.0},
+		{"Green", 0.0, 1.0, 0.0},
+		{"Blue", 0.0, 0.0, 1.0},
+		{"White", 1.0, 1.0, 1.0},
+		{"Black", 0.0, 0.0, 0.0},
+		{"Half intensity gray", 0.5, 0.5, 0.5},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx.SetSourceRGB(tc.r, tc.g, tc.b)
+			st := ctx.Status()
+			assert.Equal(t, status.Success, st, "Status should be Success after SetSourceRGB")
+		})
+	}
+}
+
+// TestContextSetSourceRGBA verifies that SetSourceRGBA sets a color with alpha and maintains success status.
+func TestContextSetSourceRGBA(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "failed to close context")
+	}()
+
+	// Test various color and alpha combinations
+	testCases := []struct {
+		name       string
+		r, g, b, a float64
+	}{
+		{"Opaque red", 1.0, 0.0, 0.0, 1.0},
+		{"Semi-transparent blue", 0.0, 0.0, 1.0, 0.5},
+		{"Fully transparent green", 0.0, 1.0, 0.0, 0.0},
+		{"Quarter opacity white", 1.0, 1.0, 1.0, 0.25},
+		{"Three-quarter opacity black", 0.0, 0.0, 0.0, 0.75},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx.SetSourceRGBA(tc.r, tc.g, tc.b, tc.a)
+			st := ctx.Status()
+			assert.Equal(t, status.Success, st, "Status should be Success after SetSourceRGBA")
+		})
+	}
+}
+
+// TestContextSetSourceAfterClose verifies that setting source after close is safe.
+func TestContextSetSourceAfterClose(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+
+	// Close the context
+	err = ctx.Close()
+	assert.NoError(t, err, "Closing context should not error")
+
+	// Setting source after close should be safe (no-op)
+	ctx.SetSourceRGB(1.0, 0.0, 0.0)
+	ctx.SetSourceRGBA(0.0, 1.0, 0.0, 0.5)
+
+	// Status should indicate closed/null pointer
+	st := ctx.Status()
+	assert.Equal(t, status.NullPointer, st, "Status after close should be NullPointer")
+}

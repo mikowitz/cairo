@@ -31,3 +31,17 @@ func contextSave(ptr ContextPtr) {
 func contextRestore(ptr ContextPtr) {
 	C.cairo_restore(ptr)
 }
+
+func contextSetSourceRGB(ptr ContextPtr, r, g, b float64) {
+	C.cairo_set_source_rgb(
+		ptr,
+		C.double(r), C.double(g), C.double(b),
+	)
+}
+
+func contextSetSourceRGBA(ptr ContextPtr, r, g, b, a float64) {
+	C.cairo_set_source_rgba(
+		ptr,
+		C.double(r), C.double(g), C.double(b), C.double(a),
+	)
+}

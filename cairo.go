@@ -88,8 +88,13 @@ func NewImageSurface(format Format, width, height int) (*surface.ImageSurface, e
 //	}
 //	defer ctx.Close()
 //
-//	// Drawing operations will be added in subsequent prompts:
-//	// - Set colors with SetSourceRGB/SetSourceRGBA
+//	// Set source color to opaque red
+//	ctx.SetSourceRGB(1.0, 0.0, 0.0)
+//
+//	// Or use SetSourceRGBA for colors with transparency
+//	ctx.SetSourceRGBA(0.0, 0.0, 1.0, 0.5)  // Semi-transparent blue
+//
+//	// Additional drawing operations (to be added in subsequent prompts):
 //	// - Create paths with MoveTo, LineTo, Rectangle, Arc, etc.
 //	// - Render with Fill, Stroke, Paint
 //	// - Transform with Translate, Scale, Rotate
