@@ -258,19 +258,19 @@ func TestContextSetSourceRGB(t *testing.T) {
 	require.NoError(t, err, "Failed to create surface")
 	defer func() {
 		err := surf.Close()
-		assert.NoError(t, err, "failed to close the surface")
+		assert.NoError(t, err, "Failed to close surface")
 	}()
 
 	ctx, err := NewContext(surf)
 	require.NoError(t, err, "Failed to create context")
 	defer func() {
 		err := ctx.Close()
-		assert.NoError(t, err, "failed to close context")
+		assert.NoError(t, err, "Failed to close context")
 	}()
 
 	// Test various color combinations
 	testCases := []struct {
-		name string
+		name    string
 		r, g, b float64
 	}{
 		{"Red", 1.0, 0.0, 0.0},
@@ -296,7 +296,7 @@ func TestContextSetSourceRGBA(t *testing.T) {
 	require.NoError(t, err, "Failed to create surface")
 	defer func() {
 		err := surf.Close()
-		assert.NoError(t, err, "failed to close the surface")
+		assert.NoError(t, err, "Failed to close surface")
 	}()
 
 	ctx, err := NewContext(surf)
@@ -308,7 +308,7 @@ func TestContextSetSourceRGBA(t *testing.T) {
 
 	// Test various color and alpha combinations
 	testCases := []struct {
-		name string
+		name       string
 		r, g, b, a float64
 	}{
 		{"Opaque red", 1.0, 0.0, 0.0, 1.0},
@@ -333,7 +333,7 @@ func TestContextSetSourceAfterClose(t *testing.T) {
 	require.NoError(t, err, "Failed to create surface")
 	defer func() {
 		err := surf.Close()
-		assert.NoError(t, err, "failed to close the surface")
+		assert.NoError(t, err, "Failed to close surface")
 	}()
 
 	ctx, err := NewContext(surf)

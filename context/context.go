@@ -128,6 +128,8 @@ func (c *Context) Save() {
 	contextSave(c.ptr)
 }
 
+// Restores context to the state saved by a preceding call to [Context.Save]
+// and removes that state from the stack of saved states.
 func (c *Context) Restore() {
 	c.Lock()
 	defer c.Unlock()
