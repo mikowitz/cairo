@@ -1,61 +1,3 @@
-// Package context provides the main drawing context for Cairo operations.
-//
-// The Context is Cairo's central object for drawing operations. It maintains
-// all graphics state parameters including the current transformation matrix,
-// clip region, line width, line style, colors, font properties, and more.
-//
-// # Drawing Pipeline
-//
-// The typical Cairo drawing workflow follows this pattern:
-//
-//  1. Create a Surface (the drawing target)
-//  2. Create a Context for that Surface
-//  3. Set drawing properties (colors, line width, etc.)
-//  4. Construct paths (MoveTo, LineTo, Rectangle, etc.)
-//  5. Render paths (Fill, Stroke, Paint, etc.)
-//  6. Close the Context and Surface when done
-//
-// # Lifecycle and Resource Management
-//
-// A Context must be created for a specific Surface and holds a reference to it.
-// The Context should be explicitly closed with Close() when drawing is complete
-// to release Cairo resources. A finalizer is registered as a safety net, but
-// explicit cleanup is strongly recommended for long-running programs.
-//
-// Example usage:
-//
-//	surface, err := surface.NewImageSurface(surface.FormatARGB32, 400, 300)
-//	if err != nil {
-//	    return err
-//	}
-//	defer surface.Close()
-//
-//	ctx, err := context.NewContext(surface)
-//	if err != nil {
-//	    return err
-//	}
-//	defer ctx.Close()
-//
-//	// Drawing operations will be added in subsequent prompts
-//	// ctx.SetSourceRGB(1.0, 0.0, 0.0)  // Red color
-//	// ctx.Rectangle(50, 50, 100, 100)
-//	// ctx.Fill()
-//
-// # State Management
-//
-// The Context maintains a stack of graphics states. Use Save() to push the
-// current state onto the stack and Restore() to pop it back. This is useful
-// for temporarily changing drawing parameters:
-//
-//	ctx.Save()
-//	// Make temporary changes
-//	ctx.Restore()  // Returns to previous state
-//
-// # Thread Safety
-//
-// Context is safe for concurrent use. All methods use appropriate locking
-// to protect the internal state. However, for best performance, avoid
-// concurrent drawing operations on the same Context.
 package context
 
 import (
@@ -181,6 +123,193 @@ func (c *Context) SetSourceRGBA(r, g, b, a float64) {
 	contextSetSourceRGBA(c.ptr, r, g, b, a)
 }
 
+// MoveTo begins a new sub-path by setting the current point to (x, y).
+//
+// After this call the current point will be (x, y). Coordinates are specified
+// in user-space, which is affected by the current transformation matrix (CTM).
+//
+// If there is no current path when MoveTo is called, this function behaves
+// identically to calling NewPath() followed by MoveTo(x, y).
+//
+// Example:
+//
+//	ctx.MoveTo(50.0, 75.0)  // Start a path at (50, 75)
+//	ctx.LineTo(100.0, 75.0) // Draw line to (100, 75)
+func (c *Context) MoveTo(x, y float64) {
+	c.withLock(func() {
+		contextMoveTo(c.ptr, x, y)
+	})
+}
+
+// LineTo adds a line segment to the path from the current point to (x, y),
+// and sets the current point to (x, y).
+//
+// If there is no current point before the call to LineTo, this function will
+// behave as if preceded by a call to MoveTo(x, y).
+//
+// After this call the current point will be (x, y). Coordinates are specified
+// in user-space.
+//
+// Example:
+//
+//	ctx.MoveTo(10.0, 10.0)
+//	ctx.LineTo(50.0, 10.0)  // Horizontal line
+//	ctx.LineTo(50.0, 50.0)  // Vertical line
+func (c *Context) LineTo(x, y float64) {
+	c.withLock(func() {
+		contextLineTo(c.ptr, x, y)
+	})
+}
+
+// Rectangle adds a closed rectangular sub-path to the current path.
+//
+// The rectangle is positioned at (x, y) in user-space with the specified
+// width and height. This is equivalent to:
+//
+//	ctx.MoveTo(x, y)
+//	ctx.LineTo(x+width, y)
+//	ctx.LineTo(x+width, y+height)
+//	ctx.LineTo(x, y+height)
+//	ctx.ClosePath()
+//
+// After calling Rectangle, the current point will be at (x, y).
+//
+// Example:
+//
+//	ctx.Rectangle(20.0, 30.0, 100.0, 50.0)  // Rectangle at (20,30) sized 100x50
+//	ctx.SetSourceRGB(1.0, 0.0, 0.0)         // Red
+//	ctx.Fill()                               // Fill the rectangle
+func (c *Context) Rectangle(x, y, width, height float64) {
+	c.withLock(func() {
+		contextRectangle(c.ptr, x, y, width, height)
+	})
+}
+
+// GetCurrentPoint returns the current point in user-space coordinates.
+//
+// The current point is the point that would be used by MoveTo or LineTo if
+// called. Most path construction functions alter the current point. See the
+// individual function documentation for details.
+//
+// Returns an error if there is no current point defined. Use HasCurrentPoint()
+// to check whether a current point exists before calling this method.
+//
+// Example:
+//
+//	ctx.MoveTo(25.5, 37.75)
+//	x, y, err := ctx.GetCurrentPoint()
+//	if err == nil {
+//	    fmt.Printf("Current point: (%f, %f)\n", x, y)
+//	}
+func (c *Context) GetCurrentPoint() (x, y float64, err error) {
+	c.RLock()
+	defer c.RUnlock()
+
+	if c.ptr == nil {
+		return 0, 0, status.NullPointer
+	}
+
+	x, y, st := contextGetCurrentPoint(c.ptr)
+	if st != nil {
+		return 0, 0, st
+	}
+	return x, y, nil
+}
+
+// HasCurrentPoint returns whether a current point is defined on the current path.
+//
+// A current point is defined after operations like MoveTo, LineTo, or Rectangle.
+// The current point becomes undefined after NewPath() or if no path operations
+// have been performed yet.
+//
+// This is useful to check before calling GetCurrentPoint() to avoid errors.
+//
+// Example:
+//
+//	if ctx.HasCurrentPoint() {
+//	    x, y, _ := ctx.GetCurrentPoint()
+//	    fmt.Printf("Current point: (%f, %f)\n", x, y)
+//	}
+func (c *Context) HasCurrentPoint() bool {
+	c.RLock()
+	defer c.RUnlock()
+
+	if c.ptr == nil {
+		return false
+	}
+	return contextHasCurrentPoint(c.ptr)
+}
+
+// NewPath clears the current path and removes any current point.
+//
+// After this call there will be no current path and no current point.
+// This is typically called before starting a new path to ensure the path
+// is empty. Without calling NewPath, subsequent path calls will append to
+// the existing path.
+//
+// Example:
+//
+//	ctx.Rectangle(10, 10, 50, 50)
+//	ctx.Fill()          // Fills the rectangle
+//	ctx.NewPath()       // Clear the path to start fresh
+//	ctx.Rectangle(70, 10, 50, 50)
+//	ctx.Stroke()        // Strokes the second rectangle
+func (c *Context) NewPath() {
+	c.withLock(func() {
+		contextNewPath(c.ptr)
+	})
+}
+
+// ClosePath adds a line segment from the current point to the beginning of
+// the current sub-path (the most recent point passed to MoveTo), and marks
+// the current sub-path as closed.
+//
+// After calling ClosePath, the current point will be the beginning of the
+// (now closed) sub-path.
+//
+// The behavior of ClosePath is distinct from simply calling LineTo with the
+// coordinates of the sub-path's starting point. When a sub-path is closed,
+// line joins are used at the connection point, whereas when it's merely
+// connected with a line, line caps are used.
+//
+// If there is no current point before the call to ClosePath, this function
+// has no effect.
+//
+// Example:
+//
+//	ctx.MoveTo(10, 10)
+//	ctx.LineTo(50, 10)
+//	ctx.LineTo(30, 40)
+//	ctx.ClosePath()     // Completes the triangle back to (10, 10)
+func (c *Context) ClosePath() {
+	c.withLock(func() {
+		contextClosePath(c.ptr)
+	})
+}
+
+// NewSubPath begins a new sub-path within the current path.
+//
+// After this call there will be no current point. In many cases, calling
+// NewSubPath is not required since MoveTo automatically begins new sub-paths.
+// The primary use case is for creating compound paths with multiple disconnected
+// shapes that share the same fill or stroke operation.
+//
+// NewSubPath is particularly useful when you want to ensure a new sub-path
+// starts without implicitly closing or connecting to an existing sub-path.
+//
+// Example:
+//
+//	// Create two separate circles in the same path
+//	ctx.Arc(50, 50, 20, 0, 2*math.Pi)
+//	ctx.NewSubPath()
+//	ctx.Arc(120, 50, 20, 0, 2*math.Pi)
+//	ctx.Fill()  // Both circles filled with one operation
+func (c *Context) NewSubPath() {
+	c.withLock(func() {
+		contextNewSubPath(c.ptr)
+	})
+}
+
 func (c *Context) close() error {
 	c.Lock()
 	defer c.Unlock()
@@ -193,4 +322,15 @@ func (c *Context) close() error {
 	}
 
 	return nil
+}
+
+func (c *Context) withLock(fn func()) {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.ptr == nil {
+		return
+	}
+
+	fn()
 }

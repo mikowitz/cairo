@@ -351,3 +351,315 @@ func TestContextSetSourceAfterClose(t *testing.T) {
 	st := ctx.Status()
 	assert.Equal(t, status.NullPointer, st, "Status after close should be NullPointer")
 }
+
+// TestContextMoveTo verifies that MoveTo sets the current point.
+func TestContextMoveTo(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// MoveTo should set current point
+	ctx.MoveTo(50.0, 75.0)
+	st := ctx.Status()
+	assert.Equal(t, status.Success, st, "Status should be Success after MoveTo")
+
+	// Verify current point is set correctly
+	x, y, err := ctx.GetCurrentPoint()
+	require.NoError(t, err, "GetCurrentPoint should not error after MoveTo")
+	assert.InDelta(t, 50.0, x, 0.001, "X coordinate should match")
+	assert.InDelta(t, 75.0, y, 0.001, "Y coordinate should match")
+}
+
+// TestContextLineTo verifies that LineTo adds a line and updates the current point.
+func TestContextLineTo(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Start with MoveTo to establish a current point
+	ctx.MoveTo(10.0, 20.0)
+
+	// LineTo should create a line and update current point
+	ctx.LineTo(50.0, 60.0)
+	st := ctx.Status()
+	assert.Equal(t, status.Success, st, "Status should be Success after LineTo")
+
+	// Verify current point is updated
+	x, y, err := ctx.GetCurrentPoint()
+	require.NoError(t, err, "GetCurrentPoint should not error after LineTo")
+	assert.InDelta(t, 50.0, x, 0.001, "X coordinate should match LineTo destination")
+	assert.InDelta(t, 60.0, y, 0.001, "Y coordinate should match LineTo destination")
+
+	// Multiple LineTo calls should work
+	ctx.LineTo(80.0, 90.0)
+	x, y, err = ctx.GetCurrentPoint()
+	require.NoError(t, err, "GetCurrentPoint should not error after second LineTo")
+	assert.InDelta(t, 80.0, x, 0.001, "X coordinate should match second LineTo")
+	assert.InDelta(t, 90.0, y, 0.001, "Y coordinate should match second LineTo")
+}
+
+// TestContextRectangle verifies that Rectangle creates a rectangular path.
+func TestContextRectangle(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Rectangle should create a closed rectangular path
+	ctx.Rectangle(10.0, 20.0, 100.0, 50.0)
+	st := ctx.Status()
+	assert.Equal(t, status.Success, st, "Status should be Success after Rectangle")
+
+	// Test various rectangle dimensions
+	testCases := []struct {
+		name       string
+		x, y, w, h float64
+	}{
+		{"Square", 0.0, 0.0, 50.0, 50.0},
+		{"Wide rectangle", 10.0, 10.0, 100.0, 20.0},
+		{"Tall rectangle", 20.0, 30.0, 30.0, 80.0},
+		{"Single pixel", 50.0, 50.0, 1.0, 1.0},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx.Rectangle(tc.x, tc.y, tc.w, tc.h)
+			st := ctx.Status()
+			assert.Equal(t, status.Success, st, "Status should be Success after Rectangle")
+		})
+	}
+}
+
+// TestContextClosePath verifies that ClosePath closes the current path.
+func TestContextClosePath(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Create a path
+	ctx.MoveTo(10.0, 10.0)
+	ctx.LineTo(50.0, 10.0)
+	ctx.LineTo(50.0, 50.0)
+
+	// Close the path
+	ctx.ClosePath()
+	st := ctx.Status()
+	assert.Equal(t, status.Success, st, "Status should be Success after ClosePath")
+
+	// ClosePath on empty path should be safe
+	ctx.NewPath()
+	ctx.ClosePath()
+	st = ctx.Status()
+	assert.Equal(t, status.Success, st, "ClosePath on empty path should not error")
+}
+
+// TestContextNewPath verifies that NewPath clears the current path.
+func TestContextNewPath(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Create a path with a current point
+	ctx.MoveTo(50.0, 50.0)
+	x, y, err := ctx.GetCurrentPoint()
+	require.NoError(t, err, "Should have current point after MoveTo")
+	assert.InDelta(t, 50.0, x, 0.001, "X should be 50")
+	assert.InDelta(t, 50.0, y, 0.001, "Y should be 50")
+
+	// NewPath should clear the path and current point
+	ctx.NewPath()
+	st := ctx.Status()
+	assert.Equal(t, status.Success, st, "Status should be Success after NewPath")
+
+	// Current point should no longer be defined
+	_, _, err = ctx.GetCurrentPoint()
+	assert.Error(t, err, "GetCurrentPoint should error after NewPath clears the path")
+
+	// Multiple NewPath calls should be safe
+	ctx.NewPath()
+	ctx.NewPath()
+	st = ctx.Status()
+	assert.Equal(t, status.Success, st, "Multiple NewPath calls should succeed")
+}
+
+// TestContextGetCurrentPoint verifies getting the current point.
+func TestContextGetCurrentPoint(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Set current point with MoveTo
+	ctx.MoveTo(25.5, 37.75)
+	x, y, err := ctx.GetCurrentPoint()
+	require.NoError(t, err, "GetCurrentPoint should not error")
+	assert.InDelta(t, 25.5, x, 0.001, "X coordinate should match")
+	assert.InDelta(t, 37.75, y, 0.001, "Y coordinate should match")
+
+	// Update with LineTo
+	ctx.LineTo(100.0, 200.0)
+	x, y, err = ctx.GetCurrentPoint()
+	require.NoError(t, err, "GetCurrentPoint should not error after LineTo")
+	assert.InDelta(t, 100.0, x, 0.001, "X coordinate should be updated")
+	assert.InDelta(t, 200.0, y, 0.001, "Y coordinate should be updated")
+}
+
+func TestContextHasCurrentPointNoPoint(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// No current point initially
+	assert.False(t, ctx.HasCurrentPoint(), "HasCurrentPoint should be false when no current point")
+
+	// Set a current point
+	ctx.MoveTo(10.0, 20.0)
+	assert.True(t, ctx.HasCurrentPoint(), "HasCurrentPoint should be true when current point is set")
+
+	// NewPath clears the current point
+	ctx.NewPath()
+	assert.False(t, ctx.HasCurrentPoint(), "HasCurrentPoint should be false when no current point")
+
+	// Rectangle creates a path and Cairo should have a defined current point
+	// after a closed subpath like Rectangle
+	ctx.Rectangle(10.0, 10.0, 50.0, 50.0)
+	assert.True(t, ctx.HasCurrentPoint(), "HasCurrentPoint should be true when current point is set")
+}
+
+// TestContextGetCurrentPointNoPoint verifies error when no current point exists.
+func TestContextGetCurrentPointNoPoint(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// No current point initially
+	_, _, err = ctx.GetCurrentPoint()
+	assert.Error(t, err, "GetCurrentPoint should error when no current point")
+
+	// Set a current point
+	ctx.MoveTo(10.0, 20.0)
+	_, _, err = ctx.GetCurrentPoint()
+	require.NoError(t, err, "Should have current point after MoveTo")
+
+	// NewPath clears the current point
+	ctx.NewPath()
+	_, _, err = ctx.GetCurrentPoint()
+	assert.Error(t, err, "GetCurrentPoint should error after NewPath")
+
+	// Rectangle creates a path and Cairo should have a defined current point
+	// after a closed subpath like Rectangle
+	ctx.Rectangle(10.0, 10.0, 50.0, 50.0)
+	_, _, err = ctx.GetCurrentPoint()
+	require.NoError(t, err, "Should have current point after MoveTo")
+}
+
+// TestContextPathOperationsAfterClose verifies path operations are safe after close.
+func TestContextPathOperationsAfterClose(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+
+	// Close the context
+	err = ctx.Close()
+	assert.NoError(t, err, "Closing context should not error")
+
+	// All path operations should be safe no-ops after close
+	ctx.MoveTo(10.0, 20.0)
+	ctx.LineTo(30.0, 40.0)
+	ctx.Rectangle(5.0, 5.0, 20.0, 20.0)
+	ctx.ClosePath()
+	ctx.NewPath()
+	ctx.NewSubPath()
+
+	// GetCurrentPoint should return error indicating closed context
+	_, _, err = ctx.GetCurrentPoint()
+	assert.Error(t, err, "GetCurrentPoint should error on closed context")
+
+	// Status should indicate closed/null pointer
+	st := ctx.Status()
+	assert.Equal(t, status.NullPointer, st, "Status after close should be NullPointer")
+}
