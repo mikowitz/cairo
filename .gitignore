@@ -31,7 +31,7 @@ Thumbs.db
 examples/*.png
 examples/*.pdf
 examples/*.svg
-*.png
+./*.png
 *.pdf
 *.svg
 
