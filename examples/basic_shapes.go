@@ -27,14 +27,18 @@ func GenerateBasicShapes(outputPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create surface: %w", err)
 	}
-	defer surface.Close()
+	defer func() {
+		_ = surface.Close()
+	}()
 
 	// Create drawing context
 	ctx, err := cairo.NewContext(surface)
 	if err != nil {
 		return fmt.Errorf("failed to create context: %w", err)
 	}
-	defer ctx.Close()
+	defer func() {
+		_ = ctx.Close()
+	}()
 
 	// Fill the background with white
 	ctx.SetSourceRGB(1.0, 1.0, 1.0)

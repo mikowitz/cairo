@@ -90,7 +90,10 @@ func CompareImageToGolden(t *testing.T, generator ImageGeneratorFunc, goldenPath
 func compareImageFiles(generatedPath, goldenPath string) (bool, error) {
 	// Check if golden file exists
 	if _, err := os.Stat(goldenPath); os.IsNotExist(err) {
-		return false, fmt.Errorf("golden reference image does not exist at %s (run with -update-golden to create it)", goldenPath)
+		return false, fmt.Errorf(
+			"golden reference image does not exist at %s (run with -update-golden to create it)",
+			goldenPath,
+		)
 	}
 
 	// Compute hash of generated image
@@ -111,11 +114,14 @@ func compareImageFiles(generatedPath, goldenPath string) (bool, error) {
 
 // computeFileHash computes the SHA256 hash of a file.
 func computeFileHash(path string) (string, error) {
+	filepath.Clean(path)
 	file, err := os.Open(path)
 	if err != nil {
 		return "", err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	hash := sha256.New()
 	if _, err := io.Copy(hash, file); err != nil {
@@ -129,23 +135,28 @@ func computeFileHash(path string) (string, error) {
 func updateGoldenImage(generatedPath, goldenPath string) error {
 	// Ensure the directory for the golden image exists
 	goldenDir := filepath.Dir(goldenPath)
-	if err := os.MkdirAll(goldenDir, 0755); err != nil {
+	if err := os.MkdirAll(goldenDir, 0o750); err != nil {
 		return fmt.Errorf("failed to create golden directory: %w", err)
 	}
 
 	// Open source file
+	filepath.Clean(generatedPath)
 	src, err := os.Open(generatedPath)
 	if err != nil {
 		return fmt.Errorf("failed to open generated image: %w", err)
 	}
-	defer src.Close()
+	defer func() {
+		_ = src.Close()
+	}()
 
 	// Create destination file
 	dst, err := os.Create(goldenPath)
 	if err != nil {
 		return fmt.Errorf("failed to create golden image: %w", err)
 	}
-	defer dst.Close()
+	defer func() {
+		_ = dst.Close()
+	}()
 
 	// Copy content
 	if _, err := io.Copy(dst, src); err != nil {

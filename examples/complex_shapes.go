@@ -25,14 +25,18 @@ func GenerateComplexShapes(outputPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create surface: %w", err)
 	}
-	defer surface.Close()
+	defer func() {
+		_ = surface.Close()
+	}()
 
 	// Create drawing context
 	ctx, err := cairo.NewContext(surface)
 	if err != nil {
 		return fmt.Errorf("failed to create context: %w", err)
 	}
-	defer ctx.Close()
+	defer func() {
+		_ = ctx.Close()
+	}()
 
 	// Section 1: Paint() - Fill background with light gray
 	ctx.SetSourceRGB(0.95, 0.95, 0.95)
