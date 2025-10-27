@@ -11,6 +11,75 @@ func TestStatusSuccess(t *testing.T) {
 	assert.Equal(t, 0, int(Success), "Success should equal 0")
 }
 
+// TestStatusString verifies that String() returns proper string representations
+func TestStatusString(t *testing.T) {
+	tests := []struct {
+		status   Status
+		expected string
+	}{
+		{Success, "Success"},
+		{NoMemory, "NoMemory"},
+		{InvalidRestore, "InvalidRestore"},
+		{InvalidPopGroup, "InvalidPopGroup"},
+		{NoCurrentPoint, "NoCurrentPoint"},
+		{InvalidMatrix, "InvalidMatrix"},
+		{InvalidStatus, "InvalidStatus"},
+		{NullPointer, "NullPointer"},
+		{InvalidString, "InvalidString"},
+		{InvalidPathData, "InvalidPathData"},
+		{ReadError, "ReadError"},
+		{WriteError, "WriteError"},
+		{SurfaceFinished, "SurfaceFinished"},
+		{SurfaceTypeMismatch, "SurfaceTypeMismatch"},
+		{PatternTypeMismatch, "PatternTypeMismatch"},
+		{InvalidContent, "InvalidContent"},
+		{InvalidFormat, "InvalidFormat"},
+		{InvalidVisual, "InvalidVisual"},
+		{FileNotFound, "FileNotFound"},
+		{InvalidDash, "InvalidDash"},
+		{InvalidDscComment, "InvalidDscComment"},
+		{InvalidIndex, "InvalidIndex"},
+		{ClipNotRepresentable, "ClipNotRepresentable"},
+		{TempFileError, "TempFileError"},
+		{InvalidStride, "InvalidStride"},
+		{FontTypeMismatch, "FontTypeMismatch"},
+		{UserFontImmutable, "UserFontImmutable"},
+		{UserFontError, "UserFontError"},
+		{NegativeCount, "NegativeCount"},
+		{InvalidClusters, "InvalidClusters"},
+		{InvalidSlant, "InvalidSlant"},
+		{InvalidWeight, "InvalidWeight"},
+		{InvalidSize, "InvalidSize"},
+		{UserFontNotImplemented, "UserFontNotImplemented"},
+		{DeviceTypeMismatch, "DeviceTypeMismatch"},
+		{DeviceError, "DeviceError"},
+		{InvalidMeshConstruction, "InvalidMeshConstruction"},
+		{DeviceFinished, "DeviceFinished"},
+		{JBig2GlobalMissing, "JBig2GlobalMissing"},
+		{PngError, "PngError"},
+		{FreetypeError, "FreetypeError"},
+		{Win32GdiError, "Win32GdiError"},
+		{TagError, "TagError"},
+		{DWriteError, "DWriteError"},
+		{SvgFontError, "SvgFontError"},
+		{LastStatus, "LastStatus"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.expected, func(t *testing.T) {
+			str := tt.status.String()
+			assert.Equal(t, tt.expected, str, "String() should return the constant name")
+		})
+	}
+}
+
+// TestStatusStringInvalid verifies that String() handles invalid status values
+func TestStatusStringInvalid(t *testing.T) {
+	invalidStatus := Status(9999)
+	str := invalidStatus.String()
+	assert.Contains(t, str, "Status(9999)", "String() should handle invalid status values")
+}
+
 // TestStatusError verifies that Error() returns non-empty strings for all non-success statuses
 func TestStatusError(t *testing.T) {
 	tests := []struct {
