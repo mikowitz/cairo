@@ -352,15 +352,18 @@ rather than mutating an existing matrix in place.
 - [ ] Update `context/context_cgo.go`:
   - [ ] CGO implementations for all rendering methods
   - [ ] Check if context is closed
-- [ ] Update `context/context_test.go`:
-  - [ ] `TestContextFill`
-  - [ ] `TestContextFillPreserve`
-  - [ ] `TestContextStroke`
-  - [ ] `TestContextStrokePreserve`
-  - [ ] `TestContextPaint`
-  - [ ] `TestContextSetLineWidth`
-  - [ ] `TestContextRenderAfterClose`
-  - [ ] Integration test: NewPath, Rectangle, SetSourceRGB, Fill
+- [x] Update `context/context_test.go`:
+  - [x] `TestContextFill` (context_test.go:668-694) - FAILING (Fill not implemented)
+  - [x] `TestContextFillPreserve` (context_test.go:697-730) - FAILING (FillPreserve not implemented)
+  - [x] `TestContextStroke` (context_test.go:733-759) - FAILING (Stroke not implemented)
+  - [x] `TestContextStrokePreserve` (context_test.go:762-796) - FAILING (StrokePreserve not implemented)
+  - [x] `TestContextPaint` (context_test.go:799-827) - FAILING (Paint not implemented)
+  - [x] `TestContextSetLineWidth` (context_test.go:830-872) - FAILING (SetLineWidth not implemented)
+  - [x] `TestContextRenderAfterClose` (context_test.go:875-901) - FAILING (render methods not implemented)
+  - [x] `TestContextIntegrationFillStroke` (context_test.go:904-949) - FAILING (Fill/Stroke not implemented)
+    - [x] Tests NewPath, Rectangle, SetSourceRGB, Fill integration
+    - [x] Tests multiple drawing operations in sequence
+    - [x] Tests FillPreserve + Stroke combination
 - [ ] Update `cairo/cairo.go`:
   - [ ] Add example of complete drawing operation
   - [ ] Document Fill vs Stroke semantics

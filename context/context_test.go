@@ -663,3 +663,290 @@ func TestContextPathOperationsAfterClose(t *testing.T) {
 	st := ctx.Status()
 	assert.Equal(t, status.NullPointer, st, "Status after close should be NullPointer")
 }
+
+// TestContextFill verifies that Fill renders and consumes the current path.
+func TestContextFill(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Create a path and fill it
+	ctx.Rectangle(50.0, 50.0, 100.0, 100.0)
+	ctx.SetSourceRGB(1.0, 0.0, 0.0) // Red
+	ctx.Fill()
+
+	// Verify status is still success
+	st := ctx.Status()
+	assert.Equal(t, status.Success, st, "Status should be Success after Fill")
+
+	// After Fill, there should be no current point (path consumed)
+	assert.False(t, ctx.HasCurrentPoint(), "Fill should consume the path, removing current point")
+}
+
+// TestContextFillPreserve verifies that FillPreserve renders but keeps the path.
+func TestContextFillPreserve(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Create a path
+	ctx.Rectangle(50.0, 50.0, 100.0, 100.0)
+	ctx.SetSourceRGB(0.0, 1.0, 0.0) // Green
+
+	// FillPreserve should keep the path
+	ctx.FillPreserve()
+
+	st := ctx.Status()
+	assert.Equal(t, status.Success, st, "Status should be Success after FillPreserve")
+
+	// After FillPreserve, current point should still exist (path preserved)
+	assert.True(t, ctx.HasCurrentPoint(), "FillPreserve should preserve the path and current point")
+
+	// We should be able to stroke the same path
+	ctx.SetSourceRGB(0.0, 0.0, 1.0) // Blue
+	ctx.Stroke()
+	st = ctx.Status()
+	assert.Equal(t, status.Success, st, "Should be able to stroke after FillPreserve")
+}
+
+// TestContextStroke verifies that Stroke renders and consumes the current path.
+func TestContextStroke(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Create a path and stroke it
+	ctx.SetLineWidth(2.0)
+	ctx.Rectangle(50.0, 50.0, 100.0, 100.0)
+	ctx.SetSourceRGB(0.0, 0.0, 1.0) // Blue
+	ctx.Stroke()
+
+	st := ctx.Status()
+	assert.Equal(t, status.Success, st, "Status should be Success after Stroke")
+
+	// After Stroke, there should be no current point (path consumed)
+	assert.False(t, ctx.HasCurrentPoint(), "Stroke should consume the path, removing current point")
+}
+
+// TestContextStrokePreserve verifies that StrokePreserve renders but keeps the path.
+func TestContextStrokePreserve(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Create a path
+	ctx.SetLineWidth(3.0)
+	ctx.Rectangle(50.0, 50.0, 100.0, 100.0)
+	ctx.SetSourceRGB(1.0, 0.0, 1.0) // Magenta
+
+	// StrokePreserve should keep the path
+	ctx.StrokePreserve()
+
+	st := ctx.Status()
+	assert.Equal(t, status.Success, st, "Status should be Success after StrokePreserve")
+
+	// After StrokePreserve, current point should still exist (path preserved)
+	assert.True(t, ctx.HasCurrentPoint(), "StrokePreserve should preserve the path and current point")
+
+	// We should be able to fill the same path
+	ctx.SetSourceRGBA(1.0, 1.0, 0.0, 0.5) // Semi-transparent yellow
+	ctx.Fill()
+	st = ctx.Status()
+	assert.Equal(t, status.Success, st, "Should be able to fill after StrokePreserve")
+}
+
+// TestContextPaint verifies that Paint paints the current source everywhere.
+func TestContextPaint(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Paint with a solid color
+	ctx.SetSourceRGB(0.5, 0.5, 0.5) // Gray
+	ctx.Paint()
+
+	st := ctx.Status()
+	assert.Equal(t, status.Success, st, "Status should be Success after Paint")
+
+	// Paint with transparency
+	ctx.SetSourceRGBA(1.0, 0.0, 0.0, 0.3) // Semi-transparent red
+	ctx.Paint()
+
+	st = ctx.Status()
+	assert.Equal(t, status.Success, st, "Status should be Success after Paint with alpha")
+}
+
+// TestContextSetLineWidth verifies that SetLineWidth sets the line width for stroking.
+func TestContextSetLineWidth(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Test various line widths
+	testCases := []struct {
+		name  string
+		width float64
+	}{
+		{"Thin line", 1.0},
+		{"Medium line", 5.0},
+		{"Thick line", 10.0},
+		{"Very thin", 0.5},
+		{"Very thick", 20.0},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx.SetLineWidth(tc.width)
+			st := ctx.Status()
+			assert.Equal(t, status.Success, st, "Status should be Success after SetLineWidth")
+
+			width := ctx.GetLineWidth()
+			assert.Equal(t, tc.width, width, "should be able to retrieve the set line width via GetLineWidth")
+
+			// Draw a line with this width
+			ctx.MoveTo(10.0, 10.0)
+			ctx.LineTo(100.0, 100.0)
+			ctx.Stroke()
+
+			st = ctx.Status()
+			assert.Equal(t, status.Success, st, "Status should be Success after Stroke")
+		})
+	}
+}
+
+// TestContextRenderAfterClose verifies render operations are safe after close.
+func TestContextRenderAfterClose(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+
+	// Close the context
+	err = ctx.Close()
+	assert.NoError(t, err, "Closing context should not error")
+
+	// All render operations should be safe no-ops after close
+	ctx.Fill()
+	ctx.FillPreserve()
+	ctx.Stroke()
+	ctx.StrokePreserve()
+	ctx.Paint()
+	ctx.SetLineWidth(5.0)
+
+	// Status should indicate closed/null pointer
+	st := ctx.Status()
+	assert.Equal(t, status.NullPointer, st, "Status after close should be NullPointer")
+}
+
+// TestContextIntegrationFillStroke is an integration test combining path operations with rendering.
+func TestContextIntegrationFillStroke(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 300, 300)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Integration test: Create path, set color, and fill
+	ctx.NewPath()
+	ctx.Rectangle(50.0, 50.0, 100.0, 100.0)
+	ctx.SetSourceRGB(1.0, 0.0, 0.0) // Red
+	ctx.Fill()
+
+	st := ctx.Status()
+	assert.Equal(t, status.Success, st, "Integration test should complete successfully")
+
+	// Draw another shape with stroke
+	ctx.NewPath()
+	ctx.Rectangle(175.0, 175.0, 100.0, 100.0)
+	ctx.SetSourceRGB(0.0, 0.0, 1.0) // Blue
+	ctx.SetLineWidth(3.0)
+	ctx.Stroke()
+
+	st = ctx.Status()
+	assert.Equal(t, status.Success, st, "Second shape should complete successfully")
+
+	// Test FillPreserve + Stroke on same path
+	ctx.NewPath()
+	ctx.Rectangle(100.0, 175.0, 50.0, 50.0)
+	ctx.SetSourceRGBA(0.0, 1.0, 0.0, 0.7) // Semi-transparent green
+	ctx.FillPreserve()
+	ctx.SetSourceRGB(0.0, 0.0, 0.0) // Black outline
+	ctx.SetLineWidth(2.0)
+	ctx.Stroke()
+
+	st = ctx.Status()
+	assert.Equal(t, status.Success, st, "FillPreserve + Stroke combination should work")
+}

@@ -310,6 +310,49 @@ func (c *Context) NewSubPath() {
 	})
 }
 
+func (c *Context) Stroke() {
+	c.withLock(func() {
+		contextStroke(c.ptr)
+	})
+}
+
+func (c *Context) StrokePreserve() {
+	c.withLock(func() {
+		contextStrokePreserve(c.ptr)
+	})
+}
+
+func (c *Context) Fill() {
+	c.withLock(func() {
+		contextFill(c.ptr)
+	})
+}
+
+func (c *Context) FillPreserve() {
+	c.withLock(func() {
+		contextFillPreserve(c.ptr)
+	})
+}
+
+func (c *Context) Paint() {
+	c.withLock(func() {
+		contextPaint(c.ptr)
+	})
+}
+
+func (c *Context) SetLineWidth(width float64) {
+	c.withLock(func() {
+		contextSetLineWidth(c.ptr, width)
+	})
+}
+
+func (c *Context) GetLineWidth() float64 {
+	c.RLock()
+	defer c.RUnlock()
+
+	return contextGetLineWidth(c.ptr)
+}
+
 func (c *Context) close() error {
 	c.Lock()
 	defer c.Unlock()

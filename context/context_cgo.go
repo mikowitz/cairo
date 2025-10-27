@@ -88,3 +88,31 @@ func contextClosePath(ptr ContextPtr) {
 func contextNewSubPath(ptr ContextPtr) {
 	C.cairo_new_sub_path(ptr)
 }
+
+func contextStroke(ptr ContextPtr) {
+	C.cairo_stroke(ptr)
+}
+
+func contextStrokePreserve(ptr ContextPtr) {
+	C.cairo_stroke_preserve(ptr)
+}
+
+func contextFill(ptr ContextPtr) {
+	C.cairo_fill(ptr)
+}
+
+func contextFillPreserve(ptr ContextPtr) {
+	C.cairo_fill_preserve(ptr)
+}
+
+func contextPaint(ptr ContextPtr) {
+	C.cairo_paint(ptr)
+}
+
+func contextSetLineWidth(ptr ContextPtr, width float64) {
+	C.cairo_set_line_width(ptr, C.double(width))
+}
+
+func contextGetLineWidth(ptr ContextPtr) float64 {
+	return float64(C.cairo_get_line_width(ptr))
+}
