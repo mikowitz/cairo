@@ -291,33 +291,52 @@ rather than mutating an existing matrix in place.
 
 ✅ **Status: 100% COMPLETE - All requirements met, all 3 tests passing, documentation complete**
 
-### Prompt 11: Context Package - Basic Path Operations
+### Prompt 11: Context Package - Basic Path Operations ✅ COMPLETE
 
-- [ ] Update `context/context.go`:
-  - [ ] `func (c *Context) MoveTo(x, y float64)`
-  - [ ] `func (c *Context) LineTo(x, y float64)`
-  - [ ] `func (c *Context) Rectangle(x, y, width, height float64)`
-  - [ ] `func (c *Context) ClosePath()`
-  - [ ] `func (c *Context) NewPath()`
-  - [ ] `func (c *Context) NewSubPath()`
-  - [ ] `func (c *Context) GetCurrentPoint() (x, y float64, err error)`
-  - [ ] All methods use proper locking
-  - [ ] Document coordinate system
-- [ ] Update `context/context_cgo.go`:
-  - [ ] CGO implementations for all path methods
-  - [ ] GetCurrentPoint checks status and returns error if no current point
-- [ ] Update `context/context_test.go`:
-  - [ ] `TestContextMoveTo`
-  - [ ] `TestContextLineTo`
-  - [ ] `TestContextRectangle`
-  - [ ] `TestContextClosePath`
-  - [ ] `TestContextNewPath`
-  - [ ] `TestContextGetCurrentPoint`
-  - [ ] `TestContextGetCurrentPointNoPoint`
-  - [ ] `TestContextPathOperationsAfterClose`
-- [ ] Update `cairo/cairo.go`:
-  - [ ] Document path construction basics
-  - [ ] Document current point concept
+- [x] Update `context/context.go`:
+  - [x] `func (c *Context) MoveTo(x, y float64)` (context.go:138-142) ✅
+  - [x] `func (c *Context) LineTo(x, y float64)` (context.go:158-162) ✅
+  - [x] `func (c *Context) Rectangle(x, y, width, height float64)` (context.go:182-186) ✅
+  - [x] `func (c *Context) ClosePath()` (context.go:284-288) ✅
+  - [x] `func (c *Context) NewPath()` (context.go:257-261) ✅
+  - [x] `func (c *Context) NewSubPath()` (context.go:307-311) ✅
+  - [x] `func (c *Context) GetCurrentPoint() (x, y float64, err error)` (context.go:204-217) ✅
+  - [x] BONUS: `func (c *Context) HasCurrentPoint() bool` (context.go:233-241) ✅
+  - [x] All methods use proper locking (withLock or RLock/RUnlock) ✅
+  - [x] Document coordinate system (user-space coordinates) - comprehensive godoc comments added ✅
+    - [x] MoveTo: documents user-space coordinates and current point behavior (lines 126-137)
+    - [x] LineTo: documents user-space coordinates and current point updates (lines 144-157)
+    - [x] Rectangle: documents user-space, equivalence to path operations (lines 164-181)
+    - [x] GetCurrentPoint: documents user-space return values (lines 188-203)
+    - [x] HasCurrentPoint: documents current point lifecycle (lines 219-232)
+    - [x] NewPath: documents clearing path and current point (lines 243-256)
+    - [x] ClosePath: documents sub-path closing and current point (lines 263-283)
+    - [x] NewSubPath: documents sub-path creation (lines 290-306)
+- [x] Update `context/context_cgo.go`:
+  - [x] CGO implementations for all path methods (lines 49-90) ✅
+  - [x] GetCurrentPoint checks status via HasCurrentPoint (context_cgo.go:64-74) ✅
+- [x] Update `context/context_test.go`:
+  - [x] `TestContextMoveTo` - ✅ PASSING
+  - [x] `TestContextLineTo` - ✅ PASSING
+  - [x] `TestContextRectangle` - ✅ PASSING
+  - [x] `TestContextClosePath` - ✅ PASSING
+  - [x] `TestContextNewPath` - ✅ PASSING
+  - [x] `TestContextGetCurrentPoint` - ✅ PASSING
+  - [x] `TestContextHasCurrentPointNoPoint` - ✅ PASSING (bonus)
+  - [x] `TestContextGetCurrentPointNoPoint` - ✅ PASSING
+  - [x] `TestContextPathOperationsAfterClose` - ✅ PASSING
+- [x] Update `cairo/cairo.go`:
+  - [x] Document path construction basics in Context type documentation (lines 104-123) ✅
+    - [x] Explains path-based drawing model
+    - [x] Lists basic path operations with signatures
+    - [x] Provides triangle drawing example
+  - [x] Document current point concept in Context type documentation (lines 125-146) ✅
+    - [x] Explains current point lifecycle
+    - [x] Documents user-space coordinates
+    - [x] Shows GetCurrentPoint/HasCurrentPoint usage example
+  - [x] Updated basic usage example to include actual path operations (lines 94-102) ✅
+
+✅ **Status: 100% COMPLETE - All requirements met, all 9 tests passing, comprehensive documentation added**
 
 ### Prompt 12: Context Package - Fill and Stroke Operations
 

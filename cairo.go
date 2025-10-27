@@ -91,13 +91,59 @@ func NewImageSurface(format Format, width, height int) (*surface.ImageSurface, e
 //	// Set source color to opaque red
 //	ctx.SetSourceRGB(1.0, 0.0, 0.0)
 //
-//	// Or use SetSourceRGBA for colors with transparency
-//	ctx.SetSourceRGBA(0.0, 0.0, 1.0, 0.5)  // Semi-transparent blue
+//	// Create a rectangular path and fill it
+//	ctx.Rectangle(50.0, 50.0, 200.0, 100.0)
+//	ctx.Fill()
 //
-//	// Additional drawing operations (to be added in subsequent prompts):
-//	// - Create paths with MoveTo, LineTo, Rectangle, Arc, etc.
-//	// - Render with Fill, Stroke, Paint
-//	// - Transform with Translate, Scale, Rotate
+//	// Draw a line with semi-transparent blue
+//	ctx.SetSourceRGBA(0.0, 0.0, 1.0, 0.5)
+//	ctx.MoveTo(10.0, 10.0)
+//	ctx.LineTo(100.0, 100.0)
+//	ctx.Stroke()
+//
+// # Path Construction
+//
+// Cairo uses a path-based drawing model. You construct paths using operations
+// like MoveTo, LineTo, and Rectangle, then render them with Fill or Stroke.
+//
+// Basic path operations:
+//
+//	ctx.MoveTo(x, y)       // Begin a new sub-path at (x, y)
+//	ctx.LineTo(x, y)       // Add a line to (x, y)
+//	ctx.Rectangle(x, y, w, h) // Add a rectangular path
+//	ctx.ClosePath()        // Close the current sub-path
+//	ctx.NewPath()          // Clear the current path
+//
+// Example - Drawing a triangle:
+//
+//	ctx.MoveTo(50, 10)      // Start at top
+//	ctx.LineTo(90, 90)      // Line to bottom-right
+//	ctx.LineTo(10, 90)      // Line to bottom-left
+//	ctx.ClosePath()         // Complete the triangle
+//	ctx.Fill()              // Fill with current source color
+//
+// # Current Point
+//
+// Cairo maintains a "current point" which is used as the starting point for
+// path operations. The current point is set by operations like MoveTo and
+// updated by LineTo. You can query it with GetCurrentPoint() or check if
+// one exists with HasCurrentPoint().
+//
+// The current point is always in user-space coordinates, meaning it's affected
+// by any transformations applied to the Context. After operations like NewPath(),
+// there is no current point until one is established by MoveTo or similar operations.
+//
+// Example:
+//
+//	ctx.MoveTo(25.0, 50.0)
+//	if ctx.HasCurrentPoint() {
+//	    x, y, _ := ctx.GetCurrentPoint()
+//	    fmt.Printf("Current point: (%f, %f)\n", x, y)  // Prints: (25.0, 50.0)
+//	}
+//	ctx.NewPath()  // Clears path and current point
+//	if !ctx.HasCurrentPoint() {
+//	    fmt.Println("No current point after NewPath")
+//	}
 //
 // # Resource Management
 //

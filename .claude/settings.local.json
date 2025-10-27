@@ -6,7 +6,8 @@
       "Bash(go build .)",
       "Bash(go test:*)",
       "WebFetch(domain:www.cairographics.org)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(gh pr checks:*)"
     ],
     "deny": [],
     "ask": []
