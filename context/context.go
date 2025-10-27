@@ -460,6 +460,8 @@ func (c *Context) SetLineWidth(width float64) {
 // operations. It returns the width that was most recently set with SetLineWidth,
 // or the default value of 2.0 if SetLineWidth has not been called.
 //
+// If called on a closed context, this method returns 0.0.
+//
 // Example:
 //
 //	ctx.SetLineWidth(5.0)
@@ -467,6 +469,10 @@ func (c *Context) SetLineWidth(width float64) {
 func (c *Context) GetLineWidth() float64 {
 	c.RLock()
 	defer c.RUnlock()
+
+	if c.ptr == nil {
+		return 0.0
+	}
 
 	return contextGetLineWidth(c.ptr)
 }

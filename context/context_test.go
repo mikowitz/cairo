@@ -852,6 +852,7 @@ func TestContextSetLineWidth(t *testing.T) {
 		{"Thick line", 10.0},
 		{"Very thin", 0.5},
 		{"Very thick", 20.0},
+		{"Negative width", -5.0}, // Cairo clamps negative to 0
 	}
 
 	for _, tc := range testCases {
@@ -859,9 +860,6 @@ func TestContextSetLineWidth(t *testing.T) {
 			ctx.SetLineWidth(tc.width)
 			st := ctx.Status()
 			assert.Equal(t, status.Success, st, "Status should be Success after SetLineWidth")
-
-			width := ctx.GetLineWidth()
-			assert.Equal(t, tc.width, width, "should be able to retrieve the set line width via GetLineWidth")
 
 			// Draw a line with this width
 			ctx.MoveTo(10.0, 10.0)
@@ -872,6 +870,97 @@ func TestContextSetLineWidth(t *testing.T) {
 			assert.Equal(t, status.Success, st, "Status should be Success after Stroke")
 		})
 	}
+}
+
+// TestContextGetLineWidth verifies GetLineWidth returns correct values in different scenarios.
+func TestContextGetLineWidth(t *testing.T) {
+	t.Run("Default width on new context", func(t *testing.T) {
+		surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+		require.NoError(t, err, "Failed to create surface")
+		defer func() {
+			err := surf.Close()
+			assert.NoError(t, err, "Failed to close surface")
+		}()
+
+		ctx, err := NewContext(surf)
+		require.NoError(t, err, "Failed to create context")
+		defer func() {
+			err := ctx.Close()
+			assert.NoError(t, err, "Failed to close context")
+		}()
+
+		// Default line width should be 2.0
+		width := ctx.GetLineWidth()
+		assert.Equal(t, 2.0, width, "Default line width should be 2.0")
+	})
+
+	t.Run("Returns set width", func(t *testing.T) {
+		surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+		require.NoError(t, err, "Failed to create surface")
+		defer func() {
+			err := surf.Close()
+			assert.NoError(t, err, "Failed to close surface")
+		}()
+
+		ctx, err := NewContext(surf)
+		require.NoError(t, err, "Failed to create context")
+		defer func() {
+			err := ctx.Close()
+			assert.NoError(t, err, "Failed to close context")
+		}()
+
+		// Test various widths
+		testWidths := []float64{1.0, 5.0, 10.0, 0.5, 100.0}
+		for _, expectedWidth := range testWidths {
+			ctx.SetLineWidth(expectedWidth)
+			actualWidth := ctx.GetLineWidth()
+			assert.Equal(t, expectedWidth, actualWidth, "GetLineWidth should return the width that was set")
+		}
+	})
+
+	t.Run("Negative width clamped to zero", func(t *testing.T) {
+		surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+		require.NoError(t, err, "Failed to create surface")
+		defer func() {
+			err := surf.Close()
+			assert.NoError(t, err, "Failed to close surface")
+		}()
+
+		ctx, err := NewContext(surf)
+		require.NoError(t, err, "Failed to create context")
+		defer func() {
+			err := ctx.Close()
+			assert.NoError(t, err, "Failed to close context")
+		}()
+
+		// Set negative width - Cairo should clamp to 0
+		ctx.SetLineWidth(-5.0)
+		width := ctx.GetLineWidth()
+		assert.Equal(t, 0.0, width, "Negative line width should be clamped to 0.0")
+	})
+
+	t.Run("Returns zero after close", func(t *testing.T) {
+		surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+		require.NoError(t, err, "Failed to create surface")
+		defer func() {
+			err := surf.Close()
+			assert.NoError(t, err, "Failed to close surface")
+		}()
+
+		ctx, err := NewContext(surf)
+		require.NoError(t, err, "Failed to create context")
+
+		// Set a width before closing
+		ctx.SetLineWidth(10.0)
+
+		// Close the context
+		err = ctx.Close()
+		assert.NoError(t, err, "Closing context should not error")
+
+		// GetLineWidth after close should return 0.0
+		width := ctx.GetLineWidth()
+		assert.Equal(t, 0.0, width, "GetLineWidth after close should return 0.0")
+	})
 }
 
 // TestContextRenderAfterClose verifies render operations are safe after close.
