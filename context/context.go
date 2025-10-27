@@ -310,6 +310,173 @@ func (c *Context) NewSubPath() {
 	})
 }
 
+// Stroke draws the current path by stroking it according to the current line
+// width, line join, line cap, and dash settings. After Stroke, the current
+// path will be cleared from the Context.
+//
+// The stroke operation draws along the outline of the path, with the line
+// width determining how thick the line appears. The current source pattern
+// determines the color or pattern used for the stroke.
+//
+// Note: Unlike StrokePreserve, this function clears the path after stroking.
+// If you need to reuse the path for additional operations, use StrokePreserve
+// instead.
+//
+// Example:
+//
+//	ctx.SetSourceRGB(0.0, 0.0, 1.0)  // Blue
+//	ctx.SetLineWidth(5.0)
+//	ctx.Rectangle(20, 20, 100, 100)
+//	ctx.Stroke()  // Draws blue outline, path is now cleared
+func (c *Context) Stroke() {
+	c.withLock(func() {
+		contextStroke(c.ptr)
+	})
+}
+
+// StrokePreserve draws the current path by stroking it according to the current
+// line width, line join, line cap, and dash settings. Unlike Stroke, this function
+// preserves the path in the Context after stroking, allowing for additional
+// operations on the same path.
+//
+// This is useful when you want to both stroke and fill the same path, or perform
+// multiple operations with different settings on the same path.
+//
+// Example:
+//
+//	ctx.Rectangle(20, 20, 100, 100)
+//	ctx.SetSourceRGB(1.0, 0.0, 0.0)  // Red fill
+//	ctx.FillPreserve()
+//	ctx.SetSourceRGB(0.0, 0.0, 0.0)  // Black outline
+//	ctx.SetLineWidth(2.0)
+//	ctx.StrokePreserve()  // Path still available after this
+func (c *Context) StrokePreserve() {
+	c.withLock(func() {
+		contextStrokePreserve(c.ptr)
+	})
+}
+
+// Fill fills the current path according to the current fill rule. After Fill,
+// the current path will be cleared from the Context.
+//
+// The fill operation paints the interior of the path using the current source
+// pattern. The fill rule (even-odd or winding) determines which areas are
+// considered "inside" the path.
+//
+// Note: Unlike FillPreserve, this function clears the path after filling.
+// If you need to reuse the path for additional operations, use FillPreserve
+// instead.
+//
+// Example:
+//
+//	ctx.SetSourceRGB(1.0, 0.0, 0.0)  // Red
+//	ctx.Rectangle(50, 50, 100, 100)
+//	ctx.Fill()  // Fills rectangle with red, path is now cleared
+func (c *Context) Fill() {
+	c.withLock(func() {
+		contextFill(c.ptr)
+	})
+}
+
+// FillPreserve fills the current path according to the current fill rule.
+// Unlike Fill, this function preserves the path in the Context after filling,
+// allowing for additional operations on the same path.
+//
+// This is particularly useful when you want to both fill and stroke the same
+// path with different colors or settings, which is a common pattern for creating
+// shapes with both interior color and outline.
+//
+// Example:
+//
+//	ctx.Rectangle(50, 50, 100, 100)
+//	ctx.SetSourceRGBA(0.0, 1.0, 0.0, 0.7)  // Semi-transparent green
+//	ctx.FillPreserve()  // Fill the rectangle
+//	ctx.SetSourceRGB(0.0, 0.0, 0.0)        // Black outline
+//	ctx.SetLineWidth(2.0)
+//	ctx.Stroke()  // Stroke the same rectangle
+func (c *Context) FillPreserve() {
+	c.withLock(func() {
+		contextFillPreserve(c.ptr)
+	})
+}
+
+// Paint paints the current source pattern everywhere within the current clip
+// region. This is useful for setting a background color or pattern across
+// the entire surface (or clipped region).
+//
+// Unlike Fill and Stroke, Paint does not use the current path. It simply
+// applies the source pattern to all pixels in the current clip region.
+//
+// Example:
+//
+//	// Set white background
+//	ctx.SetSourceRGB(1.0, 1.0, 1.0)
+//	ctx.Paint()
+//
+//	// Now draw on top of the white background
+//	ctx.SetSourceRGB(0.0, 0.0, 0.0)
+//	ctx.Rectangle(50, 50, 100, 100)
+//	ctx.Fill()
+func (c *Context) Paint() {
+	c.withLock(func() {
+		contextPaint(c.ptr)
+	})
+}
+
+// SetLineWidth sets the current line width for the Context. The line width
+// value specifies the diameter of the pen used for stroking paths, in user-space
+// units.
+//
+// The line width affects all subsequent Stroke and StrokePreserve operations.
+// The default line width is 2.0.
+//
+// Note: The line width is transformed by the current transformation matrix (CTM),
+// so scaling transformations will affect the actual rendered line width. However,
+// the width specified here is always in user-space coordinates before
+// transformation.
+//
+// Example:
+//
+//	ctx.SetLineWidth(5.0)  // Set thick line
+//	ctx.MoveTo(10, 10)
+//	ctx.LineTo(100, 100)
+//	ctx.Stroke()  // Draws 5-pixel wide line
+//
+//	ctx.SetLineWidth(1.0)  // Set thin line
+//	ctx.MoveTo(10, 20)
+//	ctx.LineTo(100, 110)
+//	ctx.Stroke()  // Draws 1-pixel wide line
+func (c *Context) SetLineWidth(width float64) {
+	c.withLock(func() {
+		contextSetLineWidth(c.ptr, width)
+	})
+}
+
+// GetLineWidth returns the current line width value for the Context. The line
+// width represents the diameter of the pen used for stroking paths, specified
+// in user-space units.
+//
+// This method is thread-safe and can be called concurrently with other read
+// operations. It returns the width that was most recently set with SetLineWidth,
+// or the default value of 2.0 if SetLineWidth has not been called.
+//
+// If called on a closed context, this method returns 0.0.
+//
+// Example:
+//
+//	ctx.SetLineWidth(5.0)
+//	width := ctx.GetLineWidth()  // Returns 5.0
+func (c *Context) GetLineWidth() float64 {
+	c.RLock()
+	defer c.RUnlock()
+
+	if c.ptr == nil {
+		return 0.0
+	}
+
+	return contextGetLineWidth(c.ptr)
+}
+
 func (c *Context) close() error {
 	c.Lock()
 	defer c.Unlock()

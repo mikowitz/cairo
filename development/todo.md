@@ -340,30 +340,56 @@ rather than mutating an existing matrix in place.
 
 ### Prompt 12: Context Package - Fill and Stroke Operations
 
-- [ ] Update `context/context.go`:
-  - [ ] `func (c *Context) Fill()`
-  - [ ] `func (c *Context) FillPreserve()`
-  - [ ] `func (c *Context) Stroke()`
-  - [ ] `func (c *Context) StrokePreserve()`
-  - [ ] `func (c *Context) Paint()`
-  - [ ] `func (c *Context) SetLineWidth(width float64)`
-  - [ ] All methods use proper locking
-  - [ ] Document that Fill/Stroke consume path, Preserve variants don't
-- [ ] Update `context/context_cgo.go`:
-  - [ ] CGO implementations for all rendering methods
-  - [ ] Check if context is closed
-- [ ] Update `context/context_test.go`:
-  - [ ] `TestContextFill`
-  - [ ] `TestContextFillPreserve`
-  - [ ] `TestContextStroke`
-  - [ ] `TestContextStrokePreserve`
-  - [ ] `TestContextPaint`
-  - [ ] `TestContextSetLineWidth`
-  - [ ] `TestContextRenderAfterClose`
-  - [ ] Integration test: NewPath, Rectangle, SetSourceRGB, Fill
-- [ ] Update `cairo/cairo.go`:
-  - [ ] Add example of complete drawing operation
-  - [ ] Document Fill vs Stroke semantics
+- [x] Update `context/context.go`:
+  - [x] `func (c *Context) Fill()` (context.go:325-329) ✅
+  - [x] `func (c *Context) FillPreserve()` (context.go:331-335) ✅
+  - [x] `func (c *Context) Stroke()` (context.go:313-317) ✅
+  - [x] `func (c *Context) StrokePreserve()` (context.go:319-323) ✅
+  - [x] `func (c *Context) Paint()` (context.go:337-341) ✅
+  - [x] `func (c *Context) SetLineWidth(width float64)` (context.go:343-347) ✅
+  - [x] BONUS: `func (c *Context) GetLineWidth() float64` (context.go:349-354) ✅
+  - [x] All methods use proper locking (withLock or RLock/RUnlock) ✅
+  - [x] Document that Fill/Stroke consume path, Preserve variants don't ✅
+    - [x] Added comprehensive godoc to Stroke() (context.go:313-335)
+    - [x] Added comprehensive godoc to StrokePreserve() (context.go:337-357)
+    - [x] Added comprehensive godoc to Fill() (context.go:359-379)
+    - [x] Added comprehensive godoc to FillPreserve() (context.go:381-401)
+    - [x] Added comprehensive godoc to Paint() (context.go:403-424)
+    - [x] Added comprehensive godoc to SetLineWidth() (context.go:426-453)
+    - [x] Added comprehensive godoc to GetLineWidth() (context.go:455-472)
+- [x] Update `context/context_cgo.go`:
+  - [x] CGO implementations for all rendering methods (lines 92-116) ✅
+    - [x] `contextStroke` (line 92)
+    - [x] `contextStrokePreserve` (line 96)
+    - [x] `contextFill` (line 100)
+    - [x] `contextFillPreserve` (line 104)
+    - [x] `contextPaint` (line 108)
+    - [x] `contextSetLineWidth` (line 112)
+    - [x] BONUS: `contextGetLineWidth` (line 116)
+  - [x] Check if context is closed (via withLock helper checking ptr == nil) ✅
+- [x] Update `context/context_test.go`:
+  - [x] `TestContextFill` (context_test.go:668-694) - ✅ PASSING
+  - [x] `TestContextFillPreserve` (context_test.go:697-730) - ✅ PASSING
+  - [x] `TestContextStroke` (context_test.go:733-759) - ✅ PASSING
+  - [x] `TestContextStrokePreserve` (context_test.go:762-796) - ✅ PASSING
+  - [x] `TestContextPaint` (context_test.go:799-827) - ✅ PASSING
+  - [x] `TestContextSetLineWidth` (context_test.go:830-872) - ✅ PASSING (5 sub-tests)
+  - [x] `TestContextRenderAfterClose` (context_test.go:875-901) - ✅ PASSING
+  - [x] `TestContextIntegrationFillStroke` (context_test.go:904-949) - ✅ PASSING
+    - [x] Tests NewPath, Rectangle, SetSourceRGB, Fill integration ✅
+    - [x] Tests multiple drawing operations in sequence ✅
+    - [x] Tests FillPreserve + Stroke combination ✅
+- [x] Update `cairo/cairo.go`:
+  - [x] Add example of complete drawing operation (lines 94-102) ✅
+    - [x] Shows Rectangle + Fill example
+    - [x] Shows MoveTo + LineTo + Stroke example
+  - [x] Document Fill vs Stroke semantics ✅
+    - [x] Added "# Rendering Operations" section (cairo.go:125-190)
+    - [x] Explains Fill vs Stroke vs Paint differences
+    - [x] Documents path consumption vs preservation
+    - [x] Provides examples of Fill/Stroke usage
+    - [x] Explains when to use Preserve variants
+    - [x] Documents line width behavior
 
 ---
 

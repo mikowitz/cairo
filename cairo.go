@@ -122,6 +122,72 @@ func NewImageSurface(format Format, width, height int) (*surface.ImageSurface, e
 //	ctx.ClosePath()         // Complete the triangle
 //	ctx.Fill()              // Fill with current source color
 //
+// # Rendering Operations
+//
+// After constructing a path, you render it using Fill, Stroke, or Paint operations.
+// Understanding the difference between these operations and their "Preserve" variants
+// is crucial for effective Cairo usage.
+//
+// Fill vs Stroke:
+//
+//   - Fill(): Paints the interior of the path using the current source pattern.
+//     The path is consumed (cleared) after the operation.
+//
+//   - Stroke(): Paints along the outline of the path according to line width,
+//     line join, line cap, and dash settings. The path is consumed after the operation.
+//
+//   - Paint(): Applies the source pattern to the entire clipped region, independent
+//     of any path. Useful for setting backgrounds.
+//
+// Example - Simple fill and stroke:
+//
+//	// Fill a rectangle
+//	ctx.SetSourceRGB(1.0, 0.0, 0.0)  // Red
+//	ctx.Rectangle(50, 50, 100, 100)
+//	ctx.Fill()  // Path is now cleared
+//
+//	// Stroke a line
+//	ctx.SetSourceRGB(0.0, 0.0, 1.0)  // Blue
+//	ctx.SetLineWidth(3.0)
+//	ctx.MoveTo(10, 10)
+//	ctx.LineTo(100, 100)
+//	ctx.Stroke()  // Path is now cleared
+//
+// Path Preservation:
+//
+// The standard Fill() and Stroke() operations consume the current path, clearing
+// it after rendering. The "Preserve" variants (FillPreserve and StrokePreserve)
+// keep the path intact, allowing multiple operations on the same path.
+//
+// This is particularly useful for creating shapes with both fill and outline:
+//
+// Example - Fill and stroke the same shape:
+//
+//	ctx.Rectangle(50, 50, 100, 100)
+//	ctx.SetSourceRGBA(0.0, 1.0, 0.0, 0.7)  // Semi-transparent green fill
+//	ctx.FillPreserve()  // Fill, but keep the path
+//	ctx.SetSourceRGB(0.0, 0.0, 0.0)        // Black outline
+//	ctx.SetLineWidth(2.0)
+//	ctx.Stroke()  // Now the path is cleared
+//
+// When to use Preserve variants:
+//
+//   - When you need both fill and stroke on the same path
+//   - When you want to apply multiple operations with different settings
+//   - When you need to query path information after rendering
+//
+// Line Width:
+//
+// The line width affects how Stroke operations render. It specifies the diameter
+// of the pen used for stroking, in user-space units:
+//
+//	ctx.SetLineWidth(5.0)   // Thick lines
+//	ctx.SetLineWidth(1.0)   // Thin lines
+//	width := ctx.GetLineWidth()  // Query current width
+//
+// The default line width is 2.0. Line width is affected by transformations,
+// so scaling the Context will also scale the rendered line width.
+//
 // # Current Point
 //
 // Cairo maintains a "current point" which is used as the starting point for
