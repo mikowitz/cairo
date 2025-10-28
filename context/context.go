@@ -12,8 +12,7 @@ import (
 
 type Context struct {
 	sync.RWMutex
-	ptr    ContextPtr
-	closed bool
+	ptr ContextPtr
 }
 
 func NewContext(surface surface.Surface) (*Context, error) {
@@ -137,10 +136,6 @@ func (c *Context) GetSource() (pattern.Pattern, error) {
 
 func (c *Context) SetSource(p pattern.Pattern) {
 	c.withLock(func() {
-		if p == nil {
-			return
-		}
-
 		contextSetSource(c.ptr, p.Ptr())
 	})
 }
@@ -506,7 +501,6 @@ func (c *Context) close() error {
 	if c.ptr != nil {
 		contextClose(c.ptr)
 		runtime.SetFinalizer(c, nil)
-		c.closed = true
 		c.ptr = nil
 	}
 

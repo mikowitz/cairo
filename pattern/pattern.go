@@ -21,7 +21,6 @@ type Pattern interface {
 type BasePattern struct {
 	sync.RWMutex
 	ptr         PatternPtr
-	closed      bool
 	patternType PatternType
 }
 
@@ -92,9 +91,41 @@ func (b *BasePattern) close() error {
 	if b.ptr != nil {
 		patternClose(b.ptr)
 		runtime.SetFinalizer(b, nil)
-		b.closed = true
 		b.ptr = nil
 	}
 
 	return nil
+}
+
+// PatternFromC wraps a C cairo_pattern_t pointer and returns the appropriate
+// Go Pattern implementation based on the pattern's type.
+//
+// This function is primarily used internally when retrieving patterns from
+// Cairo C API functions (e.g., cairo_get_source). It inspects the pattern's
+// type and constructs the corresponding Go wrapper.
+//
+// Currently supported pattern types:
+//   - PatternTypeSolid: Returns a *SolidPattern
+//
+// For unsupported pattern types (Linear, Radial, Mesh, RasterSource), this
+// function currently defaults to returning a *SolidPattern as a temporary
+// measure. This will be updated as additional pattern types are implemented.
+//
+// The returned Pattern takes ownership of the C pointer and will properly
+// clean it up when Close() is called or when the finalizer runs.
+func PatternFromC(uPtr unsafe.Pointer) Pattern {
+	ptr := PatternPtr(uPtr)
+	patternType := patternGetType(ptr)
+	basePattern := newBasePattern(ptr, patternType)
+	switch patternType {
+	case PatternTypeSolid:
+		return &SolidPattern{
+			BasePattern: basePattern,
+		}
+	// TODO: Add cases for other pattern types as implemented
+	default:
+		return &SolidPattern{
+			BasePattern: basePattern,
+		}
+	}
 }

@@ -13,15 +13,6 @@ import (
 
 type PatternPtr *C.cairo_pattern_t
 
-func PatternFromC(uPtr unsafe.Pointer) Pattern {
-	ptr := PatternPtr(uPtr)
-	patternType := patternGetType(ptr)
-	basePattern := newBasePattern(ptr, patternType)
-	return &SolidPattern{
-		BasePattern: basePattern,
-	}
-}
-
 func patternClose(ptr PatternPtr) {
 	C.cairo_pattern_destroy(ptr)
 }
@@ -38,11 +29,11 @@ func patternSetMatrix(ptr PatternPtr, mPtr unsafe.Pointer) {
 }
 
 func patternGetMatrix(ptr PatternPtr) (*matrix.Matrix, error) {
-	m := (*C.cairo_matrix_t)(C.malloc(C.sizeof_cairo_matrix_t))
+	var m C.cairo_matrix_t
 
-	C.cairo_pattern_get_matrix(ptr, m)
+	C.cairo_pattern_get_matrix(ptr, &m)
 
-	return matrix.FromPointer(unsafe.Pointer(m)), nil
+	return matrix.FromPointer(unsafe.Pointer(&m)), nil
 }
 
 func patternCreateRGB(r, g, b float64) PatternPtr {
