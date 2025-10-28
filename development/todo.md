@@ -430,36 +430,36 @@ rather than mutating an existing matrix in place.
 
 ### Prompt 14: Enhanced Testing and Documentation
 
-- [ ] Add benchmarks:
-  - [ ] Create `context/context_bench_test.go`:
-    - [ ] `BenchmarkContextCreation`
-    - [ ] `BenchmarkContextPathOperations`
-    - [ ] `BenchmarkContextFillOperations`
-  - [ ] Create `surface/surface_bench_test.go`:
-    - [ ] `BenchmarkImageSurfaceCreation`
-    - [ ] `BenchmarkWriteToPNG`
-- [ ] Add example tests:
-  - [ ] Create `examples/example_test.go`:
-    - [ ] `Example_drawRectangle`
-    - [ ] `Example_fillAndStroke`
-    - [ ] `Example_colorBlending`
-- [ ] Improve package documentation:
-  - [ ] `cairo/cairo.go`: expand with architecture overview
-  - [ ] `context/context.go`: add Context lifecycle explanation
-  - [ ] `surface/surface.go`: add Surface types overview
-  - [ ] `matrix/matrix.go`: add transformation math explanation
-  - [ ] `status/status.go`: add error handling guide
-- [ ] Create `CONTRIBUTING.md`:
-  - [ ] How to build
-  - [ ] How to run tests
-  - [ ] Code style guidelines
-  - [ ] How to add new features
-- [ ] Update `README.md`:
-  - [ ] Add badges (build status placeholder)
-  - [ ] Add table of contents
-  - [ ] Add "Current Status" section
-  - [ ] Add "Roadmap" section
-- [ ] Verify coverage is >80% for all packages
+- [x] Add benchmarks:
+  - [x] Create `context/context_bench_test.go`:
+    - [x] `BenchmarkContextCreation`
+    - [x] `BenchmarkContextPathOperations`
+    - [x] `BenchmarkContextFillOperations`
+  - [x] Create `surface/surface_bench_test.go`:
+    - [x] `BenchmarkImageSurfaceCreation`
+    - [x] `BenchmarkWriteToPNG`
+- [x] Add example tests:
+  - [x] Create `examples/example_test.go`:
+    - [x] `Example_drawRectangle`
+    - [x] `Example_fillAndStroke`
+    - [x] `Example_colorBlending`
+- [x] Improve package documentation:
+  - [x] `cairo/cairo.go`: expand with architecture overview
+  - [x] `context/context.go`: add Context lifecycle explanation
+  - [x] `surface/surface.go`: add Surface types overview
+  - [x] `matrix/matrix.go`: add transformation math explanation
+  - [x] `status/status.go`: add error handling guide
+- [x] Create `CONTRIBUTING.md`:
+  - [x] How to build
+  - [x] How to run tests
+  - [x] Code style guidelines
+  - [x] How to add new features
+- [x] Update `README.md`:
+  - [x] Add badges (build status placeholder)
+  - [x] Add table of contents
+  - [x] Add "Current Status" section
+  - [x] Add "Roadmap" section
+- [x] Verify coverage is >80% for all packages
 
 ### Prompt 15: Pattern Package - Foundation
 

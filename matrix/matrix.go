@@ -130,6 +130,28 @@ func (m *Matrix) String() string {
 	)
 }
 
+// Close releases the C memory associated with this matrix. After calling
+// Close, the matrix should not be used for any operations.
+//
+// While matrices have finalizers that will eventually free resources during
+// garbage collection, calling Close explicitly ensures deterministic resource
+// cleanup. This is particularly important in long-running applications or
+// when creating many matrices.
+//
+// Close is safe to call multiple times. Subsequent calls after the first
+// will have no effect.
+//
+// Example:
+//
+//	m := matrix.NewIdentityMatrix()
+//	defer m.Close()
+//
+//	// Use the matrix...
+//	m.Translate(10, 20)
+func (m *Matrix) Close() error {
+	return m.destroy()
+}
+
 func (m *Matrix) withLock(f func()) {
 	m.Lock()
 	defer m.Unlock()

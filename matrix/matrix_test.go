@@ -573,6 +573,119 @@ func TestMatrixOperationsCombined(t *testing.T) {
 	})
 }
 
+// TestMatrixClose verifies that Close releases resources properly
+func TestMatrixClose(t *testing.T) {
+	t.Run("Close releases resources", func(t *testing.T) {
+		m := NewIdentityMatrix()
+		err := m.Close()
+		assert.NoError(t, err, "Close should succeed")
+	})
+
+	t.Run("Double close is safe", func(t *testing.T) {
+		m := NewIdentityMatrix()
+
+		// First close
+		err := m.Close()
+		assert.NoError(t, err, "First close should succeed")
+
+		// Second close should also succeed (no-op)
+		err = m.Close()
+		assert.NoError(t, err, "Second close should be safe")
+	})
+
+	t.Run("Close with different matrix types", func(t *testing.T) {
+		matrices := []*Matrix{
+			NewMatrix(1, 2, 3, 4, 5, 6),
+			NewIdentityMatrix(),
+			NewTranslationMatrix(10, 20),
+			NewScalingMatrix(2, 3),
+			NewRotationMatrix(1.5707963267948966),
+		}
+
+		for _, m := range matrices {
+			err := m.Close()
+			assert.NoError(t, err, "Close should succeed for all matrix types")
+		}
+	})
+
+	t.Run("Multiple matrices can be closed independently", func(t *testing.T) {
+		m1 := NewIdentityMatrix()
+		m2 := NewIdentityMatrix()
+
+		err := m1.Close()
+		assert.NoError(t, err, "Closing m1 should succeed")
+
+		// m2 should still be usable
+		m2.Translate(5, 10)
+		assert.InDelta(t, 5.0, m2.X0, 0.0001, "m2 should still be usable after m1 is closed")
+
+		err = m2.Close()
+		assert.NoError(t, err, "Closing m2 should succeed")
+	})
+}
+
+// TestMatrixString verifies that String() returns a formatted representation of the matrix
+func TestMatrixString(t *testing.T) {
+	tests := []struct {
+		name     string
+		m        *Matrix
+		contains []string
+	}{
+		{
+			name: "Identity matrix",
+			m:    NewIdentityMatrix(),
+			contains: []string{
+				"Matrix",
+				"1.00", "0.00",
+			},
+		},
+		{
+			name: "Translation matrix",
+			m:    NewTranslationMatrix(10.0, 20.0),
+			contains: []string{
+				"Matrix",
+				"10.00", "20.00",
+			},
+		},
+		{
+			name: "Scaling matrix",
+			m:    NewScalingMatrix(2.5, 3.5),
+			contains: []string{
+				"Matrix",
+				"2.50", "3.50",
+			},
+		},
+		{
+			name: "Arbitrary matrix",
+			m:    NewMatrix(1.5, 2.5, 3.5, 4.5, 5.5, 6.5),
+			contains: []string{
+				"Matrix",
+				"1.50", "2.50", "3.50", "4.50", "5.50", "6.50",
+			},
+		},
+		{
+			name: "Negative values",
+			m:    NewMatrix(-1.0, -2.0, -3.0, -4.0, -5.0, -6.0),
+			contains: []string{
+				"Matrix",
+				"-1.00", "-2.00", "-3.00", "-4.00", "-5.00", "-6.00",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			str := tt.m.String()
+			assert.NotEmpty(t, str, "String() should return non-empty string")
+
+			// Verify all expected substrings are present
+			for _, substr := range tt.contains {
+				assert.Contains(t, str, substr, "String should contain %q", substr)
+			}
+		})
+	}
+}
+
 // TestMatrixThreadSafety verifies that concurrent reads/writes don't race
 // TODO: implement this once we have methods to update matrices
 func TestMatrixThreadSafety(t *testing.T) {

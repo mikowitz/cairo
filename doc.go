@@ -4,6 +4,35 @@
 // This package provides an idiomatic Go interface to Cairo's C API, with
 // proper memory management, thread safety, and error handling.
 //
+// # Architecture Overview
+//
+// This package is organized into several subpackages, each handling a specific
+// aspect of Cairo's functionality:
+//
+//   - status: Error handling and status codes from Cairo operations
+//   - matrix: 2D affine transformations for coordinate space conversions
+//   - surface: Drawing targets (image buffers, PDF files, SVG files, etc.)
+//   - context: The main drawing interface with graphics state and operations
+//   - pattern: Sources for drawing operations (colors, gradients, images)
+//   - font: Text rendering support (future)
+//
+// The typical usage flow is:
+//
+//  1. Create a Surface (your drawing target)
+//  2. Create a Context associated with that Surface
+//  3. Use Context methods to draw (set colors, create paths, fill/stroke)
+//  4. Flush the Surface and save/export the result
+//  5. Close resources when done (or use defer)
+//
+// All packages use CGO to interface with the underlying Cairo C library while
+// presenting an idiomatic Go API. Memory management is handled automatically
+// through finalizers, though explicit cleanup via Close() is recommended for
+// deterministic resource release.
+//
+// Thread safety is built into all types via sync.RWMutex, making it safe to
+// use Cairo objects from multiple goroutines. However, sharing a single context
+// or surface across goroutines may result in lock contention affecting performance.
+//
 // # Surface Types
 //
 // Cairo draws to surfaces, which represent a destination for graphics operations.

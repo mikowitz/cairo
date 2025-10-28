@@ -1,7 +1,25 @@
 # Go-Cairo
 
+[![Go Version](https://img.shields.io/badge/Go-1.23%2B-blue.svg)](https://golang.org/doc/devel/release.html)
+[![CI](https://github.com/mikowitz/go-cairo/actions/workflows/ci.yml/badge.svg)](https://github.com/mikowitz/go-cairo/actions/workflows/ci.yml)
+<!-- [![Go Report Card](https://goreportcard.com/badge/github.com/mikowitz/cairo)](https://goreportcard.com/report/github.com/mikowitz/cairo) -->
+[![License](https://img.shields.io/badge/license-TBD-lightgrey.svg)](#license)
+<!-- [![GoDoc](https://pkg.go.dev/badge/github.com/mikowitz/cairo.svg)](https://pkg.go.dev/github.com/mikowitz/cairo) -->
+
 A Golang wrapper for the Cairo 2D graphics library, providing idiomatic
 Go bindings to Cairo's powerful vector graphics capabilities.
+
+## Table of Contents
+
+- [Purpose](#purpose)
+- [Goals](#goals)
+- [Target Audience](#target-audience)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick Example](#quick-example)
+- [Current Status](#current-status)
+- [Roadmap](#roadmap)
+- [License](#license)
 
 ## Purpose
 
@@ -66,44 +84,113 @@ go get github.com/mikowitz/cairo
 package main
 
 import (
-    "math"
-    "github.com/mikowitz/cairo"
+    "github.com/mikowitz/cairo/context"
+    "github.com/mikowitz/cairo/surface"
 )
 
 func main() {
-    // Create a 256x256 image surface
-    surface, err := cairo.NewImageSurface(cairo.FormatARGB32, 256, 256)
+    // Create a 400x400 image surface
+    surf, err := surface.NewImageSurface(surface.FormatARGB32, 400, 400)
     if err != nil {
         panic(err)
     }
-    defer surface.Close()
+    defer surf.Close()
 
     // Create a drawing context
-    ctx := cairo.NewContext(surface)
+    ctx, err := context.NewContext(surf)
+    if err != nil {
+        panic(err)
+    }
     defer ctx.Close()
 
-    // Draw a circle
-    ctx.Arc(128, 128, 64, 0, 2*math.Pi)
+    // Set white background
+    ctx.SetSourceRGB(1.0, 1.0, 1.0)
+    ctx.Paint()
+
+    // Draw a red filled rectangle
+    ctx.SetSourceRGB(1.0, 0.0, 0.0)
+    ctx.Rectangle(100, 100, 200, 150)
     ctx.Fill()
 
-    // Save to PNG
-    if err := surface.WriteToPNG("circle.png"); err != nil {
+    // Draw a blue stroked rectangle
+    ctx.SetSourceRGB(0.0, 0.0, 1.0)
+    ctx.SetLineWidth(5.0)
+    ctx.Rectangle(150, 150, 100, 100)
+    ctx.Stroke()
+
+    // Flush and save to PNG
+    surf.Flush()
+    if err := surf.WriteToPNG("rectangles.png"); err != nil {
         panic(err)
     }
 }
 ```
 
-## Development Status
+## Current Status
 
-This project is currently in early development. The initial focus is on
-implementing core functionality:
+**MVP Complete! ✓**
 
-- Basic surface creation (Image, PDF, SVG)
-- Context operations (path construction, rendering)
-- Solid colors and gradients
-- Basic transformations
+The core functionality is now fully implemented and tested. You can:
 
-See `development/go-cairo-spec.md` for the complete implementation plan.
+- ✅ **Create ImageSurfaces** with various pixel formats (ARGB32, RGB24, A8, etc.)
+- ✅ **Draw with Context** using complete path operations
+- ✅ **Render paths** with Fill, Stroke, and Paint operations
+- ✅ **Set colors** using RGB/RGBA solid colors
+- ✅ **Export to PNG** from ImageSurface
+- ✅ **Basic path operations** including MoveTo, LineTo, Rectangle, ClosePath
+- ✅ **Line styling** with SetLineWidth and GetLineWidth
+- ✅ **State management** via Save/Restore
+- ✅ **Thread-safe operations** with proper locking throughout
+- ✅ **Memory management** with finalizers and explicit Close() methods
+- ✅ **Comprehensive tests** with >80% coverage
+- ✅ **Full documentation** with examples and guides
+
+All core drawing operations work correctly and the library is ready for basic
+2D graphics tasks. See the `examples/` directory for working code samples.
+
+## Roadmap
+
+The library will continue to expand with additional Cairo features:
+
+### Phase 1: Enhanced Drawing (Next)
+
+- [ ] Transformations (Translate, Scale, Rotate, Matrix operations)
+- [ ] Advanced path operations (Arc, Curve, RelMoveTo, RelLineTo)
+- [ ] Pattern support (Gradients, Surface patterns)
+- [ ] Clipping operations
+- [ ] Fill rules and stroke/fill extents
+
+### Phase 2: Text and Fonts
+
+- [ ] Toy font API (SelectFontFace, SetFontSize, ShowText)
+- [ ] Text extents and measurement
+- [ ] Text path operations
+- [ ] Font options and rendering quality
+
+### Phase 3: Advanced Features
+
+- [ ] Line cap and join styles
+- [ ] Dash patterns
+- [ ] Compositing operators
+- [ ] Masks and opacity
+- [ ] Path querying and manipulation
+
+### Phase 4: Additional Surface Types
+
+- [ ] PDF surface for vector output
+- [ ] SVG surface for web graphics
+- [ ] Recording surface for operation capture
+- [ ] Platform-specific surfaces (if needed)
+
+### Phase 5: Performance and Polish
+
+- [ ] Performance optimization pass
+- [ ] Benchmarking suite
+- [ ] Advanced examples and tutorials
+- [ ] API stability and v1.0.0 release
+
+See `development/go_cairo_prompts.md` for the detailed implementation plan
+spanning 34 prompts from foundation through v0.1.0 release.
 
 ## License
 
