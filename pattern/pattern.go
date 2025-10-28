@@ -75,7 +75,7 @@ func (b *BasePattern) Ptr() unsafe.Pointer {
 	b.RLock()
 	defer b.RUnlock()
 
-	return unsafe.Pointer(b.ptr)
+	return unsafe.Pointer(b.ptr) //nolint:gosec
 }
 
 func (b *BasePattern) GetType() PatternType {

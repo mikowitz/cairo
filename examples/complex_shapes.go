@@ -38,8 +38,15 @@ func GenerateComplexShapes(outputPath string) error {
 		_ = ctx.Close()
 	}()
 
-	// Section 1: Paint() - Fill background with light gray
-	ctx.SetSourceRGB(0.95, 0.95, 0.95)
+	// Section 1: Paint() - Fill background with light gray using SolidPattern
+	bgPattern, err := cairo.NewSolidPatternRGB(0.95, 0.95, 0.95)
+	if err != nil {
+		return fmt.Errorf("failed to create background pattern: %w", err)
+	}
+	defer func() {
+		_ = bgPattern.Close()
+	}()
+	ctx.SetSource(bgPattern)
 	ctx.Paint()
 
 	// Check Status() after Paint
@@ -131,9 +138,16 @@ func drawColorDemonstration(ctx *cairo.Context) {
 	ctx.Rectangle(baseX+40, baseY+40, 80, 80)
 	ctx.Fill()
 
-	// Translucent overlapping circles with SetSourceRGBA
+	// Translucent overlapping circles with SetSourceRGBA and SolidPattern
 	ctx.NewPath()
-	ctx.SetSourceRGBA(1.0, 0.0, 0.0, 0.5) // Semi-transparent red
+	redPattern, err := cairo.NewSolidPatternRGBA(1.0, 0.0, 0.0, 0.5) // Semi-transparent red
+	if err != nil {
+		return
+	}
+	defer func() {
+		_ = redPattern.Close()
+	}()
+	ctx.SetSource(redPattern)
 	ctx.Rectangle(baseX, baseY+130, 80, 80)
 	ctx.Fill()
 

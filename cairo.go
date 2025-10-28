@@ -2,6 +2,7 @@ package cairo
 
 import (
 	"github.com/mikowitz/cairo/context"
+	"github.com/mikowitz/cairo/pattern"
 	"github.com/mikowitz/cairo/surface"
 )
 
@@ -266,4 +267,14 @@ type Context = context.Context
 //	// Use ctx for drawing operations...
 func NewContext(surface Surface) (*Context, error) {
 	return context.NewContext(surface)
+}
+
+type Pattern = pattern.Pattern
+
+func NewSolidPatternRGB(r, g, b float64) (*pattern.SolidPattern, error) {
+	return pattern.NewSolidPatternRGB(r, g, b)
+}
+
+func NewSolidPatternRGBA(r, g, b, a float64) (*pattern.SolidPattern, error) {
+	return pattern.NewSolidPatternRGBA(r, g, b, a)
 }

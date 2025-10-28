@@ -5,6 +5,7 @@ import (
 	"sync"
 	"unsafe"
 
+	"github.com/mikowitz/cairo/pattern"
 	"github.com/mikowitz/cairo/status"
 	"github.com/mikowitz/cairo/surface"
 )
@@ -121,6 +122,27 @@ func (c *Context) SetSourceRGBA(r, g, b, a float64) {
 		return
 	}
 	contextSetSourceRGBA(c.ptr, r, g, b, a)
+}
+
+func (c *Context) GetSource() (pattern.Pattern, error) {
+	c.RLock()
+	defer c.RUnlock()
+
+	if c.ptr == nil {
+		return nil, status.NullPointer
+	}
+
+	return contextGetSource(c.ptr)
+}
+
+func (c *Context) SetSource(p pattern.Pattern) {
+	c.withLock(func() {
+		if p == nil {
+			return
+		}
+
+		contextSetSource(c.ptr, p.Ptr())
+	})
 }
 
 // MoveTo begins a new sub-path by setting the current point to (x, y).

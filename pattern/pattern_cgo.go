@@ -15,7 +15,7 @@ type PatternPtr *C.cairo_pattern_t
 
 func PatternFromC(uPtr unsafe.Pointer) Pattern {
 	ptr := PatternPtr(uPtr)
-	patternType := PatternType(patternGetType(ptr))
+	patternType := patternGetType(ptr)
 	basePattern := newBasePattern(ptr, patternType)
 	return &SolidPattern{
 		BasePattern: basePattern,

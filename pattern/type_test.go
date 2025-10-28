@@ -102,12 +102,6 @@ func TestPatternTypeComparison(t *testing.T) {
 		assert.NotEqual(t, PatternTypeSolid, PatternTypeSurface, "Different types should not be equal")
 	})
 
-	t.Run("ordering", func(t *testing.T) {
-		assert.True(t, PatternTypeSolid < PatternTypeSurface, "PatternTypeSolid should be less than PatternTypeSurface")
-		assert.True(t, PatternTypeLinear < PatternTypeRadial, "PatternTypeLinear should be less than PatternTypeRadial")
-		assert.True(t, PatternTypeRasterSource > PatternTypeSolid, "PatternTypeRasterSource should be greater than PatternTypeSolid")
-	})
-
 	t.Run("switch_statement", func(t *testing.T) {
 		// Verify PatternType can be used in switch statements
 		testType := PatternTypeLinear

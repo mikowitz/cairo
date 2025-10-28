@@ -7,6 +7,7 @@ import "C"
 import (
 	"unsafe"
 
+	"github.com/mikowitz/cairo/pattern"
 	"github.com/mikowitz/cairo/status"
 )
 
@@ -115,4 +116,14 @@ func contextSetLineWidth(ptr ContextPtr, width float64) {
 
 func contextGetLineWidth(ptr ContextPtr) float64 {
 	return float64(C.cairo_get_line_width(ptr))
+}
+
+func contextGetSource(ptr ContextPtr) (pattern.Pattern, error) {
+	patternPtr := C.cairo_get_source(ptr)
+
+	return pattern.PatternFromC(unsafe.Pointer(patternPtr)), nil
+}
+
+func contextSetSource(ptr ContextPtr, patternPtr unsafe.Pointer) {
+	C.cairo_set_source(ptr, (*C.cairo_pattern_t)(patternPtr))
 }

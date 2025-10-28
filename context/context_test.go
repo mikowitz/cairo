@@ -3,6 +3,7 @@ package context
 import (
 	"testing"
 
+	"github.com/mikowitz/cairo/pattern"
 	"github.com/mikowitz/cairo/status"
 	"github.com/mikowitz/cairo/surface"
 	"github.com/stretchr/testify/assert"
@@ -1038,4 +1039,366 @@ func TestContextIntegrationFillStroke(t *testing.T) {
 
 	st = ctx.Status()
 	assert.Equal(t, status.Success, st, "FillPreserve + Stroke combination should work")
+}
+
+// TestContextSetSource verifies that SetSource sets a pattern as the source.
+func TestContextSetSource(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	t.Run("set_solid_pattern_rgb", func(t *testing.T) {
+		// Create a solid RGB pattern
+		pat, err := pattern.NewSolidPatternRGB(1.0, 0.0, 0.0) // Red
+		require.NoError(t, err, "Failed to create solid pattern")
+		defer pat.Close()
+
+		// Set it as the source
+		ctx.SetSource(pat)
+
+		// Verify status is still success
+		st := ctx.Status()
+		assert.Equal(t, status.Success, st, "Status should be Success after SetSource")
+	})
+
+	t.Run("set_solid_pattern_rgba", func(t *testing.T) {
+		// Create a solid RGBA pattern
+		pat, err := pattern.NewSolidPatternRGBA(0.0, 1.0, 0.0, 0.5) // Semi-transparent green
+		require.NoError(t, err, "Failed to create solid pattern")
+		defer pat.Close()
+
+		// Set it as the source
+		ctx.SetSource(pat)
+
+		// Verify status is still success
+		st := ctx.Status()
+		assert.Equal(t, status.Success, st, "Status should be Success after SetSource")
+	})
+
+	t.Run("set_multiple_patterns", func(t *testing.T) {
+		// Set multiple patterns in sequence
+		pat1, err := pattern.NewSolidPatternRGB(1.0, 0.0, 0.0)
+		require.NoError(t, err)
+		defer pat1.Close()
+
+		ctx.SetSource(pat1)
+		assert.Equal(t, status.Success, ctx.Status())
+
+		pat2, err := pattern.NewSolidPatternRGBA(0.0, 0.0, 1.0, 0.8)
+		require.NoError(t, err)
+		defer pat2.Close()
+
+		ctx.SetSource(pat2)
+		assert.Equal(t, status.Success, ctx.Status())
+	})
+}
+
+// TestContextGetSource verifies that GetSource returns the current source pattern.
+func TestContextGetSource(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	t.Run("get_default_source", func(t *testing.T) {
+		// GetSource should work even on a newly created context
+		src, err := ctx.GetSource()
+		require.NoError(t, err, "GetSource should not return an error")
+		require.NotNil(t, src, "GetSource should return a non-nil pattern")
+
+		// The default source should have success status
+		st := src.Status()
+		assert.Equal(t, status.Success, st, "Default source should have Success status")
+	})
+
+	t.Run("get_after_set_pattern", func(t *testing.T) {
+		// Create and set a solid pattern
+		pat, err := pattern.NewSolidPatternRGB(1.0, 0.0, 0.0)
+		require.NoError(t, err)
+		defer pat.Close()
+
+		ctx.SetSource(pat)
+
+		// Get the source back
+		src, err := ctx.GetSource()
+		require.NoError(t, err, "GetSource should not return an error")
+		require.NotNil(t, src, "GetSource should return a non-nil pattern")
+		assert.Equal(t, status.Success, src.Status(), "Retrieved source should have Success status")
+	})
+}
+
+// TestContextGetSourceAfterSetSourceRGB verifies that GetSource returns a SolidPattern
+// after using SetSourceRGB.
+func TestContextGetSourceAfterSetSourceRGB(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Test various colors
+	testCases := []struct {
+		name    string
+		r, g, b float64
+	}{
+		{"red", 1.0, 0.0, 0.0},
+		{"green", 0.0, 1.0, 0.0},
+		{"blue", 0.0, 0.0, 1.0},
+		{"white", 1.0, 1.0, 1.0},
+		{"black", 0.0, 0.0, 0.0},
+		{"gray", 0.5, 0.5, 0.5},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Set source using RGB
+			ctx.SetSourceRGB(tc.r, tc.g, tc.b)
+
+			// Get the source - should be a solid pattern
+			src, err := ctx.GetSource()
+			require.NoError(t, err, "GetSource should not return an error after SetSourceRGB")
+			require.NotNil(t, src, "GetSource should return a non-nil pattern after SetSourceRGB")
+
+			// Verify it's a pattern with success status
+			st := src.Status()
+			assert.Equal(t, status.Success, st, "Source pattern should have Success status")
+
+			// The pattern should be usable (we can't easily verify the color,
+			// but we can verify it's a valid pattern by checking its status)
+			assert.NotNil(t, src, "Retrieved source should be a valid pattern")
+		})
+	}
+}
+
+// TestContextGetSourceAfterSetSourceRGBA verifies that GetSource returns a SolidPattern
+// after using SetSourceRGBA.
+func TestContextGetSourceAfterSetSourceRGBA(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	// Test various colors with alpha
+	testCases := []struct {
+		name       string
+		r, g, b, a float64
+	}{
+		{"opaque_red", 1.0, 0.0, 0.0, 1.0},
+		{"transparent_green", 0.0, 1.0, 0.0, 0.0},
+		{"semi_transparent_blue", 0.0, 0.0, 1.0, 0.5},
+		{"quarter_opacity_white", 1.0, 1.0, 1.0, 0.25},
+		{"three_quarter_opacity_black", 0.0, 0.0, 0.0, 0.75},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Set source using RGBA
+			ctx.SetSourceRGBA(tc.r, tc.g, tc.b, tc.a)
+
+			// Get the source - should be a solid pattern
+			src, err := ctx.GetSource()
+			require.NoError(t, err, "GetSource should not return an error after SetSourceRGBA")
+			require.NotNil(t, src, "GetSource should return a non-nil pattern after SetSourceRGBA")
+
+			// Verify it's a pattern with success status
+			st := src.Status()
+			assert.Equal(t, status.Success, st, "Source pattern should have Success status")
+
+			// The pattern should be usable
+			assert.NotNil(t, src, "Retrieved source should be a valid pattern")
+		})
+	}
+}
+
+// TestContextSetSourcePatternAfterClose verifies that SetSource is safe after close.
+func TestContextSetSourcePatternAfterClose(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+
+	// Create a pattern
+	pat, err := pattern.NewSolidPatternRGB(1.0, 0.0, 0.0)
+	require.NoError(t, err)
+	defer pat.Close()
+
+	// Close the context
+	err = ctx.Close()
+	assert.NoError(t, err, "Closing context should not error")
+
+	// SetSource after close should be safe (no-op)
+	ctx.SetSource(pat)
+
+	// Status should indicate closed/null pointer
+	st := ctx.Status()
+	assert.Equal(t, status.NullPointer, st, "Status after close should be NullPointer")
+}
+
+// TestContextGetSourceAfterClose verifies that GetSource returns an error after close.
+func TestContextGetSourceAfterClose(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+
+	// Close the context
+	err = ctx.Close()
+	assert.NoError(t, err, "Closing context should not error")
+
+	// GetSource after close should return an error
+	src, err := ctx.GetSource()
+	assert.Error(t, err, "GetSource after close should return an error")
+	assert.Nil(t, src, "GetSource after close should return nil pattern")
+}
+
+// TestContextSourcePatternIntegration verifies integration between SetSource,
+// GetSource, and drawing operations.
+func TestContextSourcePatternIntegration(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	t.Run("set_source_and_draw", func(t *testing.T) {
+		// Create a solid pattern
+		pat, err := pattern.NewSolidPatternRGB(1.0, 0.0, 0.0) // Red
+		require.NoError(t, err)
+		defer pat.Close()
+
+		// Set as source
+		ctx.SetSource(pat)
+
+		// Draw with the pattern
+		ctx.Rectangle(10.0, 10.0, 50.0, 50.0)
+		ctx.Fill()
+
+		// Should complete successfully
+		st := ctx.Status()
+		assert.Equal(t, status.Success, st, "Drawing with pattern source should succeed")
+	})
+
+	t.Run("set_source_rgb_get_and_reuse", func(t *testing.T) {
+		// Set source using convenience method
+		ctx.SetSourceRGB(0.0, 1.0, 0.0) // Green
+
+		// Get the pattern that was created
+		src, err := ctx.GetSource()
+		require.NoError(t, err, "GetSource should not return an error")
+		require.NotNil(t, src, "Should get a pattern from SetSourceRGB")
+
+		// Draw with it
+		ctx.Rectangle(70.0, 10.0, 50.0, 50.0)
+		ctx.Fill()
+
+		st := ctx.Status()
+		assert.Equal(t, status.Success, st, "Drawing should succeed")
+
+		// The source should still be accessible
+		src2, err := ctx.GetSource()
+		require.NoError(t, err, "GetSource should not return an error after drawing")
+		assert.NotNil(t, src2, "Source should still be accessible after drawing")
+	})
+
+	t.Run("set_source_rgba_get_and_reuse", func(t *testing.T) {
+		// Set source using convenience method with alpha
+		ctx.SetSourceRGBA(0.0, 0.0, 1.0, 0.7) // Semi-transparent blue
+
+		// Get the pattern that was created
+		src, err := ctx.GetSource()
+		require.NoError(t, err, "GetSource should not return an error")
+		require.NotNil(t, src, "Should get a pattern from SetSourceRGBA")
+
+		// Draw with it
+		ctx.Rectangle(130.0, 10.0, 50.0, 50.0)
+		ctx.Fill()
+
+		st := ctx.Status()
+		assert.Equal(t, status.Success, st, "Drawing should succeed")
+
+		// The source should still be accessible
+		src2, err := ctx.GetSource()
+		require.NoError(t, err, "GetSource should not return an error after drawing")
+		assert.NotNil(t, src2, "Source should still be accessible after drawing")
+	})
+
+	t.Run("switch_between_patterns_and_rgb", func(t *testing.T) {
+		// Create a pattern
+		pat, err := pattern.NewSolidPatternRGBA(1.0, 1.0, 0.0, 0.5) // Yellow
+		require.NoError(t, err)
+		defer pat.Close()
+
+		// Set pattern
+		ctx.SetSource(pat)
+		ctx.Rectangle(10.0, 70.0, 30.0, 30.0)
+		ctx.Fill()
+
+		// Switch to RGB
+		ctx.SetSourceRGB(1.0, 0.0, 1.0) // Magenta
+		ctx.Rectangle(50.0, 70.0, 30.0, 30.0)
+		ctx.Fill()
+
+		// Switch to RGBA
+		ctx.SetSourceRGBA(0.0, 1.0, 1.0, 0.8) // Cyan
+		ctx.Rectangle(90.0, 70.0, 30.0, 30.0)
+		ctx.Fill()
+
+		// All should succeed
+		st := ctx.Status()
+		assert.Equal(t, status.Success, st, "Switching between source types should work")
+	})
 }

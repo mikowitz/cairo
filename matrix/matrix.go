@@ -2,6 +2,7 @@ package matrix
 
 import (
 	"fmt"
+	"unsafe"
 )
 
 // NewMatrix returns a matrix with the affine transformation given by
@@ -36,6 +37,17 @@ func NewScalingMatrix(sx, sy float64) *Matrix {
 // that rotates by radians.
 func NewRotationMatrix(radians float64) *Matrix {
 	return matrixInitRotate(radians)
+}
+
+func (m *Matrix) Ptr() unsafe.Pointer {
+	m.RLock()
+	defer m.RUnlock()
+
+	return unsafe.Pointer(m.ptr) //nolint:gosec
+}
+
+func FromPointer(ptr unsafe.Pointer) *Matrix {
+	return matrixFromC((MatrixPtr)(ptr))
 }
 
 // Translate applies a translation by tx, ty to the transformation in m.
