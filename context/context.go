@@ -5,14 +5,14 @@ import (
 	"sync"
 	"unsafe"
 
+	"github.com/mikowitz/cairo/pattern"
 	"github.com/mikowitz/cairo/status"
 	"github.com/mikowitz/cairo/surface"
 )
 
 type Context struct {
 	sync.RWMutex
-	ptr    ContextPtr
-	closed bool
+	ptr ContextPtr
 }
 
 func NewContext(surface surface.Surface) (*Context, error) {
@@ -121,6 +121,23 @@ func (c *Context) SetSourceRGBA(r, g, b, a float64) {
 		return
 	}
 	contextSetSourceRGBA(c.ptr, r, g, b, a)
+}
+
+func (c *Context) GetSource() (pattern.Pattern, error) {
+	c.RLock()
+	defer c.RUnlock()
+
+	if c.ptr == nil {
+		return nil, status.NullPointer
+	}
+
+	return contextGetSource(c.ptr)
+}
+
+func (c *Context) SetSource(p pattern.Pattern) {
+	c.withLock(func() {
+		contextSetSource(c.ptr, p.Ptr())
+	})
 }
 
 // MoveTo begins a new sub-path by setting the current point to (x, y).
@@ -484,7 +501,6 @@ func (c *Context) close() error {
 	if c.ptr != nil {
 		contextClose(c.ptr)
 		runtime.SetFinalizer(c, nil)
-		c.closed = true
 		c.ptr = nil
 	}
 

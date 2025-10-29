@@ -13,6 +13,8 @@ import (
 	"github.com/mikowitz/cairo/status"
 )
 
+type MatrixPtr *C.cairo_matrix_t
+
 type Matrix struct {
 	XX, YX, XY, YY, X0, Y0 float64
 	sync.RWMutex

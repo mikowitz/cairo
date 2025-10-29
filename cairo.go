@@ -2,6 +2,7 @@ package cairo
 
 import (
 	"github.com/mikowitz/cairo/context"
+	"github.com/mikowitz/cairo/pattern"
 	"github.com/mikowitz/cairo/surface"
 )
 
@@ -266,4 +267,134 @@ type Context = context.Context
 //	// Use ctx for drawing operations...
 func NewContext(surface Surface) (*Context, error) {
 	return context.NewContext(surface)
+}
+
+// Pattern is the interface that all Cairo pattern types implement.
+//
+// Patterns represent the "paint" that Cairo uses for drawing operations. They define
+// what colors, gradients, or images to use when filling or stroking paths.
+//
+// # Pattern Types
+//
+// Cairo supports several pattern types:
+//   - Solid colors: Single uniform colors (NewSolidPatternRGB, NewSolidPatternRGBA)
+//   - Linear gradients: Color gradients along a line (planned)
+//   - Radial gradients: Color gradients in a circular pattern (planned)
+//   - Surface patterns: Texturing with images (planned)
+//   - Mesh patterns: Complex multi-point gradients (planned)
+//
+// # Using Patterns
+//
+// Create a pattern and set it as the drawing source using Context.SetSource:
+//
+//	pattern, err := cairo.NewSolidPatternRGB(1.0, 0.0, 0.0)
+//	if err != nil {
+//	    return err
+//	}
+//	defer pattern.Close()
+//
+//	ctx.SetSource(pattern)
+//	ctx.Rectangle(10, 10, 100, 100)
+//	ctx.Fill()  // Fills with red
+//
+// For simple solid colors, Context provides convenience methods:
+//
+//	ctx.SetSourceRGB(1.0, 0.0, 0.0)  // Equivalent to creating a solid pattern
+//	ctx.Fill()
+//
+// # Resource Management
+//
+// Patterns must be explicitly closed when finished:
+//
+//	pattern, err := cairo.NewSolidPatternRGB(1.0, 0.0, 0.0)
+//	if err != nil {
+//	    return err
+//	}
+//	defer pattern.Close()  // Essential
+//
+// Exception: Patterns returned from Context.GetSource() have proper reference
+// counting and can be safely garbage collected without explicit Close().
+//
+// For more details, see the pattern package documentation.
+type Pattern = pattern.Pattern
+
+// NewSolidPatternRGB creates a new solid pattern with an opaque RGB color.
+//
+// The color components should be in the range [0.0, 1.0]:
+//   - 0.0 represents no intensity (black for that channel)
+//   - 1.0 represents full intensity (maximum brightness)
+//
+// The alpha channel is implicitly set to 1.0 (fully opaque).
+//
+// The returned pattern must be closed with Close() when finished to release
+// Cairo resources. A finalizer is registered for safety, but explicit cleanup
+// is strongly recommended.
+//
+// Example:
+//
+//	// Create an opaque red pattern
+//	red, err := cairo.NewSolidPatternRGB(1.0, 0.0, 0.0)
+//	if err != nil {
+//	    return err
+//	}
+//	defer red.Close()
+//
+//	// Use it for drawing
+//	ctx.SetSource(red)
+//	ctx.Rectangle(10, 10, 50, 50)
+//	ctx.Fill()
+//
+// For simple cases, consider using Context.SetSourceRGB instead:
+//
+//	ctx.SetSourceRGB(1.0, 0.0, 0.0)
+//	ctx.Rectangle(10, 10, 50, 50)
+//	ctx.Fill()
+//
+// Use explicit pattern creation when you need to:
+//   - Reuse the same pattern for multiple operations
+//   - Apply transformations to the pattern
+//   - Store patterns for later use
+func NewSolidPatternRGB(r, g, b float64) (*pattern.SolidPattern, error) {
+	return pattern.NewSolidPatternRGB(r, g, b)
+}
+
+// NewSolidPatternRGBA creates a new solid pattern with an RGBA color including transparency.
+//
+// The color components should be in the range [0.0, 1.0]:
+//   - r, g, b: Color channels where 0.0 = no intensity, 1.0 = full intensity
+//   - a: Alpha (transparency) where 0.0 = fully transparent, 1.0 = fully opaque
+//
+// Alpha compositing in Cairo uses premultiplied alpha. This function handles
+// the premultiplication internally, so you should provide unpremultiplied values.
+//
+// The returned pattern must be closed with Close() when finished to release
+// Cairo resources. A finalizer is registered for safety, but explicit cleanup
+// is strongly recommended.
+//
+// Example:
+//
+//	// Create a semi-transparent blue pattern
+//	blue, err := cairo.NewSolidPatternRGBA(0.0, 0.0, 1.0, 0.5)
+//	if err != nil {
+//	    return err
+//	}
+//	defer blue.Close()
+//
+//	// Use it for drawing
+//	ctx.SetSource(blue)
+//	ctx.Rectangle(10, 10, 50, 50)
+//	ctx.Fill()  // Fills with 50% transparent blue
+//
+// For simple cases, consider using Context.SetSourceRGBA instead:
+//
+//	ctx.SetSourceRGBA(0.0, 0.0, 1.0, 0.5)
+//	ctx.Rectangle(10, 10, 50, 50)
+//	ctx.Fill()
+//
+// Use explicit pattern creation when you need to:
+//   - Reuse the same pattern for multiple operations
+//   - Apply transformations to the pattern
+//   - Store patterns for later use
+func NewSolidPatternRGBA(r, g, b, a float64) (*pattern.SolidPattern, error) {
+	return pattern.NewSolidPatternRGBA(r, g, b, a)
 }

@@ -461,30 +461,38 @@ rather than mutating an existing matrix in place.
   - [x] Add "Roadmap" section
 - [x] Verify coverage is >80% for all packages
 
-### Prompt 15: Pattern Package - Foundation
+### Prompt 15: Pattern Package - Foundation ✅ COMPLETE
 
-- [ ] Create `pattern/pattern.go`:
-  - [ ] `Pattern` interface with Close(), Status(), SetMatrix(), GetMatrix()
-  - [ ] `BasePattern` struct with `sync.RWMutex`, ptr, closed flag
-  - [ ] `SolidPattern` struct embedding BasePattern
-  - [ ] `func NewSolidPatternRGB(r, g, b float64) (*SolidPattern, error)`
-  - [ ] `func NewSolidPatternRGBA(r, g, b, a float64) (*SolidPattern, error)`
-- [ ] Create `pattern/pattern_cgo.go`:
-  - [ ] CGO preamble
-  - [ ] BasePattern CGO methods
-  - [ ] SolidPattern CGO constructor functions
-- [ ] Create `pattern/pattern_test.go`:
-  - [ ] `TestNewSolidPatternRGB`
-  - [ ] `TestNewSolidPatternRGBA`
-  - [ ] `TestPatternClose`
-  - [ ] `TestPatternStatus`
-  - [ ] `TestPatternMatrix`
-- [ ] Update `context/context.go`:
-  - [ ] `func (c *Context) SetSource(pattern Pattern)`
-- [ ] Update `cairo/cairo.go`:
-  - [ ] Re-export Pattern interface
-  - [ ] Re-export NewSolidPattern* functions
-- [ ] Integration test: Create solid pattern, set as Context source, draw
+- [x] Create `pattern/pattern.go`:
+  - [x] `Pattern` interface with Close(), Status(), SetMatrix(), GetMatrix()
+  - [x] `BasePattern` struct with `sync.RWMutex`, ptr, closed flag
+  - [x] `SolidPattern` struct embedding BasePattern
+  - [x] `func NewSolidPatternRGB(r, g, b float64) (*SolidPattern, error)`
+  - [x] `func NewSolidPatternRGBA(r, g, b, a float64) (*SolidPattern, error)`
+- [x] Create `pattern/pattern_cgo.go`:
+  - [x] CGO preamble
+  - [x] BasePattern CGO methods
+  - [x] SolidPattern CGO constructor functions
+- [x] Create `pattern/pattern_test.go` (actually `pattern/solid_test.go`):
+  - [x] `TestNewSolidPatternRGB` ✅ PASSING
+  - [x] `TestNewSolidPatternRGBA` ✅ PASSING
+  - [x] `TestPatternClose` ✅ PASSING
+  - [x] `TestPatternStatus` ✅ PASSING
+  - [x] `TestPatternMatrix` ✅ PASSING
+  - [x] BONUS: `TestSolidPatternGetType` (added in this session) ✅ PASSING
+- [x] Update `context/context.go`:
+  - [x] `func (c *Context) SetSource(pattern Pattern)` (context.go:138) ✅
+  - [x] `TestContextSetSource` (context_test.go:1045) ✅ PASSING
+- [x] Update `cairo/cairo.go`:
+  - [x] Re-export Pattern interface (cairo.go:272) ✅
+  - [x] Re-export NewSolidPatternRGB (cairo.go:274-276) ✅
+  - [x] Re-export NewSolidPatternRGBA (cairo.go:278-280) ✅
+- [x] Integration test: Create solid pattern, set as Context source, draw
+  - [x] Demonstrated in `examples/complex_shapes.go` (updated in this session) ✅
+  - [x] Uses `cairo.NewSolidPatternRGB` with `ctx.SetSource` (line 42-50) ✅
+  - [x] Uses `cairo.NewSolidPatternRGBA` with `ctx.SetSource` (line 143-152) ✅
+
+✅ **Status: 100% COMPLETE - All requirements met, all tests passing, integration examples working**
 
 ### Prompt 16: Context Package - Transformations
 

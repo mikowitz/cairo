@@ -18,8 +18,7 @@ type Surface interface {
 
 type BaseSurface struct {
 	sync.RWMutex
-	closed bool
-	ptr    SurfacePtr
+	ptr SurfacePtr
 }
 
 func newBaseSurface(ptr SurfacePtr) *BaseSurface {
@@ -141,7 +140,6 @@ func (b *BaseSurface) close() error {
 	if b.ptr != nil {
 		surfaceClose(b.ptr)
 		runtime.SetFinalizer(b, nil)
-		b.closed = true
 		b.ptr = nil
 	}
 
