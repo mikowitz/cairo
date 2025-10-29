@@ -1506,7 +1506,7 @@ func TestContextGetSourceBorrowedReference(t *testing.T) {
 
 		// The old source is no longer the active source
 		// Let it be GC'd without explicit Close()
-		oldSrc = nil
+		oldSrc = nil //nolint:ineffassign
 		runtime.GC()
 		runtime.GC()
 
