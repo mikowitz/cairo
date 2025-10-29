@@ -117,6 +117,10 @@ func (c *Context) Rotate(radians float64) {
 //	ctx.Translate(10, 10)
 //	ctx.Transform(customMatrix)  // Applied after translation
 func (c *Context) Transform(m *matrix.Matrix) {
+	if m == nil {
+		return
+	}
+
 	c.withLock(func() {
 		mPtr := m.Ptr()
 		contextTransform(c.ptr, mPtr)
