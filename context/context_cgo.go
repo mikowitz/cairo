@@ -7,6 +7,7 @@ import "C"
 import (
 	"unsafe"
 
+	"github.com/mikowitz/cairo/matrix"
 	"github.com/mikowitz/cairo/pattern"
 	"github.com/mikowitz/cairo/status"
 )
@@ -126,4 +127,72 @@ func contextGetSource(ptr ContextPtr) (pattern.Pattern, error) {
 
 func contextSetSource(ptr ContextPtr, patternPtr unsafe.Pointer) {
 	C.cairo_set_source(ptr, (*C.cairo_pattern_t)(patternPtr))
+}
+
+func contextIdentityMatrix(ptr ContextPtr) {
+	C.cairo_identity_matrix(ptr)
+}
+
+func contextTranslate(ptr ContextPtr, tx, ty float64) {
+	C.cairo_translate(ptr, C.double(tx), C.double(ty))
+}
+
+func contextScale(ptr ContextPtr, sx, sy float64) {
+	C.cairo_scale(ptr, C.double(sx), C.double(sy))
+}
+
+func contextRotate(ptr ContextPtr, radians float64) {
+	C.cairo_rotate(ptr, C.double(radians))
+}
+
+func contextTransform(ptr ContextPtr, mPtr unsafe.Pointer) {
+	C.cairo_transform(ptr, (*C.cairo_matrix_t)(mPtr))
+}
+
+func contextGetMatrix(ptr ContextPtr) *matrix.Matrix {
+	var m C.cairo_matrix_t
+
+	C.cairo_get_matrix(ptr, &m)
+
+	return matrix.FromPointer(unsafe.Pointer(&m))
+}
+
+func contextSetMatrix(ptr ContextPtr, mPtr unsafe.Pointer) {
+	C.cairo_set_matrix(ptr, (*C.cairo_matrix_t)(mPtr))
+}
+
+func contextUserToDevice(ptr ContextPtr, x, y float64) (float64, float64) {
+	rx := C.double(x)
+	ry := C.double(y)
+
+	C.cairo_user_to_device(ptr, &rx, &ry)
+
+	return float64(rx), float64(ry)
+}
+
+func contextUserToDeviceDistance(ptr ContextPtr, dx, dy float64) (float64, float64) {
+	rx := C.double(dx)
+	ry := C.double(dy)
+
+	C.cairo_user_to_device_distance(ptr, &rx, &ry)
+
+	return float64(rx), float64(ry)
+}
+
+func contextDeviceToUser(ptr ContextPtr, x, y float64) (float64, float64) {
+	rx := C.double(x)
+	ry := C.double(y)
+
+	C.cairo_device_to_user(ptr, &rx, &ry)
+
+	return float64(rx), float64(ry)
+}
+
+func contextDeviceToUserDistance(ptr ContextPtr, dx, dy float64) (float64, float64) {
+	rx := C.double(dx)
+	ry := C.double(dy)
+
+	C.cairo_device_to_user_distance(ptr, &rx, &ry)
+
+	return float64(rx), float64(ry)
 }
