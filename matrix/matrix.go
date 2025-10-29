@@ -46,6 +46,9 @@ func (m *Matrix) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(m.ptr) //nolint:gosec
 }
 
+// FromPointer wraps a C cairo_matrix_t pointer in a Go [Matrix]. This
+// function is primarily used for internal use by other Cairo packages.
+// The caller is responsible for ensuring the pointer is valid.
 func FromPointer(ptr unsafe.Pointer) *Matrix {
 	return matrixFromC((MatrixPtr)(ptr))
 }

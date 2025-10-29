@@ -9,12 +9,78 @@ import (
 	"github.com/mikowitz/cairo/status"
 )
 
+// Pattern is the interface that all Cairo pattern types implement.
+//
+// Patterns represent the "paint" that Cairo uses for drawing operations.
+// They define what colors, gradients, or images to use when filling or
+// stroking paths.
+//
+// All pattern types (solid colors, gradients, surface patterns) implement
+// this interface, providing consistent methods for resource management,
+// status checking, and transformation.
+//
+// Pattern implementations are safe for concurrent use from multiple goroutines.
 type Pattern interface {
+	// Close releases the Cairo resources associated with this pattern.
+	//
+	// After calling Close, the pattern should not be used for any operations.
+	// Calling Close multiple times is safe (subsequent calls are no-ops).
+	//
+	// While patterns have finalizers that will eventually clean up resources,
+	// explicit Close() calls are strongly recommended for predictable resource
+	// management, especially in long-running programs.
+	//
+	// Returns an error if cleanup fails, though this is rare in practice.
 	Close() error
+
+	// Status returns the current status of the pattern.
+	//
+	// Returns status.Success if the pattern is valid and ready to use.
+	// Returns status.NullPointer if the pattern has been closed.
+	// Returns other status codes if the pattern creation failed or became invalid.
+	//
+	// This method is safe to call even after Close().
 	Status() status.Status
+
+	// SetMatrix sets the pattern's transformation matrix.
+	//
+	// The pattern matrix is used to transform the pattern coordinate space
+	// before it is applied to the surface. This affects how gradients are
+	// positioned and oriented, or how texture patterns are scaled and rotated.
+	//
+	// For solid color patterns, the matrix has no visible effect, but it can
+	// still be set and retrieved.
+	//
+	// The transformation is independent of the Context's transformation matrix.
+	// If m is nil, this method is a no-op.
+	//
+	// Example:
+	//   m := matrix.NewScaleMatrix(2.0, 2.0)
+	//   pattern.SetMatrix(m)  // Scale the pattern's coordinate space
 	SetMatrix(m *matrix.Matrix)
+
+	// GetMatrix returns the pattern's current transformation matrix.
+	//
+	// Returns the matrix that was previously set with SetMatrix, or the
+	// identity matrix if no matrix was explicitly set.
+	//
+	// Returns an error (status.NullPointer) if the pattern has been closed.
 	GetMatrix() (*matrix.Matrix, error)
+
+	// Ptr returns the underlying Cairo pattern pointer.
+	//
+	// This method is primarily for internal use when passing patterns to
+	// Cairo C API functions. Most users should not need to call this directly.
+	//
+	// The returned pointer is only valid while the pattern has not been closed.
 	Ptr() unsafe.Pointer
+
+	// GetType returns the pattern's type (solid, linear, radial, etc.).
+	//
+	// Pattern types are defined by the PatternType enumeration. This method
+	// allows runtime type identification of patterns.
+	//
+	// Returns the PatternType value for this pattern (e.g., PatternTypeSolid).
 	GetType() PatternType
 }
 
@@ -57,6 +123,10 @@ func (b *BasePattern) SetMatrix(m *matrix.Matrix) {
 	mPtr := m.Ptr() // This handles matrix un/locking internally
 	b.Lock()
 	defer b.Unlock()
+
+	if b.ptr == nil {
+		return
+	}
 
 	patternSetMatrix(b.ptr, mPtr)
 }
@@ -126,8 +196,6 @@ func PatternFromC(uPtr unsafe.Pointer) Pattern {
 		}
 	// TODO: Add cases for other pattern types as implemented
 	default:
-		return &SolidPattern{
-			BasePattern: basePattern,
-		}
+		return basePattern
 	}
 }
