@@ -120,7 +120,7 @@ func contextGetLineWidth(ptr ContextPtr) float64 {
 
 func contextGetSource(ptr ContextPtr) (pattern.Pattern, error) {
 	patternPtr := C.cairo_get_source(ptr)
-
+	C.cairo_pattern_reference(patternPtr)
 	return pattern.PatternFromC(unsafe.Pointer(patternPtr)), nil
 }
 

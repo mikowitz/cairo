@@ -1,6 +1,7 @@
 package context
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/mikowitz/cairo/pattern"
@@ -1400,5 +1401,122 @@ func TestContextSourcePatternIntegration(t *testing.T) {
 		// All should succeed
 		st := ctx.Status()
 		assert.Equal(t, status.Success, st, "Switching between source types should work")
+	})
+}
+
+// TestContextGetSourceBorrowedReference is a regression test for proper reference
+// counting when GetSource() returns a borrowed reference from Cairo.
+//
+// Background:
+// The cairo_get_source() C function returns a BORROWED reference - meaning the
+// pattern is owned by the context and the caller should NOT destroy it.
+// However, our Go wrapper (PatternFromC) sets up a finalizer that WILL destroy
+// the pattern when the Go object is garbage collected.
+//
+// This test verifies that:
+// 1. GetSource() properly increments the pattern's reference count (via cairo_pattern_reference)
+// 2. The returned Go Pattern owns its own reference
+// 3. The Context still owns its original reference
+// 4. No double-free occurs when both the Pattern and Context are destroyed
+//
+// Test scenario:
+// - Create a context (which has a default source pattern)
+// - Call GetSource() to get the pattern (borrowed reference)
+// - Let the returned pattern go out of scope WITHOUT explicit Close()
+// - Force GC to run the pattern's finalizer
+// - Close the context
+// - If reference counting is correct, no crash/double-free occurs
+func TestContextGetSourceBorrowedReference(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
+	require.NoError(t, err, "Failed to create surface")
+	defer func() {
+		err := surf.Close()
+		assert.NoError(t, err, "Failed to close surface")
+	}()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer func() {
+		err := ctx.Close()
+		assert.NoError(t, err, "Failed to close context")
+	}()
+
+	t.Run("get_source_without_explicit_close", func(t *testing.T) {
+		// Get the source pattern (borrowed reference from Cairo's perspective)
+		src, err := ctx.GetSource()
+		require.NoError(t, err, "GetSource should not return an error")
+		require.NotNil(t, src, "GetSource should return a non-nil pattern")
+
+		// Verify the pattern is valid
+		st := src.Status()
+		assert.Equal(t, status.Success, st, "Source pattern should have Success status")
+
+		// Key point: We do NOT call src.Close() here
+		// The pattern goes out of scope and its finalizer will run during GC
+		// If reference counting is wrong, this will cause a double-free:
+		// 1. Pattern finalizer calls cairo_pattern_destroy
+		// 2. Context close also calls cairo_pattern_destroy (via cairo_destroy)
+
+		// Force garbage collection to run the pattern's finalizer
+		// This simulates what would happen naturally over time
+		src = nil
+		runtime.GC()
+		runtime.GC() // Run twice to ensure finalizers execute
+
+		// If we reach here without crashing, reference counting is working
+		// The context should still be valid
+		st = ctx.Status()
+		assert.Equal(t, status.Success, st, "Context should still be valid after pattern GC")
+	})
+
+	t.Run("get_source_multiple_times_without_close", func(t *testing.T) {
+		// This tests that we can safely get the source multiple times
+		// and let them all be GC'd without explicit Close()
+
+		for i := 0; i < 5; i++ {
+			src, err := ctx.GetSource()
+			require.NoError(t, err, "GetSource iteration %d should not error", i)
+			require.NotNil(t, src, "GetSource iteration %d should return pattern", i)
+
+			// Let it go out of scope - no explicit Close()
+			_ = src
+		}
+
+		// Force GC to clean up all the patterns
+		runtime.GC()
+		runtime.GC()
+
+		// Context should still be valid
+		st := ctx.Status()
+		assert.Equal(t, status.Success, st, "Context should be valid after multiple GetSource calls")
+	})
+
+	t.Run("get_source_then_set_new_source", func(t *testing.T) {
+		// Get the current source
+		oldSrc, err := ctx.GetSource()
+		require.NoError(t, err)
+		require.NotNil(t, oldSrc)
+
+		// Set a completely new source
+		newPat, err := pattern.NewSolidPatternRGB(1.0, 0.0, 0.0)
+		require.NoError(t, err)
+		defer newPat.Close()
+
+		ctx.SetSource(newPat)
+
+		// The old source is no longer the active source
+		// Let it be GC'd without explicit Close()
+		oldSrc = nil
+		runtime.GC()
+		runtime.GC()
+
+		// Everything should still work
+		st := ctx.Status()
+		assert.Equal(t, status.Success, st, "Context should be valid after source replacement")
+
+		// We should be able to get the new source
+		currentSrc, err := ctx.GetSource()
+		require.NoError(t, err)
+		require.NotNil(t, currentSrc)
 	})
 }

@@ -50,13 +50,15 @@ func (b *BasePattern) Status() status.Status {
 }
 
 func (b *BasePattern) SetMatrix(m *matrix.Matrix) {
+	if m == nil {
+		return
+	}
+
+	mPtr := m.Ptr() // This handles matrix un/locking internally
 	b.Lock()
-	m.RLock()
-
 	defer b.Unlock()
-	defer m.RUnlock()
 
-	patternSetMatrix(b.ptr, m.Ptr())
+	patternSetMatrix(b.ptr, mPtr)
 }
 
 func (b *BasePattern) GetMatrix() (*matrix.Matrix, error) {
