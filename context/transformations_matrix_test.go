@@ -307,7 +307,7 @@ func TestContextGetMatrixMemorySafety(t *testing.T) {
 				// Recursive call to consume more stack
 				stackConsumingOperations(depth - 1)
 
-				temp.Close()
+				_ = temp.Close()
 			}
 		}
 		stackConsumingOperations(10)
@@ -387,8 +387,7 @@ func TestContextGetMatrixMemorySafety(t *testing.T) {
 
 		// Clean up
 		for _, m := range matrices {
-			m.Close()
+			_ = m.Close()
 		}
 	})
 }
-
