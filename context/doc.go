@@ -91,6 +91,43 @@
 //	// Make temporary changes
 //	ctx.Restore()  // Returns to previous state
 //
+// # Transformations
+//
+// Cairo uses a transformation matrix (CTM - Current Transformation Matrix) to
+// map coordinates from user space (the coordinate system used in your drawing
+// commands) to device space (the actual pixels on the surface).
+//
+// The Context provides several methods for manipulating transformations:
+//
+//   - IdentityMatrix: Reset to no transformation (1:1 mapping)
+//   - Translate: Move the origin
+//   - Scale: Resize the coordinate system
+//   - Rotate: Rotate the coordinate system
+//   - Transform: Apply a custom matrix transformation
+//   - GetMatrix/SetMatrix: Save and restore transformation states
+//
+// Transformations are cumulative and are applied in the order called. The
+// transformation state is saved and restored along with other graphics state
+// by Save() and Restore().
+//
+// Example:
+//
+//	ctx.Save()
+//	ctx.Translate(100, 100)  // Move origin to (100, 100)
+//	ctx.Rotate(math.Pi / 4)  // Rotate 45 degrees
+//	ctx.Scale(2, 2)          // Double the size
+//	ctx.Rectangle(0, 0, 50, 50)  // Draws transformed rectangle
+//	ctx.Fill()
+//	ctx.Restore()  // Back to original transformation
+//
+// For converting between coordinate systems, use:
+//
+//   - UserToDevice/UserToDeviceDistance: Convert from user to device space
+//   - DeviceToUser/DeviceToUserDistance: Convert from device to user space
+//
+// The "Distance" variants ignore translation, making them suitable for
+// converting dimensions and direction vectors.
+//
 // # Thread Safety
 //
 // Context is safe for concurrent use. All methods use appropriate locking

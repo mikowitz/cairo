@@ -12,35 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Temporary type declarations to allow tests to compile
-// These will be removed once the actual types are implemented in surface.go
-
-// ImageSurface is a temporary placeholder
-// TODO: Remove this once ImageSurface is implemented in surface.go
-// type ImageSurface struct{}
-//
-// // NewImageSurface is a temporary placeholder
-// // TODO: Remove this once NewImageSurface is implemented in surface.go
-// func NewImageSurface(format Format, width, height int) (*ImageSurface, error) {
-// 	// Return a stub implementation that won't panic
-// 	// This allows the test file to compile but tests are skipped anyway
-// 	return &ImageSurface{}, nil
-// }
-//
-// // Temporary methods to satisfy the interface
-// // TODO: Remove these once real implementation exists
-//
-// func (i *ImageSurface) Close() error                               { return nil }
-// func (i *ImageSurface) Status() status.Status                      { return status.Success }
-// func (i *ImageSurface) Flush()                                     {}
-// func (i *ImageSurface) MarkDirty()                                 {}
-// func (i *ImageSurface) MarkDirtyRectangle(x, y, width, height int) {}
-// func (i *ImageSurface) GetFormat() Format                          { return FormatInvalid }
-// func (i *ImageSurface) GetWidth() int                              { return 0 }
-// func (i *ImageSurface) GetHeight() int                             { return 0 }
-// func (i *ImageSurface) GetStride() int                             { return 0 }
-// func (i *ImageSurface) WriteToPNG(filename string) error           { return nil }
-
 // TestSurfaceInterfaceCompleteness verifies the Surface interface exists
 // and can be satisfied by BaseSurface
 func TestSurfaceInterfaceCompleteness(t *testing.T) {
