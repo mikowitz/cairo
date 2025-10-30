@@ -11,6 +11,7 @@ import (
 //   - The function executes without error
 //   - A PNG file is created at the specified location
 //   - The file size is reasonable (between 1KB and 100KB)
+//   - Shapes include rectangles, circles (using Arc), and curves (using CurveTo)
 func TestBasicShapesGeneratesValidPNG(t *testing.T) {
 	// Use t.TempDir() for automatic cleanup
 	tempDir := t.TempDir()
@@ -28,7 +29,7 @@ func TestBasicShapesGeneratesValidPNG(t *testing.T) {
 	}
 
 	// Check file size is reasonable (between 1KB and 100KB)
-	// A 400x400 PNG should be in this range
+	// A 600x400 PNG with shapes, circles, and curves should be in this range
 	if !CheckFileSize(t, outputPath, 1000, 100000) {
 		t.Fatal("Output PNG file size is not in expected range")
 	}
@@ -40,6 +41,7 @@ func TestBasicShapesGeneratesValidPNG(t *testing.T) {
 // that matches the golden reference image.
 //
 // This test uses the CompareImageToGolden harness to verify pixel-perfect output.
+// The image demonstrates Arc (circles) and CurveTo (Bezier curves) in addition to rectangles.
 // If the test fails, run with -update-golden to regenerate the reference image.
 func TestBasicShapesMatchesGolden(t *testing.T) {
 	goldenPath := "testdata/golden/basic_shapes.png"
