@@ -150,11 +150,10 @@ func contextTransform(ptr ContextPtr, mPtr unsafe.Pointer) {
 }
 
 func contextGetMatrix(ptr ContextPtr) *matrix.Matrix {
-	var m C.cairo_matrix_t
+	m := (*C.cairo_matrix_t)(C.malloc(C.sizeof_cairo_matrix_t))
+	C.cairo_get_matrix(ptr, m)
 
-	C.cairo_get_matrix(ptr, &m)
-
-	return matrix.FromPointer(unsafe.Pointer(&m))
+	return matrix.FromPointer(unsafe.Pointer(m))
 }
 
 func contextSetMatrix(ptr ContextPtr, mPtr unsafe.Pointer) {
