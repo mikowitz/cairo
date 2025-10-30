@@ -55,38 +55,33 @@ func GenerateTransformations(outputPath string) error {
 	// Draw the house shape at 5 different positions with different transformations
 
 	// 1. Top-left: No transformation (identity)
-	ctx.Save()
-	ctx.Translate(75, 75)
-	drawHouse(ctx)
-	ctx.Restore()
+	drawHouseWithTransformation(ctx, func(ctx *cairo.Context) {
+		ctx.Translate(75, 75)
+	})
 
 	// 2. Top-right: Simple translation
-	ctx.Save()
-	ctx.Translate(375, 75) // Move to right side
-	drawHouse(ctx)
-	ctx.Restore()
+	drawHouseWithTransformation(ctx, func(ctx *cairo.Context) {
+		ctx.Translate(375, 75)
+	})
 
 	// 3. Middle-left: Scaling
-	ctx.Save()
-	ctx.Translate(75, 250)
-	ctx.Scale(1.5, 1.5) // Make 50% larger
-	drawHouse(ctx)
-	ctx.Restore()
+	drawHouseWithTransformation(ctx, func(ctx *cairo.Context) {
+		ctx.Translate(75, 250)
+		ctx.Scale(1.5, 1.5)
+	})
 
 	// 4. Middle-right: Rotation
-	ctx.Save()
-	ctx.Translate(450, 300) // Move to position first
-	ctx.Rotate(math.Pi / 4) // Rotate 45 degrees
-	drawHouse(ctx)
-	ctx.Restore()
+	drawHouseWithTransformation(ctx, func(ctx *cairo.Context) {
+		ctx.Translate(450, 300)
+		ctx.Rotate(math.Pi / 4)
+	})
 
 	// 5. Bottom: Combined transformations
-	ctx.Save()
-	ctx.Translate(300, 500)  // Move to bottom center
-	ctx.Rotate(-math.Pi / 6) // Rotate -30 degrees
-	ctx.Scale(0.8, 1.2)      // Scale non-uniformly (narrower, taller)
-	drawHouse(ctx)
-	ctx.Restore()
+	drawHouseWithTransformation(ctx, func(ctx *cairo.Context) {
+		ctx.Translate(300, 500)
+		ctx.Rotate(-math.Pi / 6)
+		ctx.Scale(0.8, 1.2)
+	})
 
 	// Flush any pending operations
 	surface.Flush()
@@ -97,6 +92,13 @@ func GenerateTransformations(outputPath string) error {
 	}
 
 	return nil
+}
+
+func drawHouseWithTransformation(ctx *cairo.Context, transformation func(*cairo.Context)) {
+	ctx.Save()
+	transformation(ctx)
+	drawHouse(ctx)
+	ctx.Restore()
 }
 
 // drawHouse draws a simple house shape (rectangle with triangular roof) at the current
@@ -111,9 +113,9 @@ func drawHouse(ctx *cairo.Context) {
 
 	// Draw the roof (triangle)
 	ctx.SetSourceRGB(0.8, 0.2, 0.2) // Red
-	ctx.MoveTo(0, 30)                // Bottom-left of roof
-	ctx.LineTo(40, 0)                // Top point (center)
-	ctx.LineTo(80, 30)               // Bottom-right of roof
+	ctx.MoveTo(0, 30)               // Bottom-left of roof
+	ctx.LineTo(40, 0)               // Top point (center)
+	ctx.LineTo(80, 30)              // Bottom-right of roof
 	ctx.ClosePath()
 	ctx.FillPreserve()
 	ctx.SetSourceRGB(0.0, 0.0, 0.0) // Black outline

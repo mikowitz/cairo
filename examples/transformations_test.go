@@ -18,9 +18,7 @@ import (
 //
 //	go test -update-golden ./examples
 func TestGenerateTransformations(t *testing.T) {
-	generator := func(path string) error {
-		return GenerateTransformations(path)
-	}
+	generator := GenerateTransformations
 
 	goldenPath := "testdata/golden/transformations.png"
 	match := CompareImageToGolden(t, generator, goldenPath)
