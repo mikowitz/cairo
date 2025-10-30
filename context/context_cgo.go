@@ -2,6 +2,7 @@ package context
 
 // #cgo pkg-config: cairo
 // #include <cairo.h>
+// #include <stdlib.h>
 import "C"
 
 import (
@@ -150,10 +151,13 @@ func contextTransform(ptr ContextPtr, mPtr unsafe.Pointer) {
 }
 
 func contextGetMatrix(ptr ContextPtr) *matrix.Matrix {
-	m := (*C.cairo_matrix_t)(C.malloc(C.sizeof_cairo_matrix_t))
-	C.cairo_get_matrix(ptr, m)
+	var mStack C.cairo_matrix_t
+	C.cairo_get_matrix(ptr, &mStack)
 
-	return matrix.FromPointer(unsafe.Pointer(m))
+	mHeap := (*C.cairo_matrix_t)(C.malloc(C.sizeof_cairo_matrix_t))
+	*mHeap = mStack
+
+	return matrix.FromPointer(unsafe.Pointer(mHeap))
 }
 
 func contextSetMatrix(ptr ContextPtr, mPtr unsafe.Pointer) {

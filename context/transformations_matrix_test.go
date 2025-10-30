@@ -34,6 +34,7 @@ func TestContextGetSetMatrix(t *testing.T) {
 		m, err := ctx.GetMatrix()
 		require.NoError(t, err, "GetMatrix should succeed")
 		require.NotNil(t, m, "Matrix should not be nil")
+		defer m.Close()
 
 		// Verify identity matrix values
 		assert.InDelta(t, 1.0, m.XX, 0.001)
@@ -51,6 +52,8 @@ func TestContextGetSetMatrix(t *testing.T) {
 
 		m, err := ctx.GetMatrix()
 		require.NoError(t, err)
+		defer m.Close()
+
 		assert.InDelta(t, 2.0, m.XX, 0.001)
 		assert.InDelta(t, 3.0, m.YY, 0.001)
 		assert.InDelta(t, 10.0, m.X0, 0.001)
@@ -71,6 +74,8 @@ func TestContextGetSetMatrix(t *testing.T) {
 		// Verify matrix was set
 		m, err := ctx.GetMatrix()
 		require.NoError(t, err)
+		defer m.Close()
+
 		assert.InDelta(t, 2.0, m.XX, 0.001)
 		assert.InDelta(t, 3.0, m.YY, 0.001)
 		assert.InDelta(t, 10.0, m.X0, 0.001)
@@ -85,6 +90,7 @@ func TestContextGetSetMatrix(t *testing.T) {
 		// Get the matrix
 		m, err := ctx.GetMatrix()
 		require.NoError(t, err)
+		defer m.Close()
 
 		// Reset to identity
 		ctx.IdentityMatrix()
@@ -95,6 +101,8 @@ func TestContextGetSetMatrix(t *testing.T) {
 		// Verify it matches original
 		m2, err := ctx.GetMatrix()
 		require.NoError(t, err)
+		defer m2.Close()
+
 		assert.InDelta(t, m.XX, m2.XX, 0.001)
 		assert.InDelta(t, m.YY, m2.YY, 0.001)
 		assert.InDelta(t, m.X0, m2.X0, 0.001)
@@ -152,6 +160,8 @@ func TestContextGetSetMatrix(t *testing.T) {
 		// Matrix should be unchanged
 		m, err := ctx.GetMatrix()
 		require.NoError(t, err)
+		defer m.Close()
+
 		assert.InDelta(t, 5.0, m.X0, 0.001)
 		assert.InDelta(t, 10.0, m.Y0, 0.001)
 	})
@@ -181,6 +191,8 @@ func TestContextIdentityMatrix(t *testing.T) {
 
 		m, err := ctx.GetMatrix()
 		require.NoError(t, err)
+		defer m.Close()
+
 		assert.InDelta(t, 1.0, m.XX, 0.001)
 		assert.InDelta(t, 1.0, m.YY, 0.001)
 		assert.InDelta(t, 0.0, m.X0, 0.001)
@@ -198,6 +210,8 @@ func TestContextIdentityMatrix(t *testing.T) {
 
 		m, err := ctx.GetMatrix()
 		require.NoError(t, err)
+		defer m.Close()
+
 		assert.InDelta(t, 1.0, m.XX, 0.001)
 		assert.InDelta(t, 1.0, m.YY, 0.001)
 
@@ -212,6 +226,8 @@ func TestContextIdentityMatrix(t *testing.T) {
 
 		m, err := ctx.GetMatrix()
 		require.NoError(t, err)
+		defer m.Close()
+
 		assert.InDelta(t, 1.0, m.XX, 0.001)
 		assert.InDelta(t, 0.0, m.YX, 0.001)
 		assert.InDelta(t, 0.0, m.XY, 0.001)
@@ -226,6 +242,7 @@ func TestContextIdentityMatrix(t *testing.T) {
 
 		m, err := ctx.GetMatrix()
 		require.NoError(t, err)
+		defer m.Close()
 
 		// All values should be back to identity
 		assert.InDelta(t, 1.0, m.XX, 0.001)
@@ -243,6 +260,8 @@ func TestContextIdentityMatrix(t *testing.T) {
 
 		m, err := ctx.GetMatrix()
 		require.NoError(t, err)
+		defer m.Close()
+
 		assert.InDelta(t, 1.0, m.XX, 0.001)
 		assert.InDelta(t, 0.0, m.X0, 0.001)
 	})
@@ -281,6 +300,7 @@ func TestContextGetMatrixMemorySafety(t *testing.T) {
 		m, err := ctx.GetMatrix()
 		require.NoError(t, err)
 		require.NotNil(t, m)
+		defer m.Close()
 
 		// Verify initial values
 		initialXX := m.XX
@@ -355,10 +375,11 @@ func TestContextGetMatrixMemorySafety(t *testing.T) {
 			assert.InDelta(t, initialY0, m.Y0, 0.001)
 		})
 
-		// Force garbage collection to trigger finalizers
-		// If the matrix has a stack pointer, the finalizer will try to free it
+		// Note: defer m.Close() at top of function ensures cleanup
+		// We also test that GC doesn't crash with proper heap allocation
 		runtime.GC()
-		runtime.GC() // Run twice to be sure
+		runtime.Gosched()
+		runtime.GC()
 	})
 
 	t.Run("matrix_operations_after_multiple_stack_frames", func(t *testing.T) {
@@ -390,4 +411,141 @@ func TestContextGetMatrixMemorySafety(t *testing.T) {
 			_ = m.Close()
 		}
 	})
+}
+
+// TestContextGetMatrixStackCorruption demonstrates the stack corruption bug
+// through assertion failures rather than crashes.
+//
+// This test shows that GetMatrix() returns a matrix with an invalid stack pointer.
+// After the stack is reused, operations that access m.ptr will produce corrupted
+// results, causing the assertions to fail.
+//
+// Expected behavior:
+//   - Current buggy implementation: FAILS with incorrect values
+//   - After fix (heap allocation): PASSES with correct values
+func TestContextGetMatrixStackCorruption(t *testing.T) {
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
+	require.NoError(t, err, "Failed to create surface")
+	defer surf.Close()
+
+	ctx, err := NewContext(surf)
+	require.NoError(t, err, "Failed to create context")
+	defer ctx.Close()
+
+	// Set up a known transformation: translate(100, 200) then scale(2, 3)
+	ctx.IdentityMatrix()
+	ctx.Translate(100.0, 200.0)
+	ctx.Scale(2.0, 3.0)
+
+	// Get the matrix - if bug exists, this stores a STACK pointer
+	m, err := ctx.GetMatrix()
+	require.NoError(t, err)
+	require.NotNil(t, m)
+	defer m.Close()
+
+	// Expected values for the transformation matrix
+	// Scale comes first in matrix, then translation offset
+	expectedXX := 2.0
+	expectedYY := 3.0
+	expectedX0 := 100.0
+	expectedY0 := 200.0
+
+	// Verify initial cached Go values are correct
+	assert.InDelta(t, expectedXX, m.XX, 0.001, "Initial XX value should be correct")
+	assert.InDelta(t, expectedYY, m.YY, 0.001, "Initial YY value should be correct")
+	assert.InDelta(t, expectedX0, m.X0, 0.001, "Initial X0 value should be correct")
+	assert.InDelta(t, expectedY0, m.Y0, 0.001, "Initial Y0 value should be correct")
+
+	// Now corrupt the stack by calling a function that will reuse the same stack space
+	// and overwrite it with known values that will cause assertions to fail
+	overwriteStack := func() {
+		// Call GetMatrix again - this will allocate a new cairo_matrix_t on the stack
+		// in potentially the same location as the previous one
+		ctx.IdentityMatrix()
+		ctx.Translate(999.0, 888.0) // Very different values
+		ctx.Scale(77.0, 66.0)        // Very different values
+
+		m2, _ := ctx.GetMatrix()
+		defer m2.Close()
+
+		// Create more matrices to thoroughly overwrite stack
+		for i := 0; i < 50; i++ {
+			temp := matrix.NewIdentityMatrix()
+			temp.Translate(float64(i)*111, float64(i)*222)
+			temp.Scale(float64(i)+7, float64(i)+13)
+			_ = temp.Close()
+		}
+
+		// Use large stack allocations
+		largeArray := make([]byte, 4096)
+		for i := range largeArray {
+			largeArray[i] = byte(i % 256)
+		}
+		_ = largeArray
+	}
+
+	// Execute stack corruption
+	overwriteStack()
+
+	// Perform more context operations that use different stack frames
+	for i := 0; i < 10; i++ {
+		ctx.Save()
+		ctx.Translate(float64(i)*5, float64(i)*10)
+		ctx.Scale(1.5, 2.5)
+		ctx.Restore()
+	}
+
+	// NOW: Try to use the matrix's internal C pointer
+	// With the bug, m.ptr points to corrupted/overwritten stack memory
+	// This will produce incorrect results
+
+	t.Run("transform_point_with_corrupted_pointer", func(t *testing.T) {
+		// TransformPoint uses m.ptr internally via C.cairo_matrix_transform_point
+		// Test point: (10, 20)
+		// Expected: x_new = 2*10 + 100 = 120, y_new = 3*20 + 200 = 260
+		x, y := m.TransformPoint(10.0, 20.0)
+
+		// These assertions WILL FAIL with the buggy implementation
+		// because m.ptr points to corrupted stack memory
+		assert.InDelta(t, 120.0, x, 0.001,
+			"TransformPoint X failed - matrix pointer is corrupted! Expected 120.0, got %v", x)
+		assert.InDelta(t, 260.0, y, 0.001,
+			"TransformPoint Y failed - matrix pointer is corrupted! Expected 260.0, got %v", y)
+	})
+
+	t.Run("multiply_with_corrupted_pointer", func(t *testing.T) {
+		// Multiply uses m.ptr via C.cairo_matrix_multiply
+		identity := matrix.NewIdentityMatrix()
+		defer identity.Close()
+
+		result := m.Multiply(identity)
+		defer result.Close()
+
+		// Result should equal original matrix since we're multiplying by identity
+		// These assertions WILL FAIL with the buggy implementation
+		assert.InDelta(t, expectedXX, result.XX, 0.001,
+			"Multiply XX failed - matrix pointer is corrupted! Expected %v, got %v", expectedXX, result.XX)
+		assert.InDelta(t, expectedYY, result.YY, 0.001,
+			"Multiply YY failed - matrix pointer is corrupted! Expected %v, got %v", expectedYY, result.YY)
+		assert.InDelta(t, expectedX0, result.X0, 0.001,
+			"Multiply X0 failed - matrix pointer is corrupted! Expected %v, got %v", expectedX0, result.X0)
+		assert.InDelta(t, expectedY0, result.Y0, 0.001,
+			"Multiply Y0 failed - matrix pointer is corrupted! Expected %v, got %v", expectedY0, result.Y0)
+	})
+
+	t.Run("transform_distance_with_corrupted_pointer", func(t *testing.T) {
+		// TransformDistance uses m.ptr via C.cairo_matrix_transform_distance
+		// Distance (10, 20) should be scaled but NOT translated
+		// Expected: dx = 2*10 = 20, dy = 3*20 = 60
+		dx, dy := m.TransformDistance(10.0, 20.0)
+
+		// These assertions WILL FAIL with the buggy implementation
+		assert.InDelta(t, 20.0, dx, 0.001,
+			"TransformDistance DX failed - matrix pointer is corrupted! Expected 20.0, got %v", dx)
+		assert.InDelta(t, 60.0, dy, 0.001,
+			"TransformDistance DY failed - matrix pointer is corrupted! Expected 60.0, got %v", dy)
+	})
+
+	// Note: We deliberately DO NOT call runtime.GC() here
+	// We want to see the assertion failures, not the finalizer crash
 }
