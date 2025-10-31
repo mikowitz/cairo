@@ -140,44 +140,6 @@ func (c *Context) SetSource(p pattern.Pattern) {
 	})
 }
 
-// MoveTo begins a new sub-path by setting the current point to (x, y).
-//
-// After this call the current point will be (x, y). Coordinates are specified
-// in user-space, which is affected by the current transformation matrix (CTM).
-//
-// If there is no current path when MoveTo is called, this function behaves
-// identically to calling NewPath() followed by MoveTo(x, y).
-//
-// Example:
-//
-//	ctx.MoveTo(50.0, 75.0)  // Start a path at (50, 75)
-//	ctx.LineTo(100.0, 75.0) // Draw line to (100, 75)
-func (c *Context) MoveTo(x, y float64) {
-	c.withLock(func() {
-		contextMoveTo(c.ptr, x, y)
-	})
-}
-
-// LineTo adds a line segment to the path from the current point to (x, y),
-// and sets the current point to (x, y).
-//
-// If there is no current point before the call to LineTo, this function will
-// behave as if preceded by a call to MoveTo(x, y).
-//
-// After this call the current point will be (x, y). Coordinates are specified
-// in user-space.
-//
-// Example:
-//
-//	ctx.MoveTo(10.0, 10.0)
-//	ctx.LineTo(50.0, 10.0)  // Horizontal line
-//	ctx.LineTo(50.0, 50.0)  // Vertical line
-func (c *Context) LineTo(x, y float64) {
-	c.withLock(func() {
-		contextLineTo(c.ptr, x, y)
-	})
-}
-
 // Rectangle adds a closed rectangular sub-path to the current path.
 //
 // The rectangle is positioned at (x, y) in user-space with the specified
