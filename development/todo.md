@@ -529,29 +529,29 @@ rather than mutating an existing matrix in place.
 
 ### Prompt 17: Context Package - Advanced Path Operations
 
-- [ ] Update `context/context.go`:
-  - [ ] `func (c *Context) Arc(xc, yc, radius, angle1, angle2 float64)`
-  - [ ] `func (c *Context) ArcNegative(xc, yc, radius, angle1, angle2 float64)`
-  - [ ] `func (c *Context) CurveTo(x1, y1, x2, y2, x3, y3 float64)`
-  - [ ] `func (c *Context) RelMoveTo(dx, dy float64)`
-  - [ ] `func (c *Context) RelLineTo(dx, dy float64)`
-  - [ ] `func (c *Context) RelCurveTo(dx1, dy1, dx2, dy2, dx3, dy3 float64)`
-  - [ ] Document angles are in radians
-- [ ] Update `context/context_cgo.go`:
-  - [ ] CGO implementations for all arc and curve methods
-- [ ] Update `context/context_test.go`:
-  - [ ] `TestContextArc`
-  - [ ] `TestContextArcNegative`
-  - [ ] `TestContextCurveTo`
-  - [ ] `TestContextRelativeOperations`
-  - [ ] `TestContextCircle`
-- [ ] Update `examples/basic_shapes.go`:
-  - [ ] Add circle drawing example
-  - [ ] Add curved path example
-  - [ ] Save to circles.png
-- [ ] Create `examples/gradients.go` placeholder:
-  - [ ] Comment explaining gradients come next
-  - [ ] Basic structure ready
+- [x] Update `context/context.go`:
+  - [x] `func (c *Context) Arc(xc, yc, radius, angle1, angle2 float64)`
+  - [x] `func (c *Context) ArcNegative(xc, yc, radius, angle1, angle2 float64)`
+  - [x] `func (c *Context) CurveTo(x1, y1, x2, y2, x3, y3 float64)`
+  - [x] `func (c *Context) RelMoveTo(dx, dy float64)`
+  - [x] `func (c *Context) RelLineTo(dx, dy float64)`
+  - [x] `func (c *Context) RelCurveTo(dx1, dy1, dx2, dy2, dx3, dy3 float64)`
+  - [x] Document angles are in radians
+- [x] Update `context/context_cgo.go`:
+  - [x] CGO implementations for all arc and curve methods
+- [x] Update `context/context_test.go`:
+  - [x] `TestContextArc`
+  - [x] `TestContextArcNegative`
+  - [x] `TestContextCurveTo`
+  - [x] `TestContextRelativeOperations`
+  - [x] `TestContextCircle`
+- [x] Update `examples/basic_shapes.go`:
+  - [x] Add circle drawing example
+  - [x] Add curved path example
+  - [x] Integrated into basic_shapes.png (not separate circles.png)
+- [x] Create `examples/gradients.go` placeholder:
+  - [x] Comment explaining gradients come next
+  - [x] Basic structure ready
 
 ### Prompt 18: Pattern Package - Gradient Patterns
 
