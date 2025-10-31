@@ -140,30 +140,6 @@ func (c *Context) SetSource(p pattern.Pattern) {
 	})
 }
 
-// Rectangle adds a closed rectangular sub-path to the current path.
-//
-// The rectangle is positioned at (x, y) in user-space with the specified
-// width and height. This is equivalent to:
-//
-//	ctx.MoveTo(x, y)
-//	ctx.LineTo(x+width, y)
-//	ctx.LineTo(x+width, y+height)
-//	ctx.LineTo(x, y+height)
-//	ctx.ClosePath()
-//
-// After calling Rectangle, the current point will be at (x, y).
-//
-// Example:
-//
-//	ctx.Rectangle(20.0, 30.0, 100.0, 50.0)  // Rectangle at (20,30) sized 100x50
-//	ctx.SetSourceRGB(1.0, 0.0, 0.0)         // Red
-//	ctx.Fill()                               // Fill the rectangle
-func (c *Context) Rectangle(x, y, width, height float64) {
-	c.withLock(func() {
-		contextRectangle(c.ptr, x, y, width, height)
-	})
-}
-
 // GetCurrentPoint returns the current point in user-space coordinates.
 //
 // The current point is the point that would be used by MoveTo or LineTo if
