@@ -553,36 +553,66 @@ rather than mutating an existing matrix in place.
   - [x] Comment explaining gradients come next
   - [x] Basic structure ready
 
-### Prompt 18: Pattern Package - Gradient Patterns
+### Prompt 18: Pattern Package - Gradient Patterns ✅ COMPLETE
 
-- [ ] Update `pattern/pattern.go`:
-  - [ ] `LinearGradient` struct embedding BasePattern
-  - [ ] `func NewLinearGradient(x0, y0, x1, y1 float64) (*LinearGradient, error)`
-  - [ ] `RadialGradient` struct embedding BasePattern
-  - [ ] `func NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1 float64)
-    (*RadialGradient, error)`
-  - [ ] `func (g *LinearGradient) AddColorStopRGB(offset, r, g, b float64)`
-  - [ ] `func (g *LinearGradient) AddColorStopRGBA(offset, r, g, b, a float64)`
-  - [ ] Same for RadialGradient
-- [ ] Update `pattern/pattern_cgo.go`:
-  - [ ] CGO implementations for gradient creation
-  - [ ] CGO implementations for color stop methods
-- [ ] Update `pattern/pattern_test.go`:
-  - [ ] `TestNewLinearGradient`
-  - [ ] `TestNewRadialGradient`
-  - [ ] `TestLinearGradientColorStops`
-  - [ ] `TestRadialGradientColorStops`
-  - [ ] `TestGradientWithContext`
-- [ ] Update `examples/gradients.go`:
-  - [ ] Implement linear gradient example (red to blue)
-  - [ ] Implement radial gradient example (white center to blue edge)
-  - [ ] Draw shapes with gradients
-  - [ ] Save to gradients.png
-- [ ] Update `cairo/cairo.go`:
-  - [ ] Re-export LinearGradient, RadialGradient types
-  - [ ] Re-export gradient constructor functions
-- [ ] Document color stops must be in [0.0, 1.0]
-- [ ] Test gradients with transformations
+- [x] Create `pattern/gradient.go` (implemented in separate file):
+  - [x] `LinearGradient` struct embedding BaseGradient (pattern/gradient.go:150)
+  - [x] `func NewLinearGradient(x0, y0, x1, y1 float64) (*LinearGradient, error)` (pattern/gradient.go:181)
+  - [x] `RadialGradient` struct embedding BaseGradient (pattern/gradient.go:208)
+  - [x] `func NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1 float64)
+    (*RadialGradient, error)` (pattern/gradient.go:241)
+  - [x] `func (g *BaseGradient) AddColorStopRGB(offset, r, g, b float64)` (pattern/gradient.go:49)
+  - [x] `func (g *BaseGradient) AddColorStopRGBA(offset, r, g, b, a float64)` (pattern/gradient.go:73)
+  - [x] Both LinearGradient and RadialGradient embed BaseGradient, so they inherit the methods
+  - [x] BONUS: `func (g *BaseGradient) GetColorStopCount() (int, error)` (pattern/gradient.go:96)
+  - [x] BONUS: `func (g *BaseGradient) GetColorStopRGBA(index int) (float64, float64, float64, float64, float64, error)` (pattern/gradient.go:130)
+- [x] Update `pattern/pattern_cgo.go`:
+  - [x] `patternCreateLinear` - CGO implementation (pattern/pattern_cgo.go:58)
+  - [x] `patternCreateRadial` - CGO implementation (pattern/pattern_cgo.go:65)
+  - [x] `patternAddColorStopRGB` - CGO implementation (pattern/pattern_cgo.go:72)
+  - [x] `patternAddColorStopRGBA` - CGO implementation (pattern/pattern_cgo.go:79)
+  - [x] BONUS: `patternGetColorStopCount` - CGO implementation (pattern/pattern_cgo.go:86)
+  - [x] BONUS: `patternGetColorStopRGBA` - CGO implementation (pattern/pattern_cgo.go:94)
+- [x] Create `pattern/gradient_test.go`:
+  - [x] `TestNewLinearGradient` (gradient_test.go:14) ✅ PASSING
+  - [x] `TestNewRadialGradient` (gradient_test.go:68) ✅ PASSING
+  - [x] `TestLinearGradientColorStops` (gradient_test.go:123) ✅ PASSING
+  - [x] `TestRadialGradientColorStops` (gradient_test.go:197) ✅ PASSING
+  - [x] `TestGradientWithArc` (gradient_test.go:293) ✅ PASSING - integration with context
+  - [x] `TestGradientWithTransformations` (gradient_test.go:330) ✅ PASSING
+  - [x] `TestGradientClose` (gradient_test.go:255) ✅ PASSING
+  - [x] BONUS: `TestLinearGradientGetColorStopCount` (gradient_test.go:370) ✅ PASSING
+  - [x] BONUS: `TestRadialGradientGetColorStopCount` (gradient_test.go:426) ✅ PASSING
+  - [x] BONUS: `TestLinearGradientGetColorStopRGBA` (gradient_test.go:467) ✅ PASSING
+  - [x] BONUS: `TestRadialGradientGetColorStopRGBA` (gradient_test.go:536) ✅ PASSING
+- [x] Update `examples/gradients.go`:
+  - [x] Implement linear gradient example (red to blue) - horizontal gradient (examples/gradients.go:53)
+  - [x] Implement radial gradient example (white center to blue edge) (examples/gradients.go:84)
+  - [x] Draw shapes with gradients - 6 different examples
+  - [x] Save to gradients.png via test harness
+  - [x] Create `examples/gradients_test.go` with tests ✅ PASSING
+  - [x] Generate golden reference image
+  - [x] BONUS: Multiple color stop rainbow gradient (examples/gradients.go:67)
+  - [x] BONUS: Radial gradient with transparency (examples/gradients.go:98)
+  - [x] BONUS: Vertical linear gradient with semi-transparency (examples/gradients.go:113)
+  - [x] BONUS: Radial gradient with offset centers (examples/gradients.go:128)
+  - [x] Updated to use cairo package re-exports instead of pattern package directly
+- [x] Update `cairo/cairo.go`:
+  - [x] Re-export LinearGradient, RadialGradient types (cairo.go:453, 514)
+  - [x] Re-export gradient constructor functions (cairo.go:581, 655)
+  - [x] Update Pattern type documentation to reflect gradients are available (cairo.go:281-282)
+  - [x] Comprehensive documentation with examples for both gradient types
+- [x] Document color stops must be in [0.0, 1.0] - comprehensive documentation added (pattern/gradient.go:5-254)
+  - [x] Gradient interface documentation (line 5-21)
+  - [x] AddColorStopRGB documentation with parameters and examples (line 31-48)
+  - [x] AddColorStopRGBA documentation with parameters and examples (line 56-72)
+  - [x] GetColorStopCount documentation (line 80-95)
+  - [x] GetColorStopRGBA documentation (line 105-129)
+  - [x] LinearGradient type documentation (line 140-149)
+  - [x] NewLinearGradient documentation with example (line 154-180)
+  - [x] RadialGradient type documentation (line 196-207)
+  - [x] NewRadialGradient documentation with example (line 212-240)
+- [x] Test gradients with transformations - `TestGradientWithTransformations` (gradient_test.go:330) ✅ PASSING
 
 ### Prompt 19: Context Package - Line Styles
 

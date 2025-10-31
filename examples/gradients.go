@@ -5,7 +5,6 @@ import (
 	"math"
 
 	"github.com/mikowitz/cairo"
-	"github.com/mikowitz/cairo/pattern"
 )
 
 // GenerateGradients creates a 600x600 PNG image demonstrating Cairo gradient patterns.
@@ -51,7 +50,7 @@ func GenerateGradients(outputPath string) error {
 	ctx.Paint()
 
 	// 1. Top-left: Simple horizontal linear gradient (red to blue)
-	linearSimple, err := pattern.NewLinearGradient(20, 20, 280, 20)
+	linearSimple, err := cairo.NewLinearGradient(20, 20, 280, 20)
 	if err != nil {
 		return fmt.Errorf("failed to create linear gradient: %w", err)
 	}
@@ -65,7 +64,7 @@ func GenerateGradients(outputPath string) error {
 	ctx.Fill()
 
 	// 2. Top-right: Linear gradient with multiple color stops (rainbow)
-	linearRainbow, err := pattern.NewLinearGradient(320, 20, 580, 20)
+	linearRainbow, err := cairo.NewLinearGradient(320, 20, 580, 20)
 	if err != nil {
 		return fmt.Errorf("failed to create rainbow gradient: %w", err)
 	}
@@ -82,7 +81,7 @@ func GenerateGradients(outputPath string) error {
 	ctx.Fill()
 
 	// 3. Middle-left: Simple radial gradient (white center to blue edge)
-	radialSimple, err := pattern.NewRadialGradient(150, 290, 10, 150, 290, 120)
+	radialSimple, err := cairo.NewRadialGradient(150, 290, 10, 150, 290, 120)
 	if err != nil {
 		return fmt.Errorf("failed to create radial gradient: %w", err)
 	}
@@ -96,7 +95,7 @@ func GenerateGradients(outputPath string) error {
 	ctx.Fill()
 
 	// 4. Middle-right: Radial gradient with transparency (fading effect)
-	radialFade, err := pattern.NewRadialGradient(450, 290, 0, 450, 290, 120)
+	radialFade, err := cairo.NewRadialGradient(450, 290, 0, 450, 290, 120)
 	if err != nil {
 		return fmt.Errorf("failed to create fading gradient: %w", err)
 	}
@@ -111,7 +110,7 @@ func GenerateGradients(outputPath string) error {
 	ctx.Fill()
 
 	// 5. Bottom-left: Vertical linear gradient with semi-transparency
-	linearVertical, err := pattern.NewLinearGradient(20, 420, 20, 580)
+	linearVertical, err := cairo.NewLinearGradient(20, 420, 20, 580)
 	if err != nil {
 		return fmt.Errorf("failed to create vertical gradient: %w", err)
 	}
@@ -126,7 +125,7 @@ func GenerateGradients(outputPath string) error {
 	ctx.Fill()
 
 	// 6. Bottom-right: Radial gradient with offset centers (creates directional lighting effect)
-	radialOffset, err := pattern.NewRadialGradient(420, 460, 20, 480, 520, 100)
+	radialOffset, err := cairo.NewRadialGradient(420, 460, 20, 480, 520, 100)
 	if err != nil {
 		return fmt.Errorf("failed to create offset radial gradient: %w", err)
 	}
