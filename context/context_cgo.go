@@ -49,12 +49,50 @@ func contextSetSourceRGBA(ptr ContextPtr, r, g, b, a float64) {
 	)
 }
 
-func contextMoveTo(ptr ContextPtr, x, y float64) {
-	C.cairo_move_to(ptr, C.double(x), C.double(y))
+func contextArc(ptr ContextPtr, xc, yc, radius, angle1, angle2 float64) {
+	C.cairo_arc(ptr,
+		C.double(xc), C.double(yc),
+		C.double(radius), C.double(angle1), C.double(angle2),
+	)
+}
+
+func contextArcNegative(ptr ContextPtr, xc, yc, radius, angle1, angle2 float64) {
+	C.cairo_arc_negative(ptr,
+		C.double(xc), C.double(yc),
+		C.double(radius), C.double(angle1), C.double(angle2),
+	)
+}
+
+func contextCurveTo(ptr ContextPtr, x1, y1, x2, y2, x3, y3 float64) {
+	C.cairo_curve_to(ptr,
+		C.double(x1), C.double(y1),
+		C.double(x2), C.double(y2),
+		C.double(x3), C.double(y3),
+	)
+}
+
+func contextRelCurveTo(ptr ContextPtr, x1, y1, x2, y2, x3, y3 float64) {
+	C.cairo_rel_curve_to(ptr,
+		C.double(x1), C.double(y1),
+		C.double(x2), C.double(y2),
+		C.double(x3), C.double(y3),
+	)
 }
 
 func contextLineTo(ptr ContextPtr, x, y float64) {
 	C.cairo_line_to(ptr, C.double(x), C.double(y))
+}
+
+func contextRelLineTo(ptr ContextPtr, x, y float64) {
+	C.cairo_rel_line_to(ptr, C.double(x), C.double(y))
+}
+
+func contextMoveTo(ptr ContextPtr, x, y float64) {
+	C.cairo_move_to(ptr, C.double(x), C.double(y))
+}
+
+func contextRelMoveTo(ptr ContextPtr, x, y float64) {
+	C.cairo_rel_move_to(ptr, C.double(x), C.double(y))
 }
 
 func contextRectangle(ptr ContextPtr, x, y, width, height float64) {
