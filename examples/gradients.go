@@ -26,7 +26,7 @@ import (
 //   - Multiple color stops for complex gradients
 //
 // All resources are properly cleaned up using defer statements.
-func GenerateGradients(outputPath string) error {
+func GenerateGradients(outputPath string) error { //nolint:funlen
 	// Create a 600x600 ARGB32 image surface
 	surface, err := cairo.NewImageSurface(cairo.FormatARGB32, 600, 600)
 	if err != nil {
@@ -71,11 +71,11 @@ func GenerateGradients(outputPath string) error {
 	defer func() {
 		_ = linearRainbow.Close()
 	}()
-	linearRainbow.AddColorStopRGB(0.0, 1.0, 0.0, 0.0)   // Red
-	linearRainbow.AddColorStopRGB(0.25, 1.0, 1.0, 0.0)  // Yellow
-	linearRainbow.AddColorStopRGB(0.5, 0.0, 1.0, 0.0)   // Green
-	linearRainbow.AddColorStopRGB(0.75, 0.0, 0.0, 1.0)  // Blue
-	linearRainbow.AddColorStopRGB(1.0, 0.5, 0.0, 0.5)   // Purple
+	linearRainbow.AddColorStopRGB(0.0, 1.0, 0.0, 0.0)  // Red
+	linearRainbow.AddColorStopRGB(0.25, 1.0, 1.0, 0.0) // Yellow
+	linearRainbow.AddColorStopRGB(0.5, 0.0, 1.0, 0.0)  // Green
+	linearRainbow.AddColorStopRGB(0.75, 0.0, 0.0, 1.0) // Blue
+	linearRainbow.AddColorStopRGB(1.0, 0.5, 0.0, 0.5)  // Purple
 	ctx.SetSource(linearRainbow)
 	ctx.Rectangle(320, 20, 260, 160)
 	ctx.Fill()
@@ -132,10 +132,10 @@ func GenerateGradients(outputPath string) error {
 	defer func() {
 		_ = radialOffset.Close()
 	}()
-	radialOffset.AddColorStopRGB(0.0, 1.0, 1.0, 0.8)  // Pale yellow (highlight)
-	radialOffset.AddColorStopRGB(0.4, 1.0, 0.6, 0.0)  // Orange
-	radialOffset.AddColorStopRGB(0.7, 0.8, 0.2, 0.0)  // Dark orange
-	radialOffset.AddColorStopRGB(1.0, 0.4, 0.1, 0.0)  // Deep red-orange
+	radialOffset.AddColorStopRGB(0.0, 1.0, 1.0, 0.8) // Pale yellow (highlight)
+	radialOffset.AddColorStopRGB(0.4, 1.0, 0.6, 0.0) // Orange
+	radialOffset.AddColorStopRGB(0.7, 0.8, 0.2, 0.0) // Dark orange
+	radialOffset.AddColorStopRGB(1.0, 0.4, 0.1, 0.0) // Deep red-orange
 	ctx.SetSource(radialOffset)
 	ctx.Rectangle(320, 420, 260, 160)
 	ctx.Fill()
