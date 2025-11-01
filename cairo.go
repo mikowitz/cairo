@@ -278,8 +278,8 @@ func NewContext(surface Surface) (*Context, error) {
 //
 // Cairo supports several pattern types:
 //   - Solid colors: Single uniform colors (NewSolidPatternRGB, NewSolidPatternRGBA)
-//   - Linear gradients: Color gradients along a line (planned)
-//   - Radial gradients: Color gradients in a circular pattern (planned)
+//   - Linear gradients: Color gradients along a line (NewLinearGradient)
+//   - Radial gradients: Color gradients in a circular pattern (NewRadialGradient)
 //   - Surface patterns: Texturing with images (planned)
 //   - Mesh patterns: Complex multi-point gradients (planned)
 //
@@ -397,4 +397,261 @@ func NewSolidPatternRGB(r, g, b float64) (*pattern.SolidPattern, error) {
 //   - Store patterns for later use
 func NewSolidPatternRGBA(r, g, b, a float64) (*pattern.SolidPattern, error) {
 	return pattern.NewSolidPatternRGBA(r, g, b, a)
+}
+
+// LinearGradient represents a gradient pattern that transitions colors along a line.
+//
+// Linear gradients create smooth color transitions between two or more colors along
+// a line defined by two points. Colors are specified using color stops, which define
+// the color at specific positions along the gradient line.
+//
+// # Creating Linear Gradients
+//
+// Create a linear gradient using NewLinearGradient, specifying the start and end points:
+//
+//	gradient, err := cairo.NewLinearGradient(0, 0, 200, 0)  // Horizontal gradient
+//	if err != nil {
+//	    return err
+//	}
+//	defer gradient.Close()
+//
+// Add color stops to define the gradient colors:
+//
+//	gradient.AddColorStopRGB(0.0, 1.0, 0.0, 0.0)  // Red at start (0%)
+//	gradient.AddColorStopRGB(0.5, 0.0, 1.0, 0.0)  // Green at middle (50%)
+//	gradient.AddColorStopRGB(1.0, 0.0, 0.0, 1.0)  // Blue at end (100%)
+//
+// Use the gradient as a drawing source:
+//
+//	ctx.SetSource(gradient)
+//	ctx.Rectangle(0, 0, 200, 100)
+//	ctx.Fill()
+//
+// # Gradient Direction
+//
+// The gradient line defines the direction of color transition. Colors are interpolated
+// perpendicular to this line, extending infinitely in both directions. Areas before
+// the start point take the first color stop, and areas after the end point take the
+// last color stop.
+//
+// Examples:
+//   - Horizontal: NewLinearGradient(0, 0, 100, 0) - left to right
+//   - Vertical: NewLinearGradient(0, 0, 0, 100) - top to bottom
+//   - Diagonal: NewLinearGradient(0, 0, 100, 100) - top-left to bottom-right
+//
+// # Resource Management
+//
+// Linear gradients must be explicitly closed when finished to release Cairo resources:
+//
+//	gradient, err := cairo.NewLinearGradient(0, 0, 200, 0)
+//	if err != nil {
+//	    return err
+//	}
+//	defer gradient.Close()  // Essential
+//
+// For more details, see the pattern package documentation.
+type LinearGradient = pattern.LinearGradient
+
+// RadialGradient represents a gradient pattern that transitions colors between two circles.
+//
+// Radial gradients create smooth color transitions from one circle to another, allowing
+// for effects like spotlights, glows, and radial color fades. Colors are specified using
+// color stops that define the color at specific positions between the two circles.
+//
+// # Creating Radial Gradients
+//
+// Create a radial gradient using NewRadialGradient, specifying two circles:
+//
+//	// Gradient from small inner circle to large outer circle (spotlight effect)
+//	gradient, err := cairo.NewRadialGradient(100, 100, 10, 100, 100, 100)
+//	if err != nil {
+//	    return err
+//	}
+//	defer gradient.Close()
+//
+// Add color stops to define the gradient colors:
+//
+//	gradient.AddColorStopRGB(0.0, 1.0, 1.0, 1.0)  // White at center
+//	gradient.AddColorStopRGB(1.0, 0.0, 0.0, 1.0)  // Blue at edge
+//
+// Use the gradient as a drawing source:
+//
+//	ctx.SetSource(gradient)
+//	ctx.Arc(100, 100, 100, 0, 2*math.Pi)  // Draw circle
+//	ctx.Fill()
+//
+// # Gradient Effects
+//
+// Different circle configurations create different visual effects:
+//
+//   - Concentric circles (same center): Creates a uniform radial gradient
+//     NewRadialGradient(50, 50, 10, 50, 50, 100)
+//
+//   - Offset centers: Creates directional lighting or highlight effects
+//     NewRadialGradient(40, 40, 10, 60, 60, 100)
+//
+//   - Zero inner radius: Gradient starts from a point
+//     NewRadialGradient(50, 50, 0, 50, 50, 100)
+//
+// # Transparency Effects
+//
+// Use AddColorStopRGBA to create gradients that fade in or out:
+//
+//	gradient.AddColorStopRGBA(0.0, 1.0, 0.5, 0.0, 1.0)  // Opaque orange center
+//	gradient.AddColorStopRGBA(1.0, 1.0, 0.5, 0.0, 0.0)  // Transparent orange edge
+//
+// # Resource Management
+//
+// Radial gradients must be explicitly closed when finished to release Cairo resources:
+//
+//	gradient, err := cairo.NewRadialGradient(100, 100, 10, 100, 100, 100)
+//	if err != nil {
+//	    return err
+//	}
+//	defer gradient.Close()  // Essential
+//
+// For more details, see the pattern package documentation.
+type RadialGradient = pattern.RadialGradient
+
+// NewLinearGradient creates a new linear gradient pattern along the line from (x0, y0) to (x1, y1).
+//
+// The gradient coordinates are in pattern space, which initially matches user space.
+// After creation, you must add color stops using AddColorStopRGB or AddColorStopRGBA
+// to define the gradient colors.
+//
+// Parameters:
+//   - x0, y0: Starting point coordinates of the gradient line
+//   - x1, y1: Ending point coordinates of the gradient line
+//
+// The gradient line defines the direction of color transition. Color stop offset 0.0
+// corresponds to the start point (x0, y0), and offset 1.0 corresponds to the end
+// point (x1, y1). Cairo interpolates colors smoothly between stops.
+//
+// The returned gradient must be closed with Close() when finished to release
+// Cairo resources. A finalizer is registered for safety, but explicit cleanup
+// is strongly recommended.
+//
+// Example - Simple horizontal gradient:
+//
+//	// Create gradient from left to right
+//	gradient, err := cairo.NewLinearGradient(0, 0, 200, 0)
+//	if err != nil {
+//	    return err
+//	}
+//	defer gradient.Close()
+//
+//	// Add color stops: red to blue
+//	gradient.AddColorStopRGB(0.0, 1.0, 0.0, 0.0)  // Red at start
+//	gradient.AddColorStopRGB(1.0, 0.0, 0.0, 1.0)  // Blue at end
+//
+//	// Use the gradient
+//	ctx.SetSource(gradient)
+//	ctx.Rectangle(0, 0, 200, 100)
+//	ctx.Fill()
+//
+// Example - Multi-color rainbow gradient:
+//
+//	gradient, err := cairo.NewLinearGradient(0, 0, 300, 0)
+//	if err != nil {
+//	    return err
+//	}
+//	defer gradient.Close()
+//
+//	gradient.AddColorStopRGB(0.0, 1.0, 0.0, 0.0)   // Red
+//	gradient.AddColorStopRGB(0.33, 0.0, 1.0, 0.0)  // Green
+//	gradient.AddColorStopRGB(0.67, 0.0, 0.0, 1.0)  // Blue
+//	gradient.AddColorStopRGB(1.0, 1.0, 1.0, 0.0)   // Yellow
+//
+//	ctx.SetSource(gradient)
+//	ctx.Paint()
+//
+// Example - Gradient with transparency:
+//
+//	gradient, err := cairo.NewLinearGradient(0, 0, 0, 200)  // Vertical
+//	if err != nil {
+//	    return err
+//	}
+//	defer gradient.Close()
+//
+//	gradient.AddColorStopRGBA(0.0, 0.0, 0.0, 0.0, 1.0)  // Opaque black at top
+//	gradient.AddColorStopRGBA(1.0, 0.0, 0.0, 0.0, 0.0)  // Transparent at bottom
+//
+//	ctx.SetSource(gradient)
+//	ctx.Paint()  // Creates fade-out effect
+func NewLinearGradient(x0, y0, x1, y1 float64) (*LinearGradient, error) {
+	return pattern.NewLinearGradient(x0, y0, x1, y1)
+}
+
+// NewRadialGradient creates a new radial gradient pattern between two circles.
+//
+// The gradient interpolates colors from the start circle (cx0, cy0, radius0) to
+// the end circle (cx1, cy1, radius1). After creation, you must add color stops
+// using AddColorStopRGB or AddColorStopRGBA to define the gradient colors.
+//
+// Parameters:
+//   - cx0, cy0: Center coordinates of the start circle
+//   - radius0: Radius of the start circle
+//   - cx1, cy1: Center coordinates of the end circle
+//   - radius1: Radius of the end circle
+//
+// The gradient coordinates are in pattern space, which initially matches user space.
+// Color stop offset 0.0 corresponds to the start circle, and offset 1.0 corresponds
+// to the end circle. Cairo interpolates colors smoothly between stops.
+//
+// The returned gradient must be closed with Close() when finished to release
+// Cairo resources. A finalizer is registered for safety, but explicit cleanup
+// is strongly recommended.
+//
+// Example - Simple radial gradient (spotlight effect):
+//
+//	// Gradient from small center to large edge
+//	gradient, err := cairo.NewRadialGradient(100, 100, 10, 100, 100, 100)
+//	if err != nil {
+//	    return err
+//	}
+//	defer gradient.Close()
+//
+//	// Add color stops: white center to blue edge
+//	gradient.AddColorStopRGB(0.0, 1.0, 1.0, 1.0)  // White at center
+//	gradient.AddColorStopRGB(1.0, 0.0, 0.0, 1.0)  // Blue at edge
+//
+//	// Draw with the gradient
+//	ctx.SetSource(gradient)
+//	ctx.Arc(100, 100, 100, 0, 2*math.Pi)
+//	ctx.Fill()
+//
+// Example - Offset gradient (lighting effect):
+//
+//	// Offset centers create directional highlight
+//	gradient, err := cairo.NewRadialGradient(80, 80, 20, 120, 120, 100)
+//	if err != nil {
+//	    return err
+//	}
+//	defer gradient.Close()
+//
+//	gradient.AddColorStopRGB(0.0, 1.0, 1.0, 0.8)  // Pale yellow highlight
+//	gradient.AddColorStopRGB(0.5, 1.0, 0.5, 0.0)  // Orange
+//	gradient.AddColorStopRGB(1.0, 0.5, 0.0, 0.0)  // Dark red
+//
+//	ctx.SetSource(gradient)
+//	ctx.Paint()
+//
+// Example - Fade-out effect with transparency:
+//
+//	// Gradient from point (radius0=0) with transparency
+//	gradient, err := cairo.NewRadialGradient(150, 150, 0, 150, 150, 100)
+//	if err != nil {
+//	    return err
+//	}
+//	defer gradient.Close()
+//
+//	gradient.AddColorStopRGBA(0.0, 1.0, 0.5, 0.0, 1.0)  // Opaque orange center
+//	gradient.AddColorStopRGBA(0.7, 1.0, 0.0, 0.5, 0.5)  // Semi-transparent pink
+//	gradient.AddColorStopRGBA(1.0, 1.0, 0.0, 0.0, 0.0)  // Transparent red edge
+//
+//	ctx.SetSource(gradient)
+//	ctx.Arc(150, 150, 100, 0, 2*math.Pi)
+//	ctx.Fill()  // Creates glow effect
+func NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1 float64) (*RadialGradient, error) {
+	return pattern.NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1)
 }
