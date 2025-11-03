@@ -301,8 +301,6 @@ func TestMatrixMultiply(t *testing.T) {
 }
 
 // TestMatrixTransformPoint verifies point transformation
-//
-//nolint:dupl // Similar to TestMatrixTransformPoint but tests different transformation
 func TestMatrixTransformPoint(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -340,8 +338,6 @@ func TestMatrixTransformPoint(t *testing.T) {
 }
 
 // TestMatrixTransformDistance verifies distance vector transformation
-//
-//nolint:dupl // Similar to TestMatrixTransformPoint but tests different transformation
 func TestMatrixTransformDistance(t *testing.T) {
 	tests := []struct {
 		name         string
