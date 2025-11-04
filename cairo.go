@@ -655,3 +655,39 @@ func NewLinearGradient(x0, y0, x1, y1 float64) (*LinearGradient, error) {
 func NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1 float64) (*RadialGradient, error) {
 	return pattern.NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1)
 }
+
+// LineCap specifies how the endpoints of lines are rendered when stroking.
+//
+// The line cap style only affects the endpoints of lines. The appearance of
+// line joins is controlled by [LineJoin].
+type LineCap = context.LineCap
+
+const (
+	// LineCapButt starts and stops the line exactly at the start and end points.
+	LineCapButt LineCap = iota
+
+	// LineCapRound uses a round ending, with the center of the circle at the end point.
+	LineCapRound
+
+	// LineCapSquare uses a squared ending, with the center of the square at the end point.
+	LineCapSquare
+)
+
+// LineJoin specifies how the junctions between line segments are rendered when stroking.
+//
+// The line join style only affects the junctions between line segments. The appearance
+// of line endpoints is controlled by [LineCap].
+type LineJoin = context.LineJoin
+
+const (
+	// LineJoinMiter uses a sharp (angled) corner. If the miter would extend beyond
+	// the miter limit (as set by [Context.SetMiterLimit]), a bevel join is used instead.
+	LineJoinMiter LineJoin = iota
+
+	// LineJoinRound uses a rounded join, with the center of the circle at the join point.
+	LineJoinRound
+
+	// LineJoinBevel uses a cut-off join, with the join cut off at half the line width
+	// from the join point.
+	LineJoinBevel
+)

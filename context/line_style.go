@@ -6,6 +6,8 @@ import "github.com/mikowitz/cairo/status"
 //
 // The line cap style only affects the endpoints of lines. The appearance of
 // line joins is controlled by [LineJoin].
+//
+//go:generate stringer -type=LineCap
 type LineCap int
 
 const (
@@ -50,6 +52,8 @@ func (c *Context) SetLineCap(lineCap LineCap) {
 //
 // The line join style only affects the junctions between line segments. The appearance
 // of line endpoints is controlled by [LineCap].
+//
+//go:generate stringer -type=LineJoin
 type LineJoin int
 
 const (
