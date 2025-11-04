@@ -8,7 +8,9 @@
       "WebFetch(domain:www.cairographics.org)",
       "WebSearch",
       "Bash(gh pr checks:*)",
-      "Bash(go build:*)"
+      "Bash(go build:*)",
+      "Bash(go doc:*)",
+      "Bash(golangci-lint run:*)"
     ],
     "deny": [],
     "ask": []
