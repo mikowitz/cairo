@@ -10,7 +10,8 @@
       "Bash(gh pr checks:*)",
       "Bash(go build:*)",
       "Bash(go doc:*)",
-      "Bash(golangci-lint run:*)"
+      "Bash(golangci-lint run:*)",
+      "Bash(go generate:*)"
     ],
     "deny": [],
     "ask": []
