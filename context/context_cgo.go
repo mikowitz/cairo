@@ -237,3 +237,53 @@ func contextDeviceToUserDistance(ptr ContextPtr, dx, dy float64) (float64, float
 
 	return float64(rx), float64(ry)
 }
+
+func contextGetLineCap(ptr ContextPtr) LineCap {
+	return LineCap(C.cairo_get_line_cap(ptr))
+}
+
+func contextSetLineCap(ptr ContextPtr, lineCap LineCap) {
+	C.cairo_set_line_cap(ptr, C.cairo_line_cap_t(lineCap))
+}
+
+func contextGetLineJoin(ptr ContextPtr) LineJoin {
+	return LineJoin(C.cairo_get_line_join(ptr))
+}
+
+func contextSetLineJoin(ptr ContextPtr, lineJoin LineJoin) {
+	C.cairo_set_line_join(ptr, C.cairo_line_join_t(lineJoin))
+}
+
+func contextGetMiterLimit(ptr ContextPtr) float64 {
+	return float64(C.cairo_get_miter_limit(ptr))
+}
+
+func contextSetMiterLimit(ptr ContextPtr, limit float64) {
+	C.cairo_set_miter_limit(ptr, C.double(limit))
+}
+
+func contextSetDash(ptr ContextPtr, dashes []float64, offset float64) status.Status {
+	var dashesPtr *C.double
+	if len(dashes) > 0 {
+		dashesPtr = (*C.double)(unsafe.Pointer(&dashes[0]))
+	}
+	C.cairo_set_dash(ptr, dashesPtr, C.int(len(dashes)), C.double(offset))
+	return status.Status(C.cairo_status(ptr))
+}
+
+func contextGetDashCount(ptr ContextPtr) int {
+	return int(C.cairo_get_dash_count(ptr))
+}
+
+func contextGetDash(ptr ContextPtr) ([]float64, float64) {
+	dashCount := contextGetDashCount(ptr)
+	if dashCount == 0 {
+		return []float64{}, 0
+	}
+	dashes := make([]float64, dashCount)
+	var offset C.double
+
+	C.cairo_get_dash(ptr, (*C.double)(&dashes[0]), &offset)
+
+	return dashes, float64(offset)
+}

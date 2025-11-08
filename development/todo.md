@@ -614,41 +614,70 @@ rather than mutating an existing matrix in place.
   - [x] NewRadialGradient documentation with example (line 212-240)
 - [x] Test gradients with transformations - `TestGradientWithTransformations` (gradient_test.go:330) ✅ PASSING
 
-### Prompt 19: Context Package - Line Styles
+### Prompt 19: Context Package - Line Styles ✅ COMPLETE
 
-- [ ] Create `context/line_style.go`:
-  - [ ] `LineCap` type as int with constants: LineCapButt, LineCapRound, LineCapSquare
-  - [ ] `LineJoin` type as int with constants: LineJoinMiter, LineJoinRound, LineJoinBevel
-  - [ ] `//go:generate stringer` for both types
-- [ ] Update `context/context.go`:
-  - [ ] `func (c *Context) SetLineCap(lineCap LineCap)`
-  - [ ] `func (c *Context) GetLineCap() LineCap`
-  - [ ] `func (c *Context) SetLineJoin(lineJoin LineJoin)`
-  - [ ] `func (c *Context) GetLineJoin() LineJoin`
-  - [ ] `func (c *Context) SetDash(dashes []float64, offset float64)`
-  - [ ] `func (c *Context) GetDash() (dashes []float64, offset float64, err error)`
-  - [ ] `func (c *Context) SetMiterLimit(limit float64)`
-  - [ ] `func (c *Context) GetMiterLimit() float64`
-  - [ ] `func (c *Context) GetLineWidth() float64`
-- [ ] Update `context/context_cgo.go`:
-  - [ ] CGO implementations for all line style methods
-  - [ ] GetDash needs to query dash count first
-- [ ] Update `context/context_test.go`:
-  - [ ] `TestContextLineCap`
-  - [ ] `TestContextLineJoin`
-  - [ ] `TestContextDash`
-  - [ ] `TestContextDashEmpty`
-  - [ ] `TestContextMiterLimit`
-  - [ ] `TestContextLineStyleCombinations`
-- [ ] Create `examples/line_styles.go`:
-  - [ ] Draw lines with different caps
-  - [ ] Draw angles with different joins
-  - [ ] Draw dashed lines with different patterns
-  - [ ] Save to line_styles.png
-- [ ] Update `cairo/cairo.go`:
-  - [ ] Re-export LineCap and LineJoin types and constants
-- [ ] Run `go generate ./...` to generate stringer code
-- [ ] Test line styles persist across Save/Restore
+- [x] Create `context/line_style.go` (context/line_style.go:1-241):
+  - [x] `LineCap` type as int with constants: LineCapButt, LineCapRound, LineCapSquare (line 11-22)
+  - [x] `LineJoin` type as int with constants: LineJoinMiter, LineJoinRound, LineJoinBevel (line 57-70)
+  - [x] `//go:generate stringer` for both types (lines 10, 56)
+- [x] Update `context/line_style.go`:
+  - [x] `func (c *Context) SetLineCap(lineCap LineCap)` (line 45-49) ✅
+  - [x] `func (c *Context) GetLineCap() LineCap` (line 27-35) ✅
+  - [x] `func (c *Context) SetLineJoin(lineJoin LineJoin)` (line 93-97) ✅
+  - [x] `func (c *Context) GetLineJoin() LineJoin` (line 75-83) ✅
+  - [x] `func (c *Context) SetDash(dashes []float64, offset float64) error` (line 171-184) ✅
+  - [x] `func (c *Context) GetDash() ([]float64, float64, error)` (line 231-240) ✅
+  - [x] BONUS: `func (c *Context) GetDashCount() int` (line 208-216) ✅
+  - [x] `func (c *Context) SetMiterLimit(limit float64)` (line 131-135) ✅
+  - [x] `func (c *Context) GetMiterLimit() float64` (line 102-111) ✅
+  - [x] `func (c *Context) GetLineWidth() float64` - already exists from Prompt 12 (context.go:455-472) ✅
+- [x] Update `context/context_cgo.go`:
+  - [x] CGO implementations for all line style methods (lines 241-287) ✅
+    - [x] `contextGetLineCap` (line 241)
+    - [x] `contextSetLineCap` (line 245)
+    - [x] `contextGetLineJoin` (line 249)
+    - [x] `contextSetLineJoin` (line 253)
+    - [x] `contextGetMiterLimit` (line 257)
+    - [x] `contextSetMiterLimit` (line 261)
+    - [x] `contextSetDash` (line 265)
+    - [x] `contextGetDashCount` (line 274)
+    - [x] `contextGetDash` (line 278)
+  - [x] GetDash queries dash count first (context_cgo.go:279) ✅
+- [x] Update `context/line_style_test.go`:
+  - [x] `TestContextLineCap` (line 13-77) ✅ PASSING
+  - [x] `TestContextLineJoin` (line 81-145) ✅ PASSING
+  - [x] `TestContextDash` (line 149-317) ✅ PASSING
+  - [x] `TestContextDashEmpty` (line 320-390) ✅ PASSING
+  - [x] BONUS: `TestContextGetDashCount` (line 393-504) ✅ PASSING
+  - [x] `TestContextMiterLimit` (line 508-602) ✅ PASSING
+  - [x] `TestContextLineStyleCombinations` (line 605-771) ✅ PASSING
+- [x] Create `examples/line_styles.go`:
+  - [x] Draw lines with different caps (Butt, Round, Square) - lines 67-95 ✅
+  - [x] Draw angles with different joins (Miter, Round, Bevel) - lines 100-134 ✅
+  - [x] Draw dashed lines with different patterns - lines 139-207 ✅
+    - [x] Solid line (no dash)
+    - [x] Simple dash pattern (20, 10)
+    - [x] Dotted pattern with round caps (0, 10)
+    - [x] Complex dash pattern (20, 5, 5, 5)
+    - [x] Dash with offset
+  - [x] BONUS: Miter limit demonstrations - lines 213-252 ✅
+    - [x] Default miter limit (10.0)
+    - [x] Low miter limit (2.0) showing bevel conversion
+    - [x] High miter limit (50.0) showing extreme miter
+  - [x] Save to line_styles.png ✅
+- [x] Create `examples/line_styles_test.go`:
+  - [x] `TestLineStylesGeneratesValidPNG` ✅ PASSING
+  - [x] `TestLineStylesMatchesGolden` ✅ PASSING
+  - [x] Golden image generated at testdata/golden/line_styles.png (9.4KB) ✅
+- [x] Update `cairo/cairo.go`:
+  - [x] Re-export LineCap type and constants (cairo.go:663-673) ✅
+  - [x] Re-export LineJoin type and constants (cairo.go:676-692) ✅
+- [x] Run `go generate ./...` to generate stringer code ✅
+  - [x] context/linecap_string.go generated ✅
+  - [x] context/linejoin_string.go generated ✅
+- [x] Test line styles persist across Save/Restore (TestContextLineStyleCombinations line 636-679) ✅
+
+✅ **Status: 100% COMPLETE - All requirements met including comprehensive examples and tests**
 
 ### Prompt 20: Context Package - Clipping
 
