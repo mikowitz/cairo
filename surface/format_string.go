@@ -22,9 +22,9 @@ const _Format_name = "InvalidARGB32RGB24A8A1RGB16_565RGB30"
 var _Format_index = [...]uint8{0, 7, 13, 18, 20, 22, 31, 36}
 
 func (i Format) String() string {
-	i -= -1
-	if i < 0 || i >= Format(len(_Format_index)-1) {
-		return "Format(" + strconv.FormatInt(int64(i+-1), 10) + ")"
+	idx := int(i) - -1
+	if i < -1 || idx >= len(_Format_index)-1 {
+		return "Format(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _Format_name[_Format_index[i]:_Format_index[i+1]]
+	return _Format_name[_Format_index[idx]:_Format_index[idx+1]]
 }

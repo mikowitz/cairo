@@ -600,3 +600,101 @@ func TestRadialGradientGetColorStopRGBA(t *testing.T) {
 		assert.Error(t, err, "Should return error for out of bounds index")
 	})
 }
+
+// TestLinearGradientExtend tests extend mode round-trip get/set operations on linear gradients.
+func TestLinearGradientExtend(t *testing.T) {
+	tests := []struct {
+		name   string
+		extend Extend
+	}{
+		{"none", ExtendNone},
+		{"repeat", ExtendRepeat},
+		{"reflect", ExtendReflect},
+		{"pad", ExtendPad},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gradient, err := NewLinearGradient(0, 0, 100, 0)
+			require.NoError(t, err)
+			defer gradient.Close()
+
+			gradient.SetExtend(tt.extend)
+			assert.Equal(t, tt.extend, gradient.GetExtend())
+		})
+	}
+}
+
+// TestRadialGradientExtend tests extend mode round-trip get/set operations on radial gradients.
+func TestRadialGradientExtend(t *testing.T) {
+	tests := []struct {
+		name   string
+		extend Extend
+	}{
+		{"none", ExtendNone},
+		{"repeat", ExtendRepeat},
+		{"reflect", ExtendReflect},
+		{"pad", ExtendPad},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gradient, err := NewRadialGradient(100, 100, 10, 100, 100, 100)
+			require.NoError(t, err)
+			defer gradient.Close()
+
+			gradient.SetExtend(tt.extend)
+			assert.Equal(t, tt.extend, gradient.GetExtend())
+		})
+	}
+}
+
+// TestLinearGradientFilter tests filter mode round-trip get/set operations on linear gradients.
+func TestLinearGradientFilter(t *testing.T) {
+	tests := []struct {
+		name   string
+		filter Filter
+	}{
+		{"fast", FilterFast},
+		{"good", FilterGood},
+		{"best", FilterBest},
+		{"nearest", FilterNearest},
+		{"bilinear", FilterBilinear},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gradient, err := NewLinearGradient(0, 0, 100, 0)
+			require.NoError(t, err)
+			defer gradient.Close()
+
+			gradient.SetFilter(tt.filter)
+			assert.Equal(t, tt.filter, gradient.GetFilter())
+		})
+	}
+}
+
+// TestRadialGradientFilter tests filter mode round-trip get/set operations on radial gradients.
+func TestRadialGradientFilter(t *testing.T) {
+	tests := []struct {
+		name   string
+		filter Filter
+	}{
+		{"fast", FilterFast},
+		{"good", FilterGood},
+		{"best", FilterBest},
+		{"nearest", FilterNearest},
+		{"bilinear", FilterBilinear},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gradient, err := NewRadialGradient(100, 100, 10, 100, 100, 100)
+			require.NoError(t, err)
+			defer gradient.Close()
+
+			gradient.SetFilter(tt.filter)
+			assert.Equal(t, tt.filter, gradient.GetFilter())
+		})
+	}
+}

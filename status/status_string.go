@@ -61,8 +61,9 @@ const _Status_name = "SuccessNoMemoryInvalidRestoreInvalidPopGroupNoCurrentPoint
 var _Status_index = [...]uint16{0, 7, 15, 29, 44, 58, 71, 84, 95, 108, 123, 132, 142, 157, 176, 195, 209, 222, 235, 247, 258, 275, 287, 307, 320, 333, 349, 366, 379, 392, 407, 419, 432, 443, 465, 483, 494, 517, 531, 549, 557, 570, 583, 591, 602, 614, 624}
 
 func (i Status) String() string {
-	if i < 0 || i >= Status(len(_Status_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_Status_index)-1 {
 		return "Status(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _Status_name[_Status_index[i]:_Status_index[i+1]]
+	return _Status_name[_Status_index[idx]:_Status_index[idx+1]]
 }

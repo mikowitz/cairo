@@ -18,8 +18,9 @@ const _LineJoin_name = "LineJoinMiterLineJoinRoundLineJoinBevel"
 var _LineJoin_index = [...]uint8{0, 13, 26, 39}
 
 func (i LineJoin) String() string {
-	if i < 0 || i >= LineJoin(len(_LineJoin_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_LineJoin_index)-1 {
 		return "LineJoin(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _LineJoin_name[_LineJoin_index[i]:_LineJoin_index[i+1]]
+	return _LineJoin_name[_LineJoin_index[idx]:_LineJoin_index[idx+1]]
 }

@@ -21,8 +21,9 @@ const _PatternType_name = "SolidSurfaceLinearRadialMeshRasterSource"
 var _PatternType_index = [...]uint8{0, 5, 12, 18, 24, 28, 40}
 
 func (i PatternType) String() string {
-	if i < 0 || i >= PatternType(len(_PatternType_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_PatternType_index)-1 {
 		return "PatternType(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _PatternType_name[_PatternType_index[i]:_PatternType_index[i+1]]
+	return _PatternType_name[_PatternType_index[idx]:_PatternType_index[idx+1]]
 }

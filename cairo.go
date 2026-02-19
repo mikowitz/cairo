@@ -1,6 +1,8 @@
 package cairo
 
 import (
+	"unsafe"
+
 	"github.com/mikowitz/cairo/context"
 	"github.com/mikowitz/cairo/pattern"
 	"github.com/mikowitz/cairo/surface"
@@ -655,6 +657,219 @@ func NewLinearGradient(x0, y0, x1, y1 float64) (*LinearGradient, error) {
 func NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1 float64) (*RadialGradient, error) {
 	return pattern.NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1)
 }
+
+// SurfacePattern represents a pattern based on a Cairo surface (image).
+//
+// Surface patterns allow using existing surfaces (like images) as the source
+// for drawing operations. This enables texture mapping, pattern fills, and
+// using rendered content as a brush.
+//
+// # Creating Surface Patterns
+//
+// Create a surface pattern from an existing surface:
+//
+//	// Create a small image to use as a texture
+//	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 20, 20)
+//	if err != nil {
+//	    return err
+//	}
+//	defer surf.Close()
+//
+//	// ... draw something on the surface ...
+//
+//	// Create pattern from the surface
+//	pattern, err := cairo.NewSurfacePattern(surface)
+//	if err != nil {
+//	    return err
+//	}
+//	defer pattern.Close()
+//
+// # Extend Modes
+//
+// Control what happens outside the pattern bounds using SetExtend:
+//
+//	pattern.SetExtend(cairo.ExtendRepeat)   // Tile the pattern
+//	pattern.SetExtend(cairo.ExtendReflect)  // Mirror at edges
+//	pattern.SetExtend(cairo.ExtendPad)      // Extend edge colors
+//	pattern.SetExtend(cairo.ExtendNone)     // Transparent outside (default)
+//
+// # Filter Modes
+//
+// Control resampling quality using SetFilter:
+//
+//	pattern.SetFilter(cairo.FilterNearest)   // Fast, pixelated
+//	pattern.SetFilter(cairo.FilterBilinear)  // Smooth, balanced (default)
+//	pattern.SetFilter(cairo.FilterBest)      // Highest quality
+//
+// # Important Notes
+//
+// The source surface must remain valid (not closed) for the entire lifetime
+// of the pattern. Closing the surface before closing the pattern will result
+// in undefined behavior.
+//
+// # Resource Management
+//
+// Surface patterns must be explicitly closed when finished:
+//
+//	pattern, err := cairo.NewSurfacePattern(surface)
+//	if err != nil {
+//	    return err
+//	}
+//	defer pattern.Close()  // Essential
+//
+// For more details, see the pattern package documentation.
+type SurfacePattern = pattern.SurfacePattern
+
+// NewSurfacePattern creates a new surface pattern from an existing surface.
+//
+// Surface patterns allow using existing surfaces (like images) as the source
+// for drawing operations. This enables texture mapping, pattern fills, and
+// using rendered content as a brush.
+//
+// The source surface must remain valid (not closed) for the entire lifetime
+// of the pattern. Closing the surface before closing the pattern will result
+// in undefined behavior.
+//
+// The returned pattern must be closed with Close() when finished to release
+// Cairo resources. A finalizer is registered for safety, but explicit cleanup
+// is strongly recommended.
+//
+// Example - Simple texture pattern:
+//
+//	// Create a small image to use as a texture
+//	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 20, 20)
+//	if err != nil {
+//	    return err
+//	}
+//	defer surf.Close()
+//
+//	// Draw something on the texture surface
+//	ctx, err := cairo.NewContext(surf)
+//	if err != nil {
+//	    return err
+//	}
+//	defer ctx.Close()
+//
+//	ctx.SetSourceRGB(1.0, 0.0, 0.0)
+//	ctx.Rectangle(0, 0, 10, 10)
+//	ctx.Fill()
+//	ctx.SetSourceRGB(0.0, 0.0, 1.0)
+//	ctx.Rectangle(10, 10, 10, 10)
+//	ctx.Fill()
+//
+//	// Create pattern from the surface
+//	pattern, err := cairo.NewSurfacePattern(surf)
+//	if err != nil {
+//	    return err
+//	}
+//	defer pattern.Close()
+//
+//	// Configure pattern to repeat (tile)
+//	pattern.SetExtend(cairo.ExtendRepeat)
+//
+//	// Use the pattern on a larger surface
+//	mainSurf, err := cairo.NewImageSurface(cairo.FormatARGB32, 200, 200)
+//	if err != nil {
+//	    return err
+//	}
+//	defer mainSurf.Close()
+//
+//	mainCtx, err := cairo.NewContext(mainSurf)
+//	if err != nil {
+//	    return err
+//	}
+//	defer mainCtx.Close()
+//
+//	mainCtx.SetSource(pattern)
+//	mainCtx.Paint()  // Fills entire surface with tiled pattern
+//
+// Example - Pattern with filter control:
+//
+//	pattern, err := cairo.NewSurfacePattern(imageSurface)
+//	if err != nil {
+//	    return err
+//	}
+//	defer pattern.Close()
+//
+//	// Use nearest-neighbor for pixelated effect
+//	pattern.SetFilter(cairo.FilterNearest)
+//	pattern.SetExtend(cairo.ExtendRepeat)
+//
+//	ctx.SetSource(pattern)
+//	ctx.Rectangle(0, 0, 400, 300)
+//	ctx.Fill()
+func NewSurfacePattern(surface Surface) (*SurfacePattern, error) {
+	return pattern.NewSurfacePattern(surfaceAdapter{surface})
+}
+
+// surfaceAdapter adapts surface.Surface to work with pattern.NewSurfacePattern.
+// surface.Surface has Ptr() SurfacePtr, but pattern.Surface requires Ptr() unsafe.Pointer
+// to avoid a circular import between the surface and pattern packages.
+type surfaceAdapter struct {
+	Surface
+}
+
+func (s surfaceAdapter) Ptr() unsafe.Pointer {
+	return unsafe.Pointer(s.Surface.Ptr())
+}
+
+// Extend defines how patterns behave outside their natural bounds.
+//
+// When a pattern (gradient or surface pattern) is used to paint an area
+// larger than the pattern naturally covers, the extend mode determines
+// what happens in the areas outside the pattern's bounds.
+type Extend = pattern.Extend
+
+const (
+	// ExtendNone means the pattern is not painted outside its natural bounds.
+	// Areas outside the pattern will be transparent.
+	ExtendNone Extend = pattern.ExtendNone
+
+	// ExtendRepeat means the pattern is tiled by repeating.
+	// The pattern repeats infinitely in all directions.
+	ExtendRepeat Extend = pattern.ExtendRepeat
+
+	// ExtendReflect means the pattern is tiled by reflecting at the edges.
+	// Creates a mirrored repetition effect.
+	ExtendReflect Extend = pattern.ExtendReflect
+
+	// ExtendPad means the pattern extends by using the closest color from its edge.
+	// The edge pixels are repeated infinitely outward.
+	ExtendPad Extend = pattern.ExtendPad
+)
+
+// Filter defines the filtering algorithm used when sampling patterns.
+//
+// When a pattern is transformed (scaled, rotated), Cairo needs to resample
+// the pattern pixels. The filter mode determines the quality and speed of
+// this resampling operation.
+type Filter = pattern.Filter
+
+const (
+	// FilterFast uses a high-performance filter with lower quality.
+	// Equivalent to nearest-neighbor filtering.
+	FilterFast Filter = pattern.FilterFast
+
+	// FilterGood balances quality and performance.
+	// Uses bilinear interpolation.
+	FilterGood Filter = pattern.FilterGood
+
+	// FilterBest uses the highest-quality filter available.
+	// May be slower but produces the best visual results.
+	FilterBest Filter = pattern.FilterBest
+
+	// FilterNearest uses nearest-neighbor sampling.
+	// Fast but can produce pixelated results when scaling.
+	FilterNearest Filter = pattern.FilterNearest
+
+	// FilterBilinear uses bilinear interpolation.
+	// Smoother than nearest-neighbor with reasonable performance.
+	FilterBilinear Filter = pattern.FilterBilinear
+
+	// FilterGaussian uses gaussian interpolation.
+	// Currently unimplemented.
+	FilterGaussian Filter = pattern.FilterGaussian
+)
 
 // LineCap specifies how the endpoints of lines are rendered when stroking.
 //
