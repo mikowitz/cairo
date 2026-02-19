@@ -102,3 +102,23 @@ func patternGetColorStopRGBA(ptr PatternPtr, index int) (float64, float64, float
 func patternGetType(ptr PatternPtr) PatternType {
 	return PatternType(C.cairo_pattern_get_type(ptr))
 }
+
+func patternCreateForSurface(surfacePtr interface{}) PatternPtr {
+	return C.cairo_pattern_create_for_surface((*C.cairo_surface_t)(surfacePtr.(unsafe.Pointer))) //nolint:gosec
+}
+
+func patternSetExtend(ptr PatternPtr, extend Extend) {
+	C.cairo_pattern_set_extend(ptr, C.cairo_extend_t(extend))
+}
+
+func patternGetExtend(ptr PatternPtr) Extend {
+	return Extend(C.cairo_pattern_get_extend(ptr))
+}
+
+func patternSetFilter(ptr PatternPtr, filter Filter) {
+	C.cairo_pattern_set_filter(ptr, C.cairo_filter_t(filter))
+}
+
+func patternGetFilter(ptr PatternPtr) Filter {
+	return Filter(C.cairo_pattern_get_filter(ptr))
+}

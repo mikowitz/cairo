@@ -9,6 +9,64 @@ import (
 	"github.com/mikowitz/cairo/status"
 )
 
+// Extend defines how patterns behave outside their natural bounds.
+//
+// When a pattern (gradient or surface pattern) is used to paint an area
+// larger than the pattern naturally covers, the extend mode determines
+// what happens in the areas outside the pattern's bounds.
+//
+//go:generate stringer -type=Extend -trimprefix=Extend
+type Extend int
+
+const (
+	// ExtendNone means the pattern is not painted outside its natural bounds.
+	// Areas outside the pattern will be transparent.
+	ExtendNone Extend = iota
+
+	// ExtendRepeat means the pattern is tiled by repeating.
+	// The pattern repeats infinitely in all directions.
+	ExtendRepeat
+
+	// ExtendReflect means the pattern is tiled by reflecting at the edges.
+	// Creates a mirrored repetition effect.
+	ExtendReflect
+
+	// ExtendPad means the pattern extends by using the closest color from its edge.
+	// The edge pixels are repeated infinitely outward.
+	ExtendPad
+)
+
+// Filter defines the filtering algorithm used when sampling patterns.
+//
+// When a pattern is transformed (scaled, rotated), Cairo needs to resample
+// the pattern pixels. The filter mode determines the quality and speed of
+// this resampling operation.
+//
+//go:generate stringer -type=Filter -trimprefix=Filter
+type Filter int
+
+const (
+	// FilterFast uses a high-performance filter with lower quality.
+	// Equivalent to nearest-neighbor filtering.
+	FilterFast Filter = iota
+
+	// FilterGood balances quality and performance.
+	// Uses bilinear interpolation.
+	FilterGood
+
+	// FilterBest uses the highest-quality filter available.
+	// May be slower but produces the best visual results.
+	FilterBest
+
+	// FilterNearest uses nearest-neighbor sampling.
+	// Fast but can produce pixelated results when scaling.
+	FilterNearest
+
+	// FilterBilinear uses bilinear interpolation.
+	// Smoother than nearest-neighbor with reasonable performance.
+	FilterBilinear
+)
+
 // Pattern is the interface that all Cairo pattern types implement.
 //
 // Patterns represent the "paint" that Cairo uses for drawing operations.
@@ -178,10 +236,11 @@ func (b *BasePattern) close() error {
 //
 // Currently supported pattern types:
 //   - PatternTypeSolid: Returns a *SolidPattern
+//   - PatternTypeSurface: Returns a *SurfacePattern
 //
 // For unsupported pattern types (Linear, Radial, Mesh, RasterSource), this
-// function currently defaults to returning a *SolidPattern as a temporary
-// measure. This will be updated as additional pattern types are implemented.
+// function currently defaults to returning the base pattern implementation.
+// This will be updated as additional pattern types are implemented.
 //
 // The returned Pattern takes ownership of the C pointer and will properly
 // clean it up when Close() is called or when the finalizer runs.
@@ -192,6 +251,10 @@ func PatternFromC(uPtr unsafe.Pointer) Pattern {
 	switch patternType {
 	case PatternTypeSolid:
 		return &SolidPattern{
+			BasePattern: basePattern,
+		}
+	case PatternTypeSurface:
+		return &SurfacePattern{
 			BasePattern: basePattern,
 		}
 	// TODO: Add cases for other pattern types as implemented
