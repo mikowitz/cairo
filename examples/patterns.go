@@ -7,7 +7,6 @@ import (
 	"math"
 
 	"github.com/mikowitz/cairo"
-	"github.com/mikowitz/cairo/pattern"
 	"github.com/mikowitz/cairo/surface"
 )
 
@@ -198,8 +197,8 @@ func drawComplexPatternExample(ctx *cairo.Context, srcSurface *surface.ImageSurf
 		_ = pat.Close()
 	}()
 
-	pat.SetExtend(pattern.ExtendRepeat)
-	pat.SetFilter(pattern.FilterGood)
+	pat.SetExtend(cairo.ExtendRepeat)
+	pat.SetFilter(cairo.FilterGood)
 
 	// Save the graphics state
 	ctx.Save()
