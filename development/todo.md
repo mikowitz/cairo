@@ -712,7 +712,7 @@ rather than mutating an existing matrix in place.
   - [x] `func (c *Context) InClip(x, y float64) bool` ✅
   - [x] `func (c *Context) ResetClip()` ✅
   - [x] Nil pointer safety on ClipExtents and InClip (added; other write methods use withLock which already checks) ✅
-  - [ ] Godoc comments on individual clipping methods (ABOUTME header exists but per-method docs are bare stubs; other methods like Stroke/SetLineWidth have comprehensive godoc)
+  - [x] Godoc comments on individual clipping methods ✅
 - [x] Update `context/context_cgo.go`:
   - [x] `contextClip` ✅
   - [x] `contextClipPreserve` ✅
@@ -743,7 +743,7 @@ rather than mutating an existing matrix in place.
 - [x] Visual regression test helper (`CompareImageToGolden`) already existed in `test_harness.go` from prior prompt ✅
 - [x] Clip region interaction with Save/Restore demonstrated in `drawSaveRestoreClipPanel` example and `TestContextClipWithTransform/SaveRestoreWithClipAndTransform` test ✅
 
-✅ **Status: FUNCTIONALLY COMPLETE - All required methods, CGO bindings, tests, and examples implemented. One minor gap: per-method godoc comments on clipping methods are minimal compared to other methods in the package.**
+✅ **Status: 100% COMPLETE - All required methods, CGO bindings, tests, examples, and godoc implemented.**
 
 ### Prompt 21: Surface Package - Surface Pattern
 

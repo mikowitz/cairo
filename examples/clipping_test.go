@@ -3,9 +3,10 @@
 package examples
 
 import (
-	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 // TestClippingGeneratesValidPNG tests that GenerateClipping creates a valid PNG file.
@@ -20,18 +21,12 @@ func TestClippingGeneratesValidPNG(t *testing.T) {
 	outputPath := filepath.Join(tempDir, "clipping_test.png")
 
 	err := GenerateClipping(outputPath)
-	if err != nil {
-		t.Fatalf("GenerateClipping failed: %v", err)
-	}
+	require.NoError(t, err, "GenerateClipping failed")
 
-	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
-		t.Fatal("Output PNG file was not created")
-	}
+	require.FileExists(t, outputPath, "Output PNG file was not created")
 
 	// A 600x600 PNG with clipped colorful shapes should be in this range
-	if !CheckFileSize(t, outputPath, 5000, 200000) {
-		t.Fatal("Output PNG file size is not in expected range")
-	}
+	require.True(t, CheckFileSize(t, outputPath, 5000, 200000), "Output PNG file size is not in expected range")
 
 	t.Logf("Successfully generated clipping PNG at %s", outputPath)
 }

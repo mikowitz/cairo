@@ -1,6 +1,7 @@
 package context
 
 import (
+	"math"
 	"testing"
 
 	"github.com/mikowitz/cairo/status"
@@ -44,6 +45,7 @@ func TestContextClip(t *testing.T) {
 
 	t.Run("ClipWithNoPath", func(t *testing.T) {
 		// Clipping with no path should not error
+		ctx.ResetClip()
 		ctx.NewPath()
 		ctx.Clip()
 		assert.Equal(t, status.Success, ctx.Status())
@@ -127,7 +129,7 @@ func TestContextClipExtents(t *testing.T) {
 	t.Run("ExtentsWithCircularClip", func(t *testing.T) {
 		ctx.ResetClip()
 		ctx.NewPath()
-		ctx.Arc(100, 100, 50, 0, 2*3.14159265359)
+		ctx.Arc(100, 100, 50, 0, 2*math.Pi)
 		ctx.Clip()
 
 		// Extents should be bounding box of circle
@@ -177,7 +179,7 @@ func TestContextInClip(t *testing.T) {
 	t.Run("PointsInCircularClip", func(t *testing.T) {
 		ctx.NewPath()
 		// Circle centered at (100, 100) with radius 50
-		ctx.Arc(100, 100, 50, 0, 2*3.14159265359)
+		ctx.Arc(100, 100, 50, 0, 2*math.Pi)
 		ctx.Clip()
 
 		// Point at center
@@ -368,7 +370,7 @@ func TestContextClipWithTransform(t *testing.T) {
 		ctx.NewPath()
 
 		// Rotate 45 degrees
-		ctx.Rotate(3.14159265359 / 4) // 45 degrees
+		ctx.Rotate(math.Pi / 4) // 45 degrees
 
 		// Create rectangular clip in rotated user coordinates
 		ctx.Rectangle(-50, -50, 100, 100)
