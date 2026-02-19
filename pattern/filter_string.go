@@ -13,11 +13,12 @@ func _() {
 	_ = x[FilterBest-2]
 	_ = x[FilterNearest-3]
 	_ = x[FilterBilinear-4]
+	_ = x[FilterGaussian-5]
 }
 
-const _Filter_name = "FastGoodBestNearestBilinear"
+const _Filter_name = "FastGoodBestNearestBilinearGaussian"
 
-var _Filter_index = [...]uint8{0, 4, 8, 12, 19, 27}
+var _Filter_index = [...]uint8{0, 4, 8, 12, 19, 27, 35}
 
 func (i Filter) String() string {
 	idx := int(i) - 0

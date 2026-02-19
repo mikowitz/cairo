@@ -68,7 +68,7 @@ const (
 
 	// FilterGaussian uses gaussian interpolation.
 	// Currently unimplemented.
-	FilterGaussian = 5
+	FilterGaussian Filter = 5
 )
 
 // Pattern is the interface that all Cairo pattern types implement.
