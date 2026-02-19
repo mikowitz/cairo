@@ -287,3 +287,31 @@ func contextGetDash(ptr ContextPtr) ([]float64, float64) {
 
 	return dashes, float64(offset)
 }
+
+func contextClip(ptr ContextPtr) {
+	C.cairo_clip(ptr)
+}
+
+func contextClipPreserve(ptr ContextPtr) {
+	C.cairo_clip_preserve(ptr)
+}
+
+func contextResetClip(ptr ContextPtr) {
+	C.cairo_reset_clip(ptr)
+}
+
+func contextInClip(ptr ContextPtr, x, y float64) bool {
+	inClip := C.cairo_in_clip(ptr, (C.double)(x), (C.double)(y))
+
+	return int(inClip) != 0
+}
+
+func contextClipExtents(ptr ContextPtr) (float64, float64, float64, float64) {
+	var x1 C.double
+	var y1 C.double
+	var x2 C.double
+	var y2 C.double
+
+	C.cairo_clip_extents(ptr, &x1, &y1, &x2, &y2)
+	return float64(x1), float64(y1), float64(x2), float64(y2)
+}

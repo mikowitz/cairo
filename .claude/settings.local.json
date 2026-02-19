@@ -11,7 +11,11 @@
       "Bash(go build:*)",
       "Bash(go doc:*)",
       "Bash(golangci-lint run:*)",
-      "Bash(go generate:*)"
+      "Bash(go generate:*)",
+      "Bash(git -C /Users/michaelberkowitz/Code/cairo status)",
+      "Bash(git -C /Users/michaelberkowitz/Code/cairo diff)",
+      "Bash(git -C /Users/michaelberkowitz/Code/cairo log --oneline -5)",
+      "Bash(git -C:*)"
     ],
     "deny": [],
     "ask": []
