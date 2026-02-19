@@ -65,6 +65,10 @@ const (
 	// FilterBilinear uses bilinear interpolation.
 	// Smoother than nearest-neighbor with reasonable performance.
 	FilterBilinear
+
+	// FilterGaussian uses gaussian interpolation.
+	// Currently unimplemented.
+	FilterGaussian = 5
 )
 
 // Pattern is the interface that all Cairo pattern types implement.

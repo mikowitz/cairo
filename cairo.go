@@ -678,7 +678,7 @@ func NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1 float64) (*RadialGra
 //	// ... draw something on the surface ...
 //
 //	// Create pattern from the surface
-//	pattern, err := pattern.NewSurfacePattern(surface)
+//	pattern, err := cairo.NewSurfacePattern(surface)
 //	if err != nil {
 //	    return err
 //	}
@@ -711,7 +711,7 @@ func NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1 float64) (*RadialGra
 //
 // Surface patterns must be explicitly closed when finished:
 //
-//	pattern, err := pattern.NewSurfacePattern(surface)
+//	pattern, err := cairo.NewSurfacePattern(surface)
 //	if err != nil {
 //	    return err
 //	}

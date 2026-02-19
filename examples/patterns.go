@@ -64,37 +64,37 @@ func GeneratePatterns(outputPath string) error {
 
 	// 1. Top-left: ExtendRepeat (tiling)
 	if err := drawPatternExample(ctx, checkerSurface, 20, 20, 240, 180,
-		pattern.ExtendRepeat, pattern.FilterGood); err != nil {
+		cairo.ExtendRepeat, cairo.FilterGood); err != nil {
 		return err
 	}
 
 	// 2. Top-right: ExtendReflect (mirroring)
 	if err := drawPatternExample(ctx, checkerSurface, 280, 20, 240, 180,
-		pattern.ExtendReflect, pattern.FilterGood); err != nil {
+		cairo.ExtendReflect, cairo.FilterGood); err != nil {
 		return err
 	}
 
 	// 3. Middle-left: ExtendPad (edge pixels extend)
 	if err := drawPatternExample(ctx, checkerSurface, 540, 20, 240, 180,
-		pattern.ExtendPad, pattern.FilterGood); err != nil {
+		cairo.ExtendPad, cairo.FilterGood); err != nil {
 		return err
 	}
 
 	// 4. Middle-right: ExtendNone (transparent outside)
 	if err := drawPatternExample(ctx, checkerSurface, 20, 220, 240, 180,
-		pattern.ExtendNone, pattern.FilterGood); err != nil {
+		cairo.ExtendNone, cairo.FilterGood); err != nil {
 		return err
 	}
 
 	// 5. Bottom-left: FilterNearest (pixelated when scaled)
 	if err := drawPatternExample(ctx, checkerSurface, 280, 220, 240, 180,
-		pattern.ExtendRepeat, pattern.FilterNearest); err != nil {
+		cairo.ExtendRepeat, cairo.FilterNearest); err != nil {
 		return err
 	}
 
 	// 6. Bottom-right: FilterBilinear (smooth when scaled)
 	if err := drawPatternExample(ctx, checkerSurface, 540, 220, 240, 180,
-		pattern.ExtendRepeat, pattern.FilterBilinear); err != nil {
+		cairo.ExtendRepeat, cairo.FilterBilinear); err != nil {
 		return err
 	}
 
@@ -160,7 +160,7 @@ func createCheckerSurface(width, height int) (*surface.ImageSurface, error) {
 
 // drawPatternExample draws a single pattern example.
 func drawPatternExample(ctx *cairo.Context, srcSurface *surface.ImageSurface,
-	x, y, width, height float64, extend pattern.Extend, filter pattern.Filter,
+	x, y, width, height float64, extend cairo.Extend, filter cairo.Filter,
 ) error {
 	pat, err := cairo.NewSurfacePattern(srcSurface)
 	if err != nil {
