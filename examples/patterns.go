@@ -5,29 +5,11 @@ package examples
 import (
 	"fmt"
 	"math"
-	"unsafe"
 
 	"github.com/mikowitz/cairo"
 	"github.com/mikowitz/cairo/pattern"
-	"github.com/mikowitz/cairo/status"
 	"github.com/mikowitz/cairo/surface"
 )
-
-// surfaceAdapter adapts surface.ImageSurface to work with pattern.NewSurfacePattern.
-// This is needed because pattern.Surface expects Ptr() interface{} but
-// surface.Surface has Ptr() SurfacePtr.
-type surfaceAdapter struct {
-	*surface.ImageSurface
-}
-
-func (s surfaceAdapter) Ptr() interface{} {
-	// Convert SurfacePtr to unsafe.Pointer for the pattern API
-	return unsafe.Pointer(s.ImageSurface.Ptr())
-}
-
-func (s surfaceAdapter) Status() status.Status {
-	return s.ImageSurface.Status()
-}
 
 // GeneratePatterns creates a 800x600 PNG image demonstrating Cairo surface patterns.
 //
@@ -82,37 +64,37 @@ func GeneratePatterns(outputPath string) error {
 
 	// 1. Top-left: ExtendRepeat (tiling)
 	if err := drawPatternExample(ctx, checkerSurface, 20, 20, 240, 180,
-		pattern.ExtendRepeat, pattern.FilterGood, "Repeat"); err != nil {
+		pattern.ExtendRepeat, pattern.FilterGood); err != nil {
 		return err
 	}
 
 	// 2. Top-right: ExtendReflect (mirroring)
 	if err := drawPatternExample(ctx, checkerSurface, 280, 20, 240, 180,
-		pattern.ExtendReflect, pattern.FilterGood, "Reflect"); err != nil {
+		pattern.ExtendReflect, pattern.FilterGood); err != nil {
 		return err
 	}
 
 	// 3. Middle-left: ExtendPad (edge pixels extend)
 	if err := drawPatternExample(ctx, checkerSurface, 540, 20, 240, 180,
-		pattern.ExtendPad, pattern.FilterGood, "Pad"); err != nil {
+		pattern.ExtendPad, pattern.FilterGood); err != nil {
 		return err
 	}
 
 	// 4. Middle-right: ExtendNone (transparent outside)
 	if err := drawPatternExample(ctx, checkerSurface, 20, 220, 240, 180,
-		pattern.ExtendNone, pattern.FilterGood, "None"); err != nil {
+		pattern.ExtendNone, pattern.FilterGood); err != nil {
 		return err
 	}
 
 	// 5. Bottom-left: FilterNearest (pixelated when scaled)
 	if err := drawPatternExample(ctx, checkerSurface, 280, 220, 240, 180,
-		pattern.ExtendRepeat, pattern.FilterNearest, "Nearest"); err != nil {
+		pattern.ExtendRepeat, pattern.FilterNearest); err != nil {
 		return err
 	}
 
 	// 6. Bottom-right: FilterBilinear (smooth when scaled)
 	if err := drawPatternExample(ctx, checkerSurface, 540, 220, 240, 180,
-		pattern.ExtendRepeat, pattern.FilterBilinear, "Bilinear"); err != nil {
+		pattern.ExtendRepeat, pattern.FilterBilinear); err != nil {
 		return err
 	}
 
@@ -176,12 +158,11 @@ func createCheckerSurface(width, height int) (*surface.ImageSurface, error) {
 	return surf, nil
 }
 
-// drawPatternExample draws a single pattern example with label.
+// drawPatternExample draws a single pattern example.
 func drawPatternExample(ctx *cairo.Context, srcSurface *surface.ImageSurface,
-	x, y, width, height float64, extend pattern.Extend, filter pattern.Filter, label string,
+	x, y, width, height float64, extend pattern.Extend, filter pattern.Filter,
 ) error {
-	// Create pattern from the checker surface (using adapter for interface compatibility)
-	pat, err := pattern.NewSurfacePattern(surfaceAdapter{srcSurface})
+	pat, err := cairo.NewSurfacePattern(srcSurface)
 	if err != nil {
 		return fmt.Errorf("failed to create surface pattern: %w", err)
 	}
@@ -204,17 +185,12 @@ func drawPatternExample(ctx *cairo.Context, srcSurface *surface.ImageSurface,
 	ctx.Rectangle(x, y, width, height)
 	ctx.Stroke()
 
-	// Draw label (simplified - in production you'd use text rendering)
-	// For now we just draw a small indicator line
-	_ = label // Label would require text rendering which isn't implemented yet
-
 	return nil
 }
 
 // drawComplexPatternExample demonstrates pattern transformation.
 func drawComplexPatternExample(ctx *cairo.Context, srcSurface *surface.ImageSurface, x, y float64) error {
-	// Create pattern (using adapter for interface compatibility)
-	pat, err := pattern.NewSurfacePattern(surfaceAdapter{srcSurface})
+	pat, err := cairo.NewSurfacePattern(srcSurface)
 	if err != nil {
 		return fmt.Errorf("failed to create surface pattern: %w", err)
 	}

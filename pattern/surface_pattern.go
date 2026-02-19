@@ -3,16 +3,16 @@
 package pattern
 
 import (
+	"unsafe"
+
 	"github.com/mikowitz/cairo/status"
 )
 
 // Surface defines the minimal interface needed for creating surface patterns.
 // This interface is satisfied by all Cairo surface types from the surface package.
-// We accept the concrete surface.Surface interface to ensure type compatibility.
+// unsafe.Pointer is used instead of surface.SurfacePtr to avoid circular imports.
 type Surface interface {
-	// Note: We use interface{} here instead of surface.SurfacePtr to avoid
-	// circular imports. The CGO layer will convert this appropriately.
-	Ptr() any
+	Ptr() unsafe.Pointer
 	Status() status.Status
 }
 
@@ -27,9 +27,8 @@ type Surface interface {
 // undefined behavior.
 //
 // SurfacePattern embeds BasePattern and implements the Pattern interface,
-// providing all standard pattern methods (Close, Status, SetMatrix, etc.)
-// plus additional methods for controlling how the surface is sampled and
-// extended beyond its bounds.
+// providing all standard pattern methods (Close, Status, SetMatrix,
+// SetExtend, SetFilter, etc.).
 //
 // Example:
 //
@@ -117,97 +116,3 @@ func NewSurfacePattern(surface Surface) (*SurfacePattern, error) {
 	}, nil
 }
 
-// SetExtend sets the extend mode for the pattern.
-//
-// The extend mode controls what happens when the pattern is sampled outside
-// its natural bounds (i.e., when you try to paint an area larger than the
-// source surface):
-//
-//   - ExtendNone: Transparent outside bounds (default)
-//   - ExtendRepeat: Pattern tiles/repeats infinitely
-//   - ExtendReflect: Pattern mirrors at edges
-//   - ExtendPad: Edge colors extend infinitely
-//
-// This is particularly useful for tiling small textures across large areas.
-//
-// Example:
-//
-//	pattern.SetExtend(pattern.ExtendRepeat)  // Tile the pattern
-func (p *SurfacePattern) SetExtend(extend Extend) {
-	p.Lock()
-	defer p.Unlock()
-
-	if p.ptr == nil {
-		return
-	}
-
-	patternSetExtend(p.ptr, extend)
-}
-
-// GetExtend returns the current extend mode for the pattern.
-//
-// Returns the Extend mode that was previously set with SetExtend, or
-// ExtendNone if no extend mode was explicitly set.
-//
-// Example:
-//
-//	if pattern.GetExtend() == pattern.ExtendRepeat {
-//	    fmt.Println("Pattern is set to tile")
-//	}
-func (p *SurfacePattern) GetExtend() Extend {
-	p.RLock()
-	defer p.RUnlock()
-
-	if p.ptr == nil {
-		return ExtendNone
-	}
-
-	return patternGetExtend(p.ptr)
-}
-
-// SetFilter sets the filter mode for the pattern.
-//
-// The filter mode controls how the pattern is resampled when the pattern
-// matrix (via SetMatrix) causes scaling or rotation:
-//
-//   - FilterFast/FilterNearest: Fast but pixelated (nearest-neighbor)
-//   - FilterGood/FilterBilinear: Balanced quality/speed (bilinear, default)
-//   - FilterBest: Highest quality, potentially slower
-//
-// Choose faster filters for performance-critical operations or when you want
-// a pixelated/retro aesthetic. Choose better filters for high-quality output.
-//
-// Example:
-//
-//	pattern.SetFilter(pattern.FilterNearest)  // Pixelated scaling
-func (p *SurfacePattern) SetFilter(filter Filter) {
-	p.Lock()
-	defer p.Unlock()
-
-	if p.ptr == nil {
-		return
-	}
-
-	patternSetFilter(p.ptr, filter)
-}
-
-// GetFilter returns the current filter mode for the pattern.
-//
-// Returns the Filter mode that was previously set with SetFilter, or
-// FilterGood if no filter was explicitly set (Cairo's default).
-//
-// Example:
-//
-//	if pattern.GetFilter() == pattern.FilterNearest {
-//	    fmt.Println("Using nearest-neighbor filtering")
-//	}
-func (p *SurfacePattern) GetFilter() Filter {
-	p.RLock()
-	defer p.RUnlock()
-
-	if p.ptr == nil {
-		return FilterGood
-	}
-
-	return patternGetFilter(p.ptr)
-}

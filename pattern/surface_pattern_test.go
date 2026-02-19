@@ -4,23 +4,50 @@ package pattern
 
 import (
 	"testing"
+	"unsafe"
 
 	"github.com/mikowitz/cairo/status"
+	"github.com/mikowitz/cairo/surface"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-// mockSurface is a minimal mock implementation for testing SurfacePattern creation
+// mockSurface is a minimal mock implementation for testing SurfacePattern error paths.
 type mockSurface struct {
-	ptr    interface{}
+	ptr    unsafe.Pointer
 	status status.Status
 }
 
-func (m *mockSurface) Ptr() interface{} {
+func (m *mockSurface) Ptr() unsafe.Pointer {
 	return m.ptr
 }
 
 func (m *mockSurface) Status() status.Status {
 	return m.status
+}
+
+// testSurfaceAdapter wraps *surface.ImageSurface to satisfy the pattern.Surface interface.
+// surface.ImageSurface.Ptr() returns surface.SurfacePtr, but pattern.Surface requires unsafe.Pointer.
+type testSurfaceAdapter struct {
+	*surface.ImageSurface
+}
+
+func (a testSurfaceAdapter) Ptr() unsafe.Pointer {
+	return unsafe.Pointer(a.ImageSurface.Ptr())
+}
+
+// newTestSurfacePattern creates a real SurfacePattern backed by a 10x10 ImageSurface.
+// Returns the pattern and a cleanup function that closes both the pattern and surface.
+func newTestSurfacePattern(t *testing.T) (*SurfacePattern, func()) {
+	t.Helper()
+	surf, err := surface.NewImageSurface(surface.FormatARGB32, 10, 10)
+	require.NoError(t, err)
+	pat, err := NewSurfacePattern(testSurfaceAdapter{surf})
+	require.NoError(t, err)
+	return pat, func() {
+		_ = pat.Close()
+		_ = surf.Close()
+	}
 }
 
 // TestNewSurfacePattern tests creation of surface patterns
@@ -41,9 +68,16 @@ func TestNewSurfacePattern(t *testing.T) {
 		assert.Error(t, err, "Should return error for invalid surface")
 		assert.Nil(t, pattern, "Pattern should be nil for invalid surface")
 	})
+
+	t.Run("valid_surface", func(t *testing.T) {
+		pat, cleanup := newTestSurfacePattern(t)
+		defer cleanup()
+		assert.NotNil(t, pat)
+		assert.Equal(t, status.Success, pat.Status())
+	})
 }
 
-// TestSurfacePatternExtend tests extend mode get/set operations
+// TestSurfacePatternExtend tests extend mode round-trip get/set operations
 func TestSurfacePatternExtend(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -57,14 +91,16 @@ func TestSurfacePatternExtend(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// This test would require a real surface
-			// For now, we just verify the enum values exist
-			assert.NotNil(t, tt.extend)
+			pat, cleanup := newTestSurfacePattern(t)
+			defer cleanup()
+
+			pat.SetExtend(tt.extend)
+			assert.Equal(t, tt.extend, pat.GetExtend())
 		})
 	}
 }
 
-// TestSurfacePatternFilter tests filter mode get/set operations
+// TestSurfacePatternFilter tests filter mode round-trip get/set operations
 func TestSurfacePatternFilter(t *testing.T) {
 	tests := []struct {
 		name   string
@@ -79,9 +115,11 @@ func TestSurfacePatternFilter(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// This test would require a real surface
-			// For now, we just verify the enum values exist
-			assert.NotNil(t, tt.filter)
+			pat, cleanup := newTestSurfacePattern(t)
+			defer cleanup()
+
+			pat.SetFilter(tt.filter)
+			assert.Equal(t, tt.filter, pat.GetFilter())
 		})
 	}
 }
@@ -135,7 +173,8 @@ func TestSurfacePatternInterfaceCompleteness(t *testing.T) {
 
 // TestSurfacePatternGetType verifies that surface patterns return PatternTypeSurface
 func TestSurfacePatternGetType(t *testing.T) {
-	// This would require a real surface to test fully
-	// For now, we verify the type constant exists
-	assert.Equal(t, PatternTypeSurface, PatternTypeSurface)
+	pat, cleanup := newTestSurfacePattern(t)
+	defer cleanup()
+
+	assert.Equal(t, PatternTypeSurface, pat.GetType())
 }

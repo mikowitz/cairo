@@ -677,7 +677,7 @@ func NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1 float64) (*RadialGra
 //
 //	// ... draw something on the surface ...
 //
-//	// Create pattern from the surface (note: requires surfaceAdapter)
+//	// Create pattern from the surface
 //	pattern, err := pattern.NewSurfacePattern(surface)
 //	if err != nil {
 //	    return err
@@ -803,14 +803,13 @@ func NewSurfacePattern(surface Surface) (*SurfacePattern, error) {
 }
 
 // surfaceAdapter adapts surface.Surface to work with pattern.NewSurfacePattern.
-// This is needed because pattern.Surface expects Ptr() interface{} but
-// surface.Surface has Ptr() SurfacePtr.
+// surface.Surface has Ptr() SurfacePtr, but pattern.Surface requires Ptr() unsafe.Pointer
+// to avoid a circular import between the surface and pattern packages.
 type surfaceAdapter struct {
 	Surface
 }
 
-func (s surfaceAdapter) Ptr() interface{} {
-	// Convert SurfacePtr to unsafe.Pointer for the pattern API
+func (s surfaceAdapter) Ptr() unsafe.Pointer {
 	return unsafe.Pointer(s.Surface.Ptr())
 }
 

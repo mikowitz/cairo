@@ -140,6 +140,25 @@ type Pattern interface {
 	//
 	// Returns the PatternType value for this pattern (e.g., PatternTypeSolid).
 	GetType() PatternType
+
+	// SetExtend sets how the pattern behaves outside its natural bounds.
+	//
+	// Cairo applies this to all pattern types. For gradients, it controls what
+	// happens beyond the gradient's endpoints. For surface patterns, it controls
+	// what happens outside the source surface.
+	SetExtend(extend Extend)
+
+	// GetExtend returns the current extend mode for the pattern.
+	GetExtend() Extend
+
+	// SetFilter sets the filtering algorithm used when sampling the pattern.
+	//
+	// Cairo applies this to all pattern types. It is most visually significant
+	// for surface patterns and transformed patterns.
+	SetFilter(filter Filter)
+
+	// GetFilter returns the current filter mode for the pattern.
+	GetFilter() Filter
 }
 
 type BasePattern struct {
@@ -212,6 +231,50 @@ func (b *BasePattern) GetType() PatternType {
 	defer b.RUnlock()
 
 	return b.patternType
+}
+
+func (b *BasePattern) SetExtend(extend Extend) {
+	b.Lock()
+	defer b.Unlock()
+
+	if b.ptr == nil {
+		return
+	}
+
+	patternSetExtend(b.ptr, extend)
+}
+
+func (b *BasePattern) GetExtend() Extend {
+	b.RLock()
+	defer b.RUnlock()
+
+	if b.ptr == nil {
+		return ExtendNone
+	}
+
+	return patternGetExtend(b.ptr)
+}
+
+func (b *BasePattern) SetFilter(filter Filter) {
+	b.Lock()
+	defer b.Unlock()
+
+	if b.ptr == nil {
+		return
+	}
+
+	patternSetFilter(b.ptr, filter)
+}
+
+func (b *BasePattern) GetFilter() Filter {
+	b.RLock()
+	defer b.RUnlock()
+
+	if b.ptr == nil {
+		return FilterGood
+	}
+
+	return patternGetFilter(b.ptr)
 }
 
 func (b *BasePattern) close() error {
