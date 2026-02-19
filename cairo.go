@@ -906,3 +906,114 @@ const (
 	// from the join point.
 	LineJoinBevel
 )
+
+// Operator controls how drawing operations combine with existing surface content.
+//
+// Cairo supports two classes of operators:
+//
+// # Porter-Duff Operators
+//
+// The Porter-Duff operators ([OperatorClear] through [OperatorSaturate]) implement
+// the standard alpha compositing model. They control how source and destination
+// pixels combine based on their alpha values.
+//
+// [OperatorOver] is the default and most common operator. It draws the source on
+// top of the destination, respecting alpha transparency.
+//
+// # Blend Mode Operators
+//
+// The blend mode operators ([OperatorMultiply] through [OperatorHslLuminosity])
+// implement Photoshop-style blending. They compute a color based on both source
+// and destination colors, then composite using OperatorOver semantics.
+type Operator = context.Operator
+
+const (
+	// OperatorClear clears the destination layer, making it fully transparent.
+	OperatorClear Operator = context.OperatorClear
+
+	// OperatorSource replaces the destination with the source, ignoring the destination.
+	OperatorSource Operator = context.OperatorSource
+
+	// OperatorOver draws the source on top of the destination, respecting alpha.
+	// This is the default operator.
+	OperatorOver Operator = context.OperatorOver
+
+	// OperatorIn draws the source only where the destination is opaque.
+	OperatorIn Operator = context.OperatorIn
+
+	// OperatorOut draws the source only where the destination is transparent.
+	OperatorOut Operator = context.OperatorOut
+
+	// OperatorAtop draws the source on top of the destination, only where
+	// the destination exists.
+	OperatorAtop Operator = context.OperatorAtop
+
+	// OperatorDest leaves the destination unchanged, ignoring the source.
+	OperatorDest Operator = context.OperatorDest
+
+	// OperatorDestOver draws the destination on top of the source.
+	OperatorDestOver Operator = context.OperatorDestOver
+
+	// OperatorDestIn leaves the destination visible only where the source is opaque.
+	OperatorDestIn Operator = context.OperatorDestIn
+
+	// OperatorDestOut leaves the destination visible only where the source is transparent.
+	OperatorDestOut Operator = context.OperatorDestOut
+
+	// OperatorDestAtop leaves the destination on top of the source, only where the source exists.
+	OperatorDestAtop Operator = context.OperatorDestAtop
+
+	// OperatorXor shows source and destination where they do not overlap.
+	OperatorXor Operator = context.OperatorXor
+
+	// OperatorAdd adds source and destination pixel values.
+	OperatorAdd Operator = context.OperatorAdd
+
+	// OperatorSaturate saturates source and destination; useful for alpha accumulation.
+	OperatorSaturate Operator = context.OperatorSaturate
+
+	// OperatorMultiply multiplies source and destination colors, darkening the result.
+	OperatorMultiply Operator = context.OperatorMultiply
+
+	// OperatorScreen inverts, multiplies, then inverts again, lightening the result.
+	OperatorScreen Operator = context.OperatorScreen
+
+	// OperatorOverlay multiplies or screens depending on the destination color.
+	OperatorOverlay Operator = context.OperatorOverlay
+
+	// OperatorDarken uses the darker of the source and destination colors.
+	OperatorDarken Operator = context.OperatorDarken
+
+	// OperatorLighten uses the lighter of the source and destination colors.
+	OperatorLighten Operator = context.OperatorLighten
+
+	// OperatorColorDodge brightens the destination to reflect the source.
+	OperatorColorDodge Operator = context.OperatorColorDodge
+
+	// OperatorColorBurn darkens the destination to reflect the source.
+	OperatorColorBurn Operator = context.OperatorColorBurn
+
+	// OperatorHardLight applies Multiply or Screen depending on the source color.
+	OperatorHardLight Operator = context.OperatorHardLight
+
+	// OperatorSoftLight applies a softer version of HardLight.
+	OperatorSoftLight Operator = context.OperatorSoftLight
+
+	// OperatorDifference subtracts source from destination or vice versa.
+	OperatorDifference Operator = context.OperatorDifference
+
+	// OperatorExclusion produces an effect similar to Difference but lower in contrast.
+	OperatorExclusion Operator = context.OperatorExclusion
+
+	// OperatorHslHue uses the hue of the source with the saturation and luminosity of the destination.
+	OperatorHslHue Operator = context.OperatorHslHue
+
+	// OperatorHslSaturation uses the saturation of the source with the hue and luminosity of the destination.
+	OperatorHslSaturation Operator = context.OperatorHslSaturation
+
+	// OperatorHslColor uses the hue and saturation of the source with the luminosity of the destination.
+	OperatorHslColor Operator = context.OperatorHslColor
+
+	// OperatorHslLuminosity uses the luminosity of the source with the hue and saturation of the destination.
+	OperatorHslLuminosity Operator = context.OperatorHslLuminosity
+)
