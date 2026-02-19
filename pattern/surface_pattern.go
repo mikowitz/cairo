@@ -7,8 +7,11 @@ import (
 )
 
 // Surface defines the minimal interface needed for creating surface patterns.
-// This interface is satisfied by all Cairo surface types (ImageSurface, etc.).
+// This interface is satisfied by all Cairo surface types from the surface package.
+// We accept the concrete surface.Surface interface to ensure type compatibility.
 type Surface interface {
+	// Note: We use interface{} here instead of surface.SurfacePtr to avoid
+	// circular imports. The CGO layer will convert this appropriately.
 	Ptr() interface{}
 	Status() status.Status
 }
