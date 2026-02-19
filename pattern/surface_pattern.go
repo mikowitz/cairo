@@ -12,7 +12,7 @@ import (
 type Surface interface {
 	// Note: We use interface{} here instead of surface.SurfacePtr to avoid
 	// circular imports. The CGO layer will convert this appropriately.
-	Ptr() interface{}
+	Ptr() any
 	Status() status.Status
 }
 

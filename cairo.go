@@ -1,6 +1,8 @@
 package cairo
 
 import (
+	"unsafe"
+
 	"github.com/mikowitz/cairo/context"
 	"github.com/mikowitz/cairo/pattern"
 	"github.com/mikowitz/cairo/surface"
@@ -797,7 +799,19 @@ type SurfacePattern = pattern.SurfacePattern
 //	ctx.Rectangle(0, 0, 400, 300)
 //	ctx.Fill()
 func NewSurfacePattern(surface Surface) (*SurfacePattern, error) {
-	return pattern.NewSurfacePattern(surface)
+	return pattern.NewSurfacePattern(surfaceAdapter{surface})
+}
+
+// surfaceAdapter adapts surface.Surface to work with pattern.NewSurfacePattern.
+// This is needed because pattern.Surface expects Ptr() interface{} but
+// surface.Surface has Ptr() SurfacePtr.
+type surfaceAdapter struct {
+	Surface
+}
+
+func (s surfaceAdapter) Ptr() interface{} {
+	// Convert SurfacePtr to unsafe.Pointer for the pattern API
+	return unsafe.Pointer(s.Surface.Ptr())
 }
 
 // Extend defines how patterns behave outside their natural bounds.
