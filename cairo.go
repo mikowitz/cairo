@@ -718,6 +718,88 @@ func NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1 float64) (*RadialGra
 // For more details, see the pattern package documentation.
 type SurfacePattern = pattern.SurfacePattern
 
+// NewSurfacePattern creates a new surface pattern from an existing surface.
+//
+// Surface patterns allow using existing surfaces (like images) as the source
+// for drawing operations. This enables texture mapping, pattern fills, and
+// using rendered content as a brush.
+//
+// The source surface must remain valid (not closed) for the entire lifetime
+// of the pattern. Closing the surface before closing the pattern will result
+// in undefined behavior.
+//
+// The returned pattern must be closed with Close() when finished to release
+// Cairo resources. A finalizer is registered for safety, but explicit cleanup
+// is strongly recommended.
+//
+// Example - Simple texture pattern:
+//
+//	// Create a small image to use as a texture
+//	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 20, 20)
+//	if err != nil {
+//	    return err
+//	}
+//	defer surf.Close()
+//
+//	// Draw something on the texture surface
+//	ctx, err := cairo.NewContext(surf)
+//	if err != nil {
+//	    return err
+//	}
+//	defer ctx.Close()
+//
+//	ctx.SetSourceRGB(1.0, 0.0, 0.0)
+//	ctx.Rectangle(0, 0, 10, 10)
+//	ctx.Fill()
+//	ctx.SetSourceRGB(0.0, 0.0, 1.0)
+//	ctx.Rectangle(10, 10, 10, 10)
+//	ctx.Fill()
+//
+//	// Create pattern from the surface
+//	pattern, err := cairo.NewSurfacePattern(surf)
+//	if err != nil {
+//	    return err
+//	}
+//	defer pattern.Close()
+//
+//	// Configure pattern to repeat (tile)
+//	pattern.SetExtend(cairo.ExtendRepeat)
+//
+//	// Use the pattern on a larger surface
+//	mainSurf, err := cairo.NewImageSurface(cairo.FormatARGB32, 200, 200)
+//	if err != nil {
+//	    return err
+//	}
+//	defer mainSurf.Close()
+//
+//	mainCtx, err := cairo.NewContext(mainSurf)
+//	if err != nil {
+//	    return err
+//	}
+//	defer mainCtx.Close()
+//
+//	mainCtx.SetSource(pattern)
+//	mainCtx.Paint()  // Fills entire surface with tiled pattern
+//
+// Example - Pattern with filter control:
+//
+//	pattern, err := cairo.NewSurfacePattern(imageSurface)
+//	if err != nil {
+//	    return err
+//	}
+//	defer pattern.Close()
+//
+//	// Use nearest-neighbor for pixelated effect
+//	pattern.SetFilter(cairo.FilterNearest)
+//	pattern.SetExtend(cairo.ExtendRepeat)
+//
+//	ctx.SetSource(pattern)
+//	ctx.Rectangle(0, 0, 400, 300)
+//	ctx.Fill()
+func NewSurfacePattern(surface Surface) (*SurfacePattern, error) {
+	return pattern.NewSurfacePattern(surface)
+}
+
 // Extend defines how patterns behave outside their natural bounds.
 //
 // When a pattern (gradient or surface pattern) is used to paint an area

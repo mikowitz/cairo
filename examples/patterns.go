@@ -178,7 +178,8 @@ func createCheckerSurface(width, height int) (*surface.ImageSurface, error) {
 
 // drawPatternExample draws a single pattern example with label.
 func drawPatternExample(ctx *cairo.Context, srcSurface *surface.ImageSurface,
-	x, y, width, height float64, extend pattern.Extend, filter pattern.Filter, label string) error {
+	x, y, width, height float64, extend pattern.Extend, filter pattern.Filter, label string,
+) error {
 	// Create pattern from the checker surface (using adapter for interface compatibility)
 	pat, err := pattern.NewSurfacePattern(surfaceAdapter{srcSurface})
 	if err != nil {
