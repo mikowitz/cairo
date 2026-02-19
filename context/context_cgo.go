@@ -315,3 +315,11 @@ func contextClipExtents(ptr ContextPtr) (float64, float64, float64, float64) {
 	C.cairo_clip_extents(ptr, &x1, &y1, &x2, &y2)
 	return float64(x1), float64(y1), float64(x2), float64(y2)
 }
+
+func contextSetOperator(ptr ContextPtr, op Operator) {
+	C.cairo_set_operator(ptr, C.cairo_operator_t(op))
+}
+
+func contextGetOperator(ptr ContextPtr) Operator {
+	return Operator(C.cairo_get_operator(ptr))
+}
