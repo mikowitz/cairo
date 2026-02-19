@@ -38,3 +38,5 @@ examples/*.svg
 # Temporary files
 tmp/
 temp/
+
+.claude/
