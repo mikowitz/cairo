@@ -18,8 +18,9 @@ const _LineCap_name = "LineCapButtLineCapRoundLineCapSquare"
 var _LineCap_index = [...]uint8{0, 11, 23, 36}
 
 func (i LineCap) String() string {
-	if i < 0 || i >= LineCap(len(_LineCap_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_LineCap_index)-1 {
 		return "LineCap(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _LineCap_name[_LineCap_index[i]:_LineCap_index[i+1]]
+	return _LineCap_name[_LineCap_index[idx]:_LineCap_index[idx+1]]
 }

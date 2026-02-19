@@ -865,6 +865,10 @@ const (
 	// FilterBilinear uses bilinear interpolation.
 	// Smoother than nearest-neighbor with reasonable performance.
 	FilterBilinear Filter = pattern.FilterBilinear
+
+	// FilterGaussian uses gaussian interpolation.
+	// Currently unimplemented.
+	FilterGaussian Filter = pattern.FilterGaussian
 )
 
 // LineCap specifies how the endpoints of lines are rendered when stroking.
