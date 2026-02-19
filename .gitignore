@@ -40,3 +40,6 @@ tmp/
 temp/
 
 .claude/
+
+# local development cycle
+progress.txt
