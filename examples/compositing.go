@@ -14,15 +14,16 @@ import (
 // The image shows 29 panels in a 5×6 grid, each demonstrating a different compositing
 // operator applied when drawing a red circle over a blue circle.
 //
-// Porter-Duff operators (rows 1–3, left to right):
-//   - Clear, Source, Over, In, Out
-//   - Atop, Dest, DestOver, DestIn, DestOut
-//   - DestAtop, Xor, Add, Saturate, Multiply
+// Operators are shown in Cairo's numeric order across a 5×6 grid (left to right,
+// top to bottom). The 14 Porter-Duff operators fill rows 1–3 with one slot remaining,
+// so the first blend mode (Multiply) appears at the end of row 3:
 //
-// Blend mode operators (rows 4–6, left to right):
-//   - Screen, Overlay, Darken, Lighten, ColorDodge
-//   - ColorBurn, HardLight, SoftLight, Difference, Exclusion
-//   - HslHue, HslSaturation, HslColor, HslLuminosity
+//   Row 1: Clear, Source, Over, In, Out
+//   Row 2: Atop, Dest, DestOver, DestIn, DestOut
+//   Row 3: DestAtop, Xor, Add, Saturate, Multiply (first blend mode)
+//   Row 4: Screen, Overlay, Darken, Lighten, ColorDodge
+//   Row 5: ColorBurn, HardLight, SoftLight, Difference, Exclusion
+//   Row 6: HslHue, HslSaturation, HslColor, HslLuminosity
 //
 // This demonstrates:
 //   - ctx.SetOperator() to change the compositing operator
@@ -76,9 +77,10 @@ func GenerateCompositing(outputPath string) error {
 		{1 * panelSize, 2 * panelSize, cairo.OperatorXor},
 		{2 * panelSize, 2 * panelSize, cairo.OperatorAdd},
 		{3 * panelSize, 2 * panelSize, cairo.OperatorSaturate},
-		{4 * panelSize, 2 * panelSize, cairo.OperatorMultiply},
 
 		// Blend mode operators
+		{4 * panelSize, 2 * panelSize, cairo.OperatorMultiply},
+
 		{0 * panelSize, 3 * panelSize, cairo.OperatorScreen},
 		{1 * panelSize, 3 * panelSize, cairo.OperatorOverlay},
 		{2 * panelSize, 3 * panelSize, cairo.OperatorDarken},
