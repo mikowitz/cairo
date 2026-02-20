@@ -1,5 +1,5 @@
 // ABOUTME: Example demonstrating Cairo compositing operators for blending drawing operations.
-// ABOUTME: Shows OperatorOver, OperatorAdd, OperatorMultiply, and OperatorXor in a visual grid.
+// ABOUTME: Shows all 29 Cairo compositing operators in a 5×6 visual grid.
 package examples
 
 import (
@@ -9,24 +9,31 @@ import (
 	"github.com/mikowitz/cairo"
 )
 
-// GenerateCompositing creates a 400x400 PNG image demonstrating Cairo compositing operators.
+// GenerateCompositing creates a 600x720 PNG image demonstrating all Cairo compositing operators.
 //
-// The image shows four panels in a 2x2 grid, each demonstrating a different operator
-// applied when drawing a red circle over a blue circle:
-//   - Top left: OperatorOver - default alpha compositing (red drawn on top of blue)
-//   - Top right: OperatorAdd - additive blending (overlap brightens toward white)
-//   - Bottom left: OperatorMultiply - multiplicative blending (overlap darkens)
-//   - Bottom right: OperatorXor - exclusive-or (overlap becomes transparent)
+// The image shows 29 panels in a 5×6 grid, each demonstrating a different compositing
+// operator applied when drawing a red circle over a blue circle.
+//
+// Porter-Duff operators (rows 1–3, left to right):
+//   - Clear, Source, Over, In, Out
+//   - Atop, Dest, DestOver, DestIn, DestOut
+//   - DestAtop, Xor, Add, Saturate, Multiply
+//
+// Blend mode operators (rows 4–6, left to right):
+//   - Screen, Overlay, Darken, Lighten, ColorDodge
+//   - ColorBurn, HardLight, SoftLight, Difference, Exclusion
+//   - HslHue, HslSaturation, HslColor, HslLuminosity
 //
 // This demonstrates:
 //   - ctx.SetOperator() to change the compositing operator
-//   - Porter-Duff operators: Over, Add, Xor
-//   - Blend mode operators: Multiply
-//   - How operators interact with opaque source colors
+//   - All 14 Porter-Duff operators
+//   - All 15 blend mode operators
 //
 // All resources are properly cleaned up using defer statements.
 func GenerateCompositing(outputPath string) error {
-	surface, err := cairo.NewImageSurface(cairo.FormatARGB32, 400, 400)
+	const panelSize = 120.0
+
+	surface, err := cairo.NewImageSurface(cairo.FormatARGB32, 600, 720)
 	if err != nil {
 		return fmt.Errorf("failed to create surface: %w", err)
 	}
@@ -46,18 +53,48 @@ func GenerateCompositing(outputPath string) error {
 	ctx.SetSourceRGB(0.75, 0.75, 0.75)
 	ctx.Paint()
 
-	const panelSize = 200.0
-
 	type panel struct {
 		ox, oy float64
 		op     cairo.Operator
 	}
 
 	panels := []panel{
-		{0, 0, cairo.OperatorOver},
-		{panelSize, 0, cairo.OperatorAdd},
-		{0, panelSize, cairo.OperatorMultiply},
-		{panelSize, panelSize, cairo.OperatorXor},
+		// Porter-Duff operators
+		{0 * panelSize, 0 * panelSize, cairo.OperatorClear},
+		{1 * panelSize, 0 * panelSize, cairo.OperatorSource},
+		{2 * panelSize, 0 * panelSize, cairo.OperatorOver},
+		{3 * panelSize, 0 * panelSize, cairo.OperatorIn},
+		{4 * panelSize, 0 * panelSize, cairo.OperatorOut},
+
+		{0 * panelSize, 1 * panelSize, cairo.OperatorAtop},
+		{1 * panelSize, 1 * panelSize, cairo.OperatorDest},
+		{2 * panelSize, 1 * panelSize, cairo.OperatorDestOver},
+		{3 * panelSize, 1 * panelSize, cairo.OperatorDestIn},
+		{4 * panelSize, 1 * panelSize, cairo.OperatorDestOut},
+
+		{0 * panelSize, 2 * panelSize, cairo.OperatorDestAtop},
+		{1 * panelSize, 2 * panelSize, cairo.OperatorXor},
+		{2 * panelSize, 2 * panelSize, cairo.OperatorAdd},
+		{3 * panelSize, 2 * panelSize, cairo.OperatorSaturate},
+		{4 * panelSize, 2 * panelSize, cairo.OperatorMultiply},
+
+		// Blend mode operators
+		{0 * panelSize, 3 * panelSize, cairo.OperatorScreen},
+		{1 * panelSize, 3 * panelSize, cairo.OperatorOverlay},
+		{2 * panelSize, 3 * panelSize, cairo.OperatorDarken},
+		{3 * panelSize, 3 * panelSize, cairo.OperatorLighten},
+		{4 * panelSize, 3 * panelSize, cairo.OperatorColorDodge},
+
+		{0 * panelSize, 4 * panelSize, cairo.OperatorColorBurn},
+		{1 * panelSize, 4 * panelSize, cairo.OperatorHardLight},
+		{2 * panelSize, 4 * panelSize, cairo.OperatorSoftLight},
+		{3 * panelSize, 4 * panelSize, cairo.OperatorDifference},
+		{4 * panelSize, 4 * panelSize, cairo.OperatorExclusion},
+
+		{0 * panelSize, 5 * panelSize, cairo.OperatorHslHue},
+		{1 * panelSize, 5 * panelSize, cairo.OperatorHslSaturation},
+		{2 * panelSize, 5 * panelSize, cairo.OperatorHslColor},
+		{3 * panelSize, 5 * panelSize, cairo.OperatorHslLuminosity},
 	}
 
 	for _, p := range panels {

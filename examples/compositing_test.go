@@ -13,8 +13,8 @@ import (
 // This test verifies:
 //   - The function executes without error
 //   - A PNG file is created at the specified location
-//   - The file size is reasonable (between 5KB and 200KB for a 400x400 image)
-//   - Panels include OperatorOver, OperatorAdd, OperatorMultiply, and OperatorXor demonstrations
+//   - The file size is reasonable (between 10KB and 500KB for a 600x720 image)
+//   - All 29 compositing operators are demonstrated in a 5×6 grid
 func TestCompositingGeneratesValidPNG(t *testing.T) {
 	tempDir := t.TempDir()
 	outputPath := filepath.Join(tempDir, "compositing_test.png")
@@ -24,8 +24,8 @@ func TestCompositingGeneratesValidPNG(t *testing.T) {
 
 	require.FileExists(t, outputPath, "Output PNG file was not created")
 
-	// A 400x400 PNG with compositing operator shapes should be in this range
-	require.True(t, CheckFileSize(t, outputPath, 5000, 200000), "Output PNG file size is not in expected range")
+	// A 600x720 PNG with 29 compositing operator panels should be in this range
+	require.True(t, CheckFileSize(t, outputPath, 10000, 500000), "Output PNG file size is not in expected range")
 
 	t.Logf("Successfully generated compositing PNG at %s", outputPath)
 }
@@ -34,11 +34,17 @@ func TestCompositingGeneratesValidPNG(t *testing.T) {
 // that matches the golden reference image.
 //
 // This test uses the CompareImageToGolden harness to verify pixel-perfect output.
-// The image demonstrates four compositing operators:
-//   - OperatorOver: default alpha compositing
-//   - OperatorAdd: additive blending (brightens at overlap)
-//   - OperatorMultiply: multiplicative blending (darkens at overlap)
-//   - OperatorXor: exclusive-or (overlap becomes transparent)
+// The image demonstrates all 29 compositing operators in a 5×6 grid.
+//
+// Porter-Duff operators:
+//   - Clear, Source, Over, In, Out
+//   - Atop, Dest, DestOver, DestIn, DestOut
+//   - DestAtop, Xor, Add, Saturate, Multiply
+//
+// Blend mode operators:
+//   - Screen, Overlay, Darken, Lighten, ColorDodge
+//   - ColorBurn, HardLight, SoftLight, Difference, Exclusion
+//   - HslHue, HslSaturation, HslColor, HslLuminosity
 //
 // If the test fails, run with -update-golden to regenerate the reference image.
 func TestCompositingMatchesGolden(t *testing.T) {
