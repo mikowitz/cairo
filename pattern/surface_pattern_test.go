@@ -33,7 +33,7 @@ type testSurfaceAdapter struct {
 }
 
 func (a testSurfaceAdapter) Ptr() unsafe.Pointer {
-	return unsafe.Pointer(a.ImageSurface.Ptr())
+	return unsafe.Pointer(a.ImageSurface.Ptr()) //nolint:gosec
 }
 
 // newTestSurfacePattern creates a real SurfacePattern backed by a 10x10 ImageSurface.

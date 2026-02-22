@@ -810,7 +810,7 @@ type surfaceAdapter struct {
 }
 
 func (s surfaceAdapter) Ptr() unsafe.Pointer {
-	return unsafe.Pointer(s.Surface.Ptr())
+	return unsafe.Pointer(s.Surface.Ptr()) //nolint:gosec
 }
 
 // Extend defines how patterns behave outside their natural bounds.
