@@ -8,11 +8,7 @@ import (
 )
 
 func TestGeneratePatterns(t *testing.T) {
-	generator := func(path string) error {
-		return GeneratePatterns(path)
-	}
-
-	match := CompareImageToGolden(t, generator, "testdata/golden/patterns.png")
+	match := CompareImageToGolden(t, GeneratePatterns, "testdata/golden/patterns.png")
 	assert.True(t, match, "Generated patterns image should match golden reference")
 }
 

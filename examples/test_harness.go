@@ -1,14 +1,29 @@
+// ABOUTME: Test harness for example image generation tests.
+// ABOUTME: Provides golden image comparison with pixel-level tolerance for cross-platform compatibility.
 package examples
 
 import (
-	"crypto/sha256"
 	"flag"
 	"fmt"
+	"image"
+	"image/color"
+	"image/png"
 	"io"
 	"os"
 	"path/filepath"
 	"testing"
 )
+
+// maxChannelDelta is the maximum allowed per-channel difference (0–255) between
+// corresponding pixels in the generated and golden images. Cairo's geometric
+// rendering can differ by 1–2 levels between platforms due to sub-pixel
+// antialiasing; 3 provides a comfortable margin without masking real regressions.
+const maxChannelDelta = 3
+
+// maxDiffPixelFraction is the maximum fraction of pixels that may exceed
+// maxChannelDelta before the comparison is considered a failure. Antialiasing
+// noise affects only edge pixels, so 1% is generous for geometric shapes.
+const maxDiffPixelFraction = 0.01
 
 // updateGolden is a flag that controls whether to update golden images
 var updateGolden = flag.Bool("update-golden", false, "update golden reference images")
@@ -22,8 +37,13 @@ type ImageGeneratorFunc func(outputPath string) error
 // This function:
 //  1. Creates a temporary directory (automatically cleaned up by testing framework)
 //  2. Runs the generator function to create an image
-//  3. Compares the generated image to the golden reference using SHA256 hashes
-//  4. Returns true if images match, false otherwise
+//  3. Compares the generated image to the golden reference using pixel-level tolerance
+//  4. Returns true if images match within tolerance, false otherwise
+//
+// Comparison tolerates minor per-pixel differences to handle sub-pixel antialiasing
+// variation across platforms: up to maxDiffPixelFraction of pixels may differ, and
+// differing pixels may vary by at most maxChannelDelta per channel (0–255). Image
+// size mismatches are always hard failures regardless of tolerance.
 //
 // If the -update-golden flag is set, this function will copy the generated image
 // to the golden path instead of comparing, making it easy to update reference images.
@@ -31,10 +51,7 @@ type ImageGeneratorFunc func(outputPath string) error
 // Usage:
 //
 //	func TestMyImage(t *testing.T) {
-//	    generator := func(path string) error {
-//	        return GenerateMyImage(path)
-//	    }
-//	    match := CompareImageToGolden(t, generator, "testdata/golden/my_image.png")
+//	    match := CompareImageToGolden(t, GenerateMyImage, "testdata/golden/my_image.png")
 //	    if !match {
 //	        t.Error("Generated image does not match golden reference")
 //	    }
@@ -69,77 +86,153 @@ func CompareImageToGolden(t *testing.T, generator ImageGeneratorFunc, goldenPath
 	}
 
 	// Compare generated image to golden reference
-	match, err := compareImageFiles(tempPath, goldenPath)
+	match, diagnostic, err := compareImageFiles(tempPath, goldenPath)
 	if err != nil {
 		t.Errorf("Failed to compare images: %v", err)
 		return false
 	}
 
 	if !match {
-		t.Errorf("Generated image does not match golden reference")
+		t.Errorf("Generated image does not match golden reference: %s", diagnostic)
 		t.Logf("  Generated: %s", tempPath)
 		t.Logf("  Golden:    %s", goldenPath)
-		t.Logf("To update the golden image, run: go test -update-golden")
+		t.Logf("  Thresholds: max channel delta=%d, max differing pixels=%.1f%%",
+			maxChannelDelta, maxDiffPixelFraction*100)
+		t.Logf("  To update: go test ./examples -update-golden")
 	}
 
 	return match
 }
 
-// compareImageFiles compares two image files using SHA256 hashes.
-// Returns true if the files have identical content, false otherwise.
-func compareImageFiles(generatedPath, goldenPath string) (bool, error) {
-	// Check if golden file exists
+// compareImageFiles compares two PNG files using pixel-level tolerance.
+// Returns (true, "", nil) when images match within tolerance.
+// Returns (false, diagnostic, nil) when images differ beyond tolerance; diagnostic
+// describes the extent of the difference to help tune thresholds if needed.
+// Returns (false, "", err) when the comparison cannot be performed.
+func compareImageFiles(generatedPath, goldenPath string) (bool, string, error) {
 	if _, err := os.Stat(goldenPath); os.IsNotExist(err) {
-		return false, fmt.Errorf(
+		return false, "", fmt.Errorf(
 			"golden reference image does not exist at %s (run with -update-golden to create it)",
 			goldenPath,
 		)
 	}
 
-	// Compute hash of generated image
-	generatedHash, err := computeFileHash(generatedPath)
+	generated, err := decodePNG(generatedPath)
 	if err != nil {
-		return false, fmt.Errorf("failed to hash generated image: %w", err)
+		return false, "", fmt.Errorf("failed to decode generated image: %w", err)
 	}
 
-	// Compute hash of golden image
-	goldenHash, err := computeFileHash(goldenPath)
+	golden, err := decodePNG(goldenPath)
 	if err != nil {
-		return false, fmt.Errorf("failed to hash golden image: %w", err)
+		return false, "", fmt.Errorf("failed to decode golden image: %w", err)
 	}
 
-	// Compare hashes
-	return generatedHash == goldenHash, nil
+	// Size mismatch is always a hard failure
+	genBounds := generated.Bounds()
+	goldenBounds := golden.Bounds()
+	if genBounds != goldenBounds {
+		return false, "", fmt.Errorf(
+			"image size mismatch: generated %v, golden %v",
+			genBounds, goldenBounds,
+		)
+	}
+
+	width := genBounds.Max.X - genBounds.Min.X
+	height := genBounds.Max.Y - genBounds.Min.Y
+	totalPixels := width * height
+
+	diffPixels, maxDelta := scanPixelDiffs(generated, golden, genBounds)
+
+	if diffPixels == 0 {
+		return true, "", nil
+	}
+
+	diffFraction := float64(diffPixels) / float64(totalPixels)
+	diagnostic := fmt.Sprintf(
+		"%d/%d pixels differ (%.2f%%, max channel delta: %d)",
+		diffPixels, totalPixels, diffFraction*100, maxDelta,
+	)
+
+	if diffFraction > maxDiffPixelFraction {
+		return false, diagnostic, nil
+	}
+
+	return true, "", nil
 }
 
-// computeFileHash computes the SHA256 hash of a file.
-func computeFileHash(path string) (string, error) {
+// scanPixelDiffs iterates every pixel in bounds and counts those where any RGBA
+// channel exceeds maxChannelDelta. Returns the count and the largest delta seen.
+func scanPixelDiffs(a, b image.Image, bounds image.Rectangle) (diffCount int, maxDelta uint8) {
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			p1 := color.NRGBAModel.Convert(a.At(x, y)).(color.NRGBA)
+			p2 := color.NRGBAModel.Convert(b.At(x, y)).(color.NRGBA)
+
+			delta := maxUint8(
+				absDiff(p1.R, p2.R),
+				absDiff(p1.G, p2.G),
+				absDiff(p1.B, p2.B),
+				absDiff(p1.A, p2.A),
+			)
+			if delta > maxDelta {
+				maxDelta = delta
+			}
+			if delta > maxChannelDelta {
+				diffCount++
+			}
+		}
+	}
+	return diffCount, maxDelta
+}
+
+// decodePNG opens and decodes a PNG file into an image.Image.
+func decodePNG(path string) (image.Image, error) {
 	filepath.Clean(path)
-	file, err := os.Open(path)
+	f, err := os.Open(path)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer func() {
-		_ = file.Close()
+		_ = f.Close()
 	}()
 
-	hash := sha256.New()
-	if _, err := io.Copy(hash, file); err != nil {
-		return "", err
+	img, err := png.Decode(f)
+	if err != nil {
+		return nil, err
 	}
+	return img, nil
+}
 
-	return fmt.Sprintf("%x", hash.Sum(nil)), nil
+// absDiff returns the absolute difference between two uint8 values.
+func absDiff(a, b uint8) uint8 {
+	if a > b {
+		return a - b
+	}
+	return b - a
+}
+
+// maxUint8 returns the largest of four uint8 values.
+func maxUint8(a, b, c, d uint8) uint8 {
+	m := a
+	if b > m {
+		m = b
+	}
+	if c > m {
+		m = c
+	}
+	if d > m {
+		m = d
+	}
+	return m
 }
 
 // updateGoldenImage copies the generated image to the golden reference location.
 func updateGoldenImage(generatedPath, goldenPath string) error {
-	// Ensure the directory for the golden image exists
 	goldenDir := filepath.Dir(goldenPath)
 	if err := os.MkdirAll(goldenDir, 0o750); err != nil {
 		return fmt.Errorf("failed to create golden directory: %w", err)
 	}
 
-	// Open source file
 	filepath.Clean(generatedPath)
 	src, err := os.Open(generatedPath)
 	if err != nil {
@@ -149,7 +242,6 @@ func updateGoldenImage(generatedPath, goldenPath string) error {
 		_ = src.Close()
 	}()
 
-	// Create destination file
 	dst, err := os.Create(goldenPath)
 	if err != nil {
 		return fmt.Errorf("failed to create golden image: %w", err)
@@ -158,7 +250,6 @@ func updateGoldenImage(generatedPath, goldenPath string) error {
 		_ = dst.Close()
 	}()
 
-	// Copy content
 	if _, err := io.Copy(dst, src); err != nil {
 		return fmt.Errorf("failed to copy image: %w", err)
 	}

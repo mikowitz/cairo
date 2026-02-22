@@ -61,43 +61,11 @@ func GeneratePatterns(outputPath string) error {
 		_ = checkerSurface.Close()
 	}()
 
-	// 1. Top-left: ExtendRepeat (tiling)
-	if err := drawPatternExample(ctx, checkerSurface, 20, 20, 240, 180,
-		cairo.ExtendRepeat, cairo.FilterGood); err != nil {
+	if err := drawPatternExamples(ctx, checkerSurface); err != nil {
 		return err
 	}
 
-	// 2. Top-right: ExtendReflect (mirroring)
-	if err := drawPatternExample(ctx, checkerSurface, 280, 20, 240, 180,
-		cairo.ExtendReflect, cairo.FilterGood); err != nil {
-		return err
-	}
-
-	// 3. Middle-left: ExtendPad (edge pixels extend)
-	if err := drawPatternExample(ctx, checkerSurface, 540, 20, 240, 180,
-		cairo.ExtendPad, cairo.FilterGood); err != nil {
-		return err
-	}
-
-	// 4. Middle-right: ExtendNone (transparent outside)
-	if err := drawPatternExample(ctx, checkerSurface, 20, 220, 240, 180,
-		cairo.ExtendNone, cairo.FilterGood); err != nil {
-		return err
-	}
-
-	// 5. Bottom-left: FilterNearest (pixelated when scaled)
-	if err := drawPatternExample(ctx, checkerSurface, 280, 220, 240, 180,
-		cairo.ExtendRepeat, cairo.FilterNearest); err != nil {
-		return err
-	}
-
-	// 6. Bottom-right: FilterBilinear (smooth when scaled)
-	if err := drawPatternExample(ctx, checkerSurface, 540, 220, 240, 180,
-		cairo.ExtendRepeat, cairo.FilterBilinear); err != nil {
-		return err
-	}
-
-	// 7. Bottom section: Complex example with rotation and scaling
+	// Bottom section: Complex example with rotation and scaling
 	if err := drawComplexPatternExample(ctx, checkerSurface, 20, 420); err != nil {
 		return err
 	}
@@ -157,10 +125,35 @@ func createCheckerSurface(width, height int) (*surface.ImageSurface, error) {
 	return surf, nil
 }
 
+// drawPatternExamples draws the six extend/filter comparison panels.
+func drawPatternExamples(ctx *cairo.Context, srcSurface *surface.ImageSurface) error {
+	type patternCase struct {
+		x, y   float64
+		extend cairo.Extend
+		filter cairo.Filter
+	}
+	cases := []patternCase{
+		{20, 20, cairo.ExtendRepeat, cairo.FilterGood},    // Top-left: ExtendRepeat (tiling)
+		{280, 20, cairo.ExtendReflect, cairo.FilterGood},  // Top-right: ExtendReflect (mirroring)
+		{540, 20, cairo.ExtendPad, cairo.FilterGood},      // Middle-left: ExtendPad (edge pixels extend)
+		{20, 220, cairo.ExtendNone, cairo.FilterGood},     // Middle-right: ExtendNone (transparent outside)
+		{280, 220, cairo.ExtendRepeat, cairo.FilterNearest},  // Bottom-left: FilterNearest (pixelated)
+		{540, 220, cairo.ExtendRepeat, cairo.FilterBilinear}, // Bottom-right: FilterBilinear (smooth)
+	}
+	for _, c := range cases {
+		if err := drawPatternExample(ctx, srcSurface, c.x, c.y, c.extend, c.filter); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // drawPatternExample draws a single pattern example.
+// Each panel is 240×180 pixels; extend and filter control how the pattern tiles and scales.
 func drawPatternExample(ctx *cairo.Context, srcSurface *surface.ImageSurface,
-	x, y, width, height float64, extend cairo.Extend, filter cairo.Filter,
+	x, y float64, extend cairo.Extend, filter cairo.Filter,
 ) error {
+	const width, height = 240, 180
 	pat, err := cairo.NewSurfacePattern(srcSurface)
 	if err != nil {
 		return fmt.Errorf("failed to create surface pattern: %w", err)

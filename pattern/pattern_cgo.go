@@ -104,7 +104,7 @@ func patternGetType(ptr PatternPtr) PatternType {
 }
 
 func patternCreateForSurface(surfacePtr unsafe.Pointer) PatternPtr {
-	return C.cairo_pattern_create_for_surface((*C.cairo_surface_t)(surfacePtr)) //nolint:gosec
+	return C.cairo_pattern_create_for_surface((*C.cairo_surface_t)(surfacePtr))
 }
 
 func patternSetExtend(ptr PatternPtr, extend Extend) {

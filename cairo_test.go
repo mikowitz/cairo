@@ -112,6 +112,88 @@ func TestSurfaceInterfaceReexport(t *testing.T) {
 	assert.Equal(t, 0, int(status)) // StatusSuccess should be 0
 }
 
+// TestOperatorReexport verifies that the Operator type and SetOperator/GetOperator
+// are usable via the root cairo package.
+func TestOperatorReexport(t *testing.T) {
+	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 10, 10)
+	require.NoError(t, err)
+	defer func() { _ = surf.Close() }()
+
+	ctx, err := cairo.NewContext(surf)
+	require.NoError(t, err)
+	defer func() { _ = ctx.Close() }()
+
+	ctx.SetOperator(cairo.OperatorAdd)
+	assert.Equal(t, cairo.OperatorAdd, ctx.GetOperator())
+}
+
+// TestOperatorRoundTrip verifies all 29 re-exported operator constants round-trip
+// correctly through SetOperator/GetOperator.
+func TestOperatorRoundTrip(t *testing.T) {
+	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 10, 10)
+	require.NoError(t, err)
+	defer func() { _ = surf.Close() }()
+
+	ctx, err := cairo.NewContext(surf)
+	require.NoError(t, err)
+	defer func() { _ = ctx.Close() }()
+
+	operators := []struct {
+		name string
+		op   cairo.Operator
+	}{
+		{"OperatorClear", cairo.OperatorClear},
+		{"OperatorSource", cairo.OperatorSource},
+		{"OperatorOver", cairo.OperatorOver},
+		{"OperatorIn", cairo.OperatorIn},
+		{"OperatorOut", cairo.OperatorOut},
+		{"OperatorAtop", cairo.OperatorAtop},
+		{"OperatorDest", cairo.OperatorDest},
+		{"OperatorDestOver", cairo.OperatorDestOver},
+		{"OperatorDestIn", cairo.OperatorDestIn},
+		{"OperatorDestOut", cairo.OperatorDestOut},
+		{"OperatorDestAtop", cairo.OperatorDestAtop},
+		{"OperatorXor", cairo.OperatorXor},
+		{"OperatorAdd", cairo.OperatorAdd},
+		{"OperatorSaturate", cairo.OperatorSaturate},
+		{"OperatorMultiply", cairo.OperatorMultiply},
+		{"OperatorScreen", cairo.OperatorScreen},
+		{"OperatorOverlay", cairo.OperatorOverlay},
+		{"OperatorDarken", cairo.OperatorDarken},
+		{"OperatorLighten", cairo.OperatorLighten},
+		{"OperatorColorDodge", cairo.OperatorColorDodge},
+		{"OperatorColorBurn", cairo.OperatorColorBurn},
+		{"OperatorHardLight", cairo.OperatorHardLight},
+		{"OperatorSoftLight", cairo.OperatorSoftLight},
+		{"OperatorDifference", cairo.OperatorDifference},
+		{"OperatorExclusion", cairo.OperatorExclusion},
+		{"OperatorHslHue", cairo.OperatorHslHue},
+		{"OperatorHslSaturation", cairo.OperatorHslSaturation},
+		{"OperatorHslColor", cairo.OperatorHslColor},
+		{"OperatorHslLuminosity", cairo.OperatorHslLuminosity},
+	}
+
+	for _, tt := range operators {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx.SetOperator(tt.op)
+			assert.Equal(t, tt.op, ctx.GetOperator())
+		})
+	}
+}
+
+// TestOperatorDefaultIsOver verifies that OperatorOver is the default (value 2 per Cairo spec).
+func TestOperatorDefaultIsOver(t *testing.T) {
+	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 10, 10)
+	require.NoError(t, err)
+	defer func() { _ = surf.Close() }()
+
+	ctx, err := cairo.NewContext(surf)
+	require.NoError(t, err)
+	defer func() { _ = ctx.Close() }()
+
+	assert.Equal(t, cairo.OperatorOver, ctx.GetOperator())
+}
+
 // TestSurfaceLifecycle demonstrates proper resource management
 func TestSurfaceLifecycle(t *testing.T) {
 	// Create a surface
