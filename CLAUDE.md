@@ -188,6 +188,21 @@ Always run `go generate ./...` after modifying enum types.
 - `examples/*_test.go` - Example tests demonstrating usage patterns
 - `examples/test_harness.go` - Shared testing utilities for visual output validation
 
+### Golden Image Tests and Text Rendering
+
+The golden image comparison in `examples/test_harness.go` uses pixel-level tolerance
+(max 3/255 per channel, max 1% of pixels) to handle sub-pixel antialiasing differences
+across platforms (macOS vs Linux). This works for geometric shapes but **does not scale
+to text rendering**: different OSes use different default fonts, hinting engines, and
+antialiasing strategies, producing pixel differences too large for any reasonable tolerance
+threshold.
+
+**Any example or test that renders text must use structural tests instead of golden image
+comparison.** Structural tests assert properties of the rendered output (e.g., "this pixel
+region is non-background", "these two regions differ from each other") rather than
+comparing against a reference image. Do not add golden image tests for text-rendering
+examples.
+
 ### Running Single Tests
 
 ```bash
