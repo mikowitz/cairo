@@ -36,15 +36,15 @@ func TestCompositingGeneratesValidPNG(t *testing.T) {
 // This test uses the CompareImageToGolden harness to verify pixel-perfect output.
 // The image demonstrates all 29 compositing operators in a 5×6 grid.
 //
-// Porter-Duff operators:
-//   - Clear, Source, Over, In, Out
-//   - Atop, Dest, DestOver, DestIn, DestOut
-//   - DestAtop, Xor, Add, Saturate, Multiply
+// Operators are shown in Cairo's numeric order. The 14 Porter-Duff operators fill
+// rows 1–3 with one slot remaining, so Multiply (first blend mode) ends row 3:
 //
-// Blend mode operators:
-//   - Screen, Overlay, Darken, Lighten, ColorDodge
-//   - ColorBurn, HardLight, SoftLight, Difference, Exclusion
-//   - HslHue, HslSaturation, HslColor, HslLuminosity
+//   Row 1: Clear, Source, Over, In, Out
+//   Row 2: Atop, Dest, DestOver, DestIn, DestOut
+//   Row 3: DestAtop, Xor, Add, Saturate, Multiply (first blend mode)
+//   Row 4: Screen, Overlay, Darken, Lighten, ColorDodge
+//   Row 5: ColorBurn, HardLight, SoftLight, Difference, Exclusion
+//   Row 6: HslHue, HslSaturation, HslColor, HslLuminosity
 //
 // If the test fails, run with -update-golden to regenerate the reference image.
 func TestCompositingMatchesGolden(t *testing.T) {
