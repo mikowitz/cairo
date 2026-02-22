@@ -18,12 +18,12 @@ import (
 // top to bottom). The 14 Porter-Duff operators fill rows 1–3 with one slot remaining,
 // so the first blend mode (Multiply) appears at the end of row 3:
 //
-//   Row 1: Clear, Source, Over, In, Out
-//   Row 2: Atop, Dest, DestOver, DestIn, DestOut
-//   Row 3: DestAtop, Xor, Add, Saturate, Multiply (first blend mode)
-//   Row 4: Screen, Overlay, Darken, Lighten, ColorDodge
-//   Row 5: ColorBurn, HardLight, SoftLight, Difference, Exclusion
-//   Row 6: HslHue, HslSaturation, HslColor, HslLuminosity
+//	Row 1: Clear, Source, Over, In, Out
+//	Row 2: Atop, Dest, DestOver, DestIn, DestOut
+//	Row 3: DestAtop, Xor, Add, Saturate, Multiply (first blend mode)
+//	Row 4: Screen, Overlay, Darken, Lighten, ColorDodge
+//	Row 5: ColorBurn, HardLight, SoftLight, Difference, Exclusion
+//	Row 6: HslHue, HslSaturation, HslColor, HslLuminosity
 //
 // This demonstrates:
 //   - ctx.SetOperator() to change the compositing operator
@@ -54,54 +54,11 @@ func GenerateCompositing(outputPath string) error {
 	ctx.SetSourceRGB(0.75, 0.75, 0.75)
 	ctx.Paint()
 
-	type panel struct {
-		ox, oy float64
-		op     cairo.Operator
-	}
-
-	panels := []panel{
-		// Porter-Duff operators
-		{0 * panelSize, 0 * panelSize, cairo.OperatorClear},
-		{1 * panelSize, 0 * panelSize, cairo.OperatorSource},
-		{2 * panelSize, 0 * panelSize, cairo.OperatorOver},
-		{3 * panelSize, 0 * panelSize, cairo.OperatorIn},
-		{4 * panelSize, 0 * panelSize, cairo.OperatorOut},
-
-		{0 * panelSize, 1 * panelSize, cairo.OperatorAtop},
-		{1 * panelSize, 1 * panelSize, cairo.OperatorDest},
-		{2 * panelSize, 1 * panelSize, cairo.OperatorDestOver},
-		{3 * panelSize, 1 * panelSize, cairo.OperatorDestIn},
-		{4 * panelSize, 1 * panelSize, cairo.OperatorDestOut},
-
-		{0 * panelSize, 2 * panelSize, cairo.OperatorDestAtop},
-		{1 * panelSize, 2 * panelSize, cairo.OperatorXor},
-		{2 * panelSize, 2 * panelSize, cairo.OperatorAdd},
-		{3 * panelSize, 2 * panelSize, cairo.OperatorSaturate},
-
-		// Blend mode operators
-		{4 * panelSize, 2 * panelSize, cairo.OperatorMultiply},
-
-		{0 * panelSize, 3 * panelSize, cairo.OperatorScreen},
-		{1 * panelSize, 3 * panelSize, cairo.OperatorOverlay},
-		{2 * panelSize, 3 * panelSize, cairo.OperatorDarken},
-		{3 * panelSize, 3 * panelSize, cairo.OperatorLighten},
-		{4 * panelSize, 3 * panelSize, cairo.OperatorColorDodge},
-
-		{0 * panelSize, 4 * panelSize, cairo.OperatorColorBurn},
-		{1 * panelSize, 4 * panelSize, cairo.OperatorHardLight},
-		{2 * panelSize, 4 * panelSize, cairo.OperatorSoftLight},
-		{3 * panelSize, 4 * panelSize, cairo.OperatorDifference},
-		{4 * panelSize, 4 * panelSize, cairo.OperatorExclusion},
-
-		{0 * panelSize, 5 * panelSize, cairo.OperatorHslHue},
-		{1 * panelSize, 5 * panelSize, cairo.OperatorHslSaturation},
-		{2 * panelSize, 5 * panelSize, cairo.OperatorHslColor},
-		{3 * panelSize, 5 * panelSize, cairo.OperatorHslLuminosity},
-	}
-
-	for _, p := range panels {
+	for i, op := range compositingOperators() {
+		col := float64(i % 5)
+		row := float64(i / 5)
 		ctx.Save()
-		drawCompositingPanel(ctx, p.ox, p.oy, panelSize, p.op)
+		drawCompositingPanel(ctx, col*panelSize, row*panelSize, panelSize, op)
 		ctx.Restore()
 	}
 
@@ -112,6 +69,44 @@ func GenerateCompositing(outputPath string) error {
 	}
 
 	return nil
+}
+
+// compositingOperators returns all 29 Cairo compositing operators in numeric order.
+// The caller maps them onto a grid by index: column = i%5, row = i/5.
+func compositingOperators() []cairo.Operator {
+	return []cairo.Operator{
+		// Porter-Duff operators
+		cairo.OperatorClear,
+		cairo.OperatorSource,
+		cairo.OperatorOver,
+		cairo.OperatorIn,
+		cairo.OperatorOut,
+		cairo.OperatorAtop,
+		cairo.OperatorDest,
+		cairo.OperatorDestOver,
+		cairo.OperatorDestIn,
+		cairo.OperatorDestOut,
+		cairo.OperatorDestAtop,
+		cairo.OperatorXor,
+		cairo.OperatorAdd,
+		cairo.OperatorSaturate,
+		// Blend mode operators
+		cairo.OperatorMultiply,
+		cairo.OperatorScreen,
+		cairo.OperatorOverlay,
+		cairo.OperatorDarken,
+		cairo.OperatorLighten,
+		cairo.OperatorColorDodge,
+		cairo.OperatorColorBurn,
+		cairo.OperatorHardLight,
+		cairo.OperatorSoftLight,
+		cairo.OperatorDifference,
+		cairo.OperatorExclusion,
+		cairo.OperatorHslHue,
+		cairo.OperatorHslSaturation,
+		cairo.OperatorHslColor,
+		cairo.OperatorHslLuminosity,
+	}
 }
 
 // drawCompositingPanel draws a single compositing demonstration panel.
