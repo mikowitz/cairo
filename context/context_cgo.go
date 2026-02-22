@@ -323,3 +323,11 @@ func contextSetOperator(ptr ContextPtr, op Operator) {
 func contextGetOperator(ptr ContextPtr) Operator {
 	return Operator(C.cairo_get_operator(ptr))
 }
+
+func contextSetFillRule(ptr ContextPtr, fillRule FillRule) {
+	C.cairo_set_fill_rule(ptr, C.cairo_fill_rule_t(fillRule))
+}
+
+func contextGetFillRule(ptr ContextPtr) FillRule {
+	return FillRule(C.cairo_get_fill_rule(ptr))
+}
