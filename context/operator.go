@@ -136,8 +136,8 @@ const (
 // Blend mode operators combine colors:
 //   - [OperatorMultiply]: Darkens by multiplying colors
 //   - [OperatorScreen]: Lightens using inverted multiply
-//   - [OperatorAdd]: Brightens by adding colors
-//   - [OperatorXor]: Shows non-overlapping regions
+//   - [OperatorOverlay]: Multiplies or screens based on destination color
+//   - [OperatorDifference]: Subtracts source from destination or vice versa
 func (c *Context) SetOperator(op Operator) {
 	c.withLock(func() {
 		contextSetOperator(c.ptr, op)
