@@ -25,6 +25,11 @@ package context
 //go:generate stringer -type=Operator
 type Operator int
 
+// The iota values below must match Cairo's cairo_operator_t C enum exactly.
+// Cairo has maintained this ordering since version 1.10 and documents it as
+// stable. The CGO layer casts Operator directly to cairo_operator_t, so any
+// divergence would silently produce incorrect compositing. If Cairo ever adds
+// or reorders operators, this block and the stringer output must be updated.
 const (
 	// OperatorClear clears the destination layer, making it fully transparent.
 	OperatorClear Operator = iota
