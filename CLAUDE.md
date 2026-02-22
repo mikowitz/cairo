@@ -159,6 +159,20 @@ if status := ctx.Status(); status != status.Success {
 }
 ```
 
+## Merging Pull Requests
+
+PRs may only be merged when **all GitHub Actions checks are passing**. Never merge a PR
+with failing or pending checks.
+
+Always merge via the `gh` CLI using squash-and-delete:
+
+```bash
+gh pr merge -sd
+```
+
+The `-s` flag squashes all commits into one, and `-d` deletes the branch after merging.
+Do not merge through the GitHub web UI or with any other flags.
+
 ## Development Workflow
 
 ### Typical Usage Flow
