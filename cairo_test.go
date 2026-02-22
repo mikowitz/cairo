@@ -112,14 +112,32 @@ func TestSurfaceInterfaceReexport(t *testing.T) {
 	assert.Equal(t, 0, int(status)) // StatusSuccess should be 0
 }
 
-// TestOperatorReexport verifies that the Operator type is re-exported correctly.
+// TestOperatorReexport verifies that the Operator type and SetOperator/GetOperator
+// are usable via the root cairo package.
 func TestOperatorReexport(t *testing.T) {
-	op := cairo.OperatorOver
-	assert.Equal(t, cairo.OperatorOver, op)
+	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 10, 10)
+	require.NoError(t, err)
+	defer func() { _ = surf.Close() }()
+
+	ctx, err := cairo.NewContext(surf)
+	require.NoError(t, err)
+	defer func() { _ = ctx.Close() }()
+
+	ctx.SetOperator(cairo.OperatorAdd)
+	assert.Equal(t, cairo.OperatorAdd, ctx.GetOperator())
 }
 
-// TestOperatorConstants verifies all operator constants are accessible from the cairo package.
-func TestOperatorConstants(t *testing.T) {
+// TestOperatorRoundTrip verifies all 29 re-exported operator constants round-trip
+// correctly through SetOperator/GetOperator.
+func TestOperatorRoundTrip(t *testing.T) {
+	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 10, 10)
+	require.NoError(t, err)
+	defer func() { _ = surf.Close() }()
+
+	ctx, err := cairo.NewContext(surf)
+	require.NoError(t, err)
+	defer func() { _ = ctx.Close() }()
+
 	operators := []struct {
 		name string
 		op   cairo.Operator
@@ -157,7 +175,8 @@ func TestOperatorConstants(t *testing.T) {
 
 	for _, tt := range operators {
 		t.Run(tt.name, func(t *testing.T) {
-			_ = tt.op
+			ctx.SetOperator(tt.op)
+			assert.Equal(t, tt.op, ctx.GetOperator())
 		})
 	}
 }
