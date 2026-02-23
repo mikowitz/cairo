@@ -58,7 +58,7 @@ func GenerateFillRules(outputPath string) error {
 	ctx.Save()
 	ctx.SetFillRule(cairo.FillRuleWinding)
 	ctx.SetSourceRGB(0.2, 0.4, 0.8)
-	starPath(ctx, 100, 100, 85, 34)
+	starPath(ctx, 100, 100, 85)
 	ctx.Fill()
 	ctx.Restore()
 
@@ -66,7 +66,7 @@ func GenerateFillRules(outputPath string) error {
 	ctx.Save()
 	ctx.SetFillRule(cairo.FillRuleEvenOdd)
 	ctx.SetSourceRGB(0.2, 0.4, 0.8)
-	starPath(ctx, 300, 100, 85, 34)
+	starPath(ctx, 300, 100, 85)
 	ctx.Fill()
 	ctx.Restore()
 
@@ -74,19 +74,19 @@ func GenerateFillRules(outputPath string) error {
 	return surface.WriteToPNG(outputPath)
 }
 
-// starPath constructs a five-pointed star path centered at (cx, cy) with the given
-// outer and inner radii. The path is not filled or stroked; the caller controls rendering.
-func starPath(ctx *cairo.Context, cx, cy, outerRadius, innerRadius float64) {
+// starPath constructs a self-intersecting five-pointed star (pentagram) path centered
+// at (cx, cy) with the given radius. It connects every other vertex of a regular
+// pentagon, producing a path that crosses itself and creates a center region enclosed
+// twice — which makes the even-odd and winding fill rules produce visibly different
+// results. The path is not filled or stroked; the caller controls rendering.
+func starPath(ctx *cairo.Context, cx, cy, radius float64) {
 	const points = 5
-	for i := 0; i < points*2; i++ {
-		// Alternate between outer and inner radius points
-		angle := float64(i)*math.Pi/float64(points) - math.Pi/2
-		r := outerRadius
-		if i%2 == 1 {
-			r = innerRadius
-		}
-		x := cx + r*math.Cos(angle)
-		y := cy + r*math.Sin(angle)
+	for i := 0; i < points; i++ {
+		// Skip every other vertex to create a self-intersecting pentagram
+		idx := (i * 2) % points
+		angle := float64(idx)*2*math.Pi/float64(points) - math.Pi/2
+		x := cx + radius*math.Cos(angle)
+		y := cy + radius*math.Sin(angle)
 		if i == 0 {
 			ctx.MoveTo(x, y)
 		} else {
