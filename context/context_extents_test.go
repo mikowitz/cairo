@@ -47,10 +47,10 @@ func TestContextStrokeExtents(t *testing.T) {
 	x1, y1, x2, y2 := ctx.StrokeExtents()
 
 	// Stroke extents extend outward by half the line width (2.0)
-	assert.InDelta(t, 8.0, x1, 0.5)
-	assert.InDelta(t, 18.0, y1, 0.5)
-	assert.InDelta(t, 92.0, x2, 0.5)
-	assert.InDelta(t, 82.0, y2, 0.5)
+	assert.InDelta(t, 8.0, x1, 0.001)
+	assert.InDelta(t, 18.0, y1, 0.001)
+	assert.InDelta(t, 92.0, x2, 0.001)
+	assert.InDelta(t, 82.0, y2, 0.001)
 }
 
 // TestContextPathExtents verifies that PathExtents returns the path bounding box.
