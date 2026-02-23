@@ -48,32 +48,32 @@ func GenerateText(outputPath string) error {
 
 	// Row 1: Normal upright sans-serif at size 20
 	ctx.SelectFontFace("sans-serif", font.SlantNormal, font.WeightNormal)
-	ctx.SetFontSize(20)
+	ctx.SetFontSize(20.0)
 	ctx.MoveTo(20, 50)
 	ctx.ShowText("Normal sans-serif")
 
 	// Row 2: Bold sans-serif at size 20
 	ctx.SelectFontFace("sans-serif", font.SlantNormal, font.WeightBold)
-	ctx.SetFontSize(20)
+	ctx.SetFontSize(20.0)
 	ctx.MoveTo(20, 100)
 	ctx.ShowText("Bold sans-serif")
 
 	// Row 3: Italic serif at size 20
 	ctx.SelectFontFace("serif", font.SlantItalic, font.WeightNormal)
-	ctx.SetFontSize(20)
+	ctx.SetFontSize(20.0)
 	ctx.MoveTo(20, 150)
 	ctx.ShowText("Italic serif")
 
 	// Row 4: Oblique monospace at size 20
 	ctx.SelectFontFace("monospace", font.SlantOblique, font.WeightNormal)
-	ctx.SetFontSize(20)
+	ctx.SetFontSize(20.0)
 	ctx.MoveTo(20, 200)
 	ctx.ShowText("Oblique monospace")
 
 	// Row 5: TextPath builds glyph outlines then Fill renders them
 	ctx.SetSourceRGB(0.2, 0.2, 0.8)
 	ctx.SelectFontFace("sans-serif", font.SlantNormal, font.WeightBold)
-	ctx.SetFontSize(30)
+	ctx.SetFontSize(30.0)
 	ctx.MoveTo(20, 270)
 	ctx.TextPath("Large bold path")
 	ctx.Fill()
