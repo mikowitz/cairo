@@ -323,3 +323,37 @@ func contextSetOperator(ptr ContextPtr, op Operator) {
 func contextGetOperator(ptr ContextPtr) Operator {
 	return Operator(C.cairo_get_operator(ptr))
 }
+
+func contextSetFillRule(ptr ContextPtr, fillRule FillRule) {
+	C.cairo_set_fill_rule(ptr, C.cairo_fill_rule_t(fillRule))
+}
+
+func contextGetFillRule(ptr ContextPtr) FillRule {
+	return FillRule(C.cairo_get_fill_rule(ptr))
+}
+
+func contextFillExtents(ptr ContextPtr) (float64, float64, float64, float64) {
+	var x1, y1, x2, y2 C.double
+	C.cairo_fill_extents(ptr, &x1, &y1, &x2, &y2)
+	return float64(x1), float64(y1), float64(x2), float64(y2)
+}
+
+func contextStrokeExtents(ptr ContextPtr) (float64, float64, float64, float64) {
+	var x1, y1, x2, y2 C.double
+	C.cairo_stroke_extents(ptr, &x1, &y1, &x2, &y2)
+	return float64(x1), float64(y1), float64(x2), float64(y2)
+}
+
+func contextPathExtents(ptr ContextPtr) (float64, float64, float64, float64) {
+	var x1, y1, x2, y2 C.double
+	C.cairo_path_extents(ptr, &x1, &y1, &x2, &y2)
+	return float64(x1), float64(y1), float64(x2), float64(y2)
+}
+
+func contextInFill(ptr ContextPtr, x, y float64) bool {
+	return int(C.cairo_in_fill(ptr, C.double(x), C.double(y))) != 0
+}
+
+func contextInStroke(ptr ContextPtr, x, y float64) bool {
+	return int(C.cairo_in_stroke(ptr, C.double(x), C.double(y))) != 0
+}

@@ -907,6 +907,25 @@ const (
 	LineJoinBevel
 )
 
+// FillRule controls which areas of a self-intersecting path are considered "inside"
+// and therefore filled when calling [Context.Fill] or [Context.FillPreserve].
+//
+// The winding and even-odd rules produce different results for complex paths
+// that intersect themselves, such as stars or compound shapes.
+type FillRule = context.FillRule
+
+const (
+	// FillRuleWinding uses the winding number rule to determine path interiors.
+	// A point is inside if the path winds around it a non-zero number of times.
+	// This is the default fill rule.
+	FillRuleWinding FillRule = context.FillRuleWinding
+
+	// FillRuleEvenOdd uses the even-odd rule to determine path interiors.
+	// A point is inside if a ray from it crosses the path an odd number of times.
+	// This can produce holes in self-intersecting paths.
+	FillRuleEvenOdd FillRule = context.FillRuleEvenOdd
+)
+
 // Operator controls how drawing operations combine with existing surface content.
 //
 // Cairo supports two classes of operators:
