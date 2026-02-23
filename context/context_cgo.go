@@ -8,6 +8,7 @@ import "C"
 import (
 	"unsafe"
 
+	"github.com/mikowitz/cairo/font"
 	"github.com/mikowitz/cairo/matrix"
 	"github.com/mikowitz/cairo/pattern"
 	"github.com/mikowitz/cairo/status"
@@ -356,4 +357,26 @@ func contextInFill(ptr ContextPtr, x, y float64) bool {
 
 func contextInStroke(ptr ContextPtr, x, y float64) bool {
 	return int(C.cairo_in_stroke(ptr, C.double(x), C.double(y))) != 0
+}
+
+func contextSelectFontFace(ptr ContextPtr, family string, slant font.Slant, weight font.Weight) {
+	cFamily := C.CString(family)
+	defer C.free(unsafe.Pointer(cFamily))
+	C.cairo_select_font_face(ptr, cFamily, C.cairo_font_slant_t(slant), C.cairo_font_weight_t(weight))
+}
+
+func contextSetFontSize(ptr ContextPtr, size float64) {
+	C.cairo_set_font_size(ptr, C.double(size))
+}
+
+func contextShowText(ptr ContextPtr, text string) {
+	cText := C.CString(text)
+	defer C.free(unsafe.Pointer(cText))
+	C.cairo_show_text(ptr, cText)
+}
+
+func contextTextPath(ptr ContextPtr, text string) {
+	cText := C.CString(text)
+	defer C.free(unsafe.Pointer(cText))
+	C.cairo_text_path(ptr, cText)
 }

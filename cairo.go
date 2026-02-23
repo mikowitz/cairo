@@ -4,6 +4,7 @@ import (
 	"unsafe"
 
 	"github.com/mikowitz/cairo/context"
+	"github.com/mikowitz/cairo/font"
 	"github.com/mikowitz/cairo/pattern"
 	"github.com/mikowitz/cairo/surface"
 )
@@ -1035,4 +1036,35 @@ const (
 
 	// OperatorHslLuminosity uses the luminosity of the source with the hue and saturation of the destination.
 	OperatorHslLuminosity Operator = context.OperatorHslLuminosity
+)
+
+// Slant specifies the slant style of a font face used with [Context.SelectFontFace].
+//
+// Results are platform-dependent; the host OS font system determines which font
+// is actually selected for a given family and slant combination.
+type Slant = font.Slant
+
+const (
+	// SlantNormal selects an upright (non-slanted) font face.
+	SlantNormal Slant = font.SlantNormal
+
+	// SlantItalic selects an italic font face.
+	SlantItalic Slant = font.SlantItalic
+
+	// SlantOblique selects an oblique (mechanically slanted) font face.
+	SlantOblique Slant = font.SlantOblique
+)
+
+// Weight specifies the weight (boldness) of a font face used with [Context.SelectFontFace].
+//
+// Results are platform-dependent; the host OS font system determines which font
+// is actually selected for a given family and weight combination.
+type Weight = font.Weight
+
+const (
+	// WeightNormal selects a normal-weight font face.
+	WeightNormal Weight = font.WeightNormal
+
+	// WeightBold selects a bold font face.
+	WeightBold Weight = font.WeightBold
 )

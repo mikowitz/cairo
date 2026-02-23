@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/mikowitz/cairo"
+	"github.com/mikowitz/cairo/status"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -192,6 +193,24 @@ func TestOperatorDefaultIsOver(t *testing.T) {
 	defer func() { _ = ctx.Close() }()
 
 	assert.Equal(t, cairo.OperatorOver, ctx.GetOperator())
+}
+
+// TestSelectFontFaceViaRootPackage verifies that SelectFontFace works using
+// re-exported Slant and Weight constants from the root cairo package.
+func TestSelectFontFaceViaRootPackage(t *testing.T) {
+	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 100, 100)
+	require.NoError(t, err)
+	defer func() { _ = surf.Close() }()
+
+	ctx, err := cairo.NewContext(surf)
+	require.NoError(t, err)
+	defer func() { _ = ctx.Close() }()
+
+	ctx.SelectFontFace("sans-serif", cairo.SlantNormal, cairo.WeightNormal)
+	ctx.SelectFontFace("serif", cairo.SlantItalic, cairo.WeightBold)
+	ctx.SelectFontFace("monospace", cairo.SlantOblique, cairo.WeightNormal)
+
+	assert.Equal(t, status.Success, ctx.Status())
 }
 
 // TestSurfaceLifecycle demonstrates proper resource management
