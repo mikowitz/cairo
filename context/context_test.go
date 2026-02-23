@@ -13,20 +13,8 @@ import (
 
 // TestNewContext verifies that a Context can be created from an ImageSurface.
 func TestNewContext(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "failed to clause the surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
+	ctx := newTestContext(t, 100, 100)
 	require.NotNil(t, ctx, "Context should not be nil")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "failed to close context")
-	}()
 
 	// Verify the context has a valid status
 	st := ctx.Status()
@@ -71,19 +59,7 @@ func TestContextClose(t *testing.T) {
 
 // TestContextStatus verifies that Status returns the correct status.
 func TestContextStatus(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "failed to clause the surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	// New context should have Success status
 	st := ctx.Status()
@@ -92,19 +68,7 @@ func TestContextStatus(t *testing.T) {
 
 // TestContextSaveRestore verifies the save/restore stack works correctly.
 func TestContextSaveRestore(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "failed to clause the surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	// Save should not cause errors
 	ctx.Save()
@@ -132,19 +96,7 @@ func TestContextSaveRestore(t *testing.T) {
 
 // TestContextSaveRestoreImbalance verifies that restoring without a matching save causes an error.
 func TestContextSaveRestoreImbalance(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "failed to clause the surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	// Restore without Save should cause InvalidRestore status
 	ctx.Restore()
@@ -256,19 +208,7 @@ func TestContextCreationWithDifferentSurfaceFormats(t *testing.T) {
 
 // TestContextSetSourceRGB verifies that SetSourceRGB sets a color and maintains success status.
 func TestContextSetSourceRGB(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	// Test various color combinations
 	testCases := []struct {
@@ -294,19 +234,7 @@ func TestContextSetSourceRGB(t *testing.T) {
 
 // TestContextSetSourceRGBA verifies that SetSourceRGBA sets a color with alpha and maintains success status.
 func TestContextSetSourceRGBA(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	// Test various color and alpha combinations
 	testCases := []struct {
@@ -356,19 +284,7 @@ func TestContextSetSourceAfterClose(t *testing.T) {
 
 // TestContextMoveTo verifies that MoveTo sets the current point.
 func TestContextMoveTo(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	// MoveTo should set current point
 	ctx.MoveTo(50.0, 75.0)
@@ -384,19 +300,7 @@ func TestContextMoveTo(t *testing.T) {
 
 // TestContextLineTo verifies that LineTo adds a line and updates the current point.
 func TestContextLineTo(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	// Start with MoveTo to establish a current point
 	ctx.MoveTo(10.0, 20.0)
@@ -422,19 +326,7 @@ func TestContextLineTo(t *testing.T) {
 
 // TestContextRectangle verifies that Rectangle creates a rectangular path.
 func TestContextRectangle(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 200, 200)
 
 	// Rectangle should create a closed rectangular path
 	ctx.Rectangle(10.0, 20.0, 100.0, 50.0)
@@ -463,19 +355,7 @@ func TestContextRectangle(t *testing.T) {
 
 // TestContextClosePath verifies that ClosePath closes the current path.
 func TestContextClosePath(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	// Create a path
 	ctx.MoveTo(10.0, 10.0)
@@ -496,19 +376,7 @@ func TestContextClosePath(t *testing.T) {
 
 // TestContextNewPath verifies that NewPath clears the current path.
 func TestContextNewPath(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	// Create a path with a current point
 	ctx.MoveTo(50.0, 50.0)
@@ -535,19 +403,7 @@ func TestContextNewPath(t *testing.T) {
 
 // TestContextGetCurrentPoint verifies getting the current point.
 func TestContextGetCurrentPoint(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	// Set current point with MoveTo
 	ctx.MoveTo(25.5, 37.75)
@@ -565,19 +421,7 @@ func TestContextGetCurrentPoint(t *testing.T) {
 }
 
 func TestContextHasCurrentPointNoPoint(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	// No current point initially
 	assert.False(t, ctx.HasCurrentPoint(), "HasCurrentPoint should be false when no current point")
@@ -598,22 +442,10 @@ func TestContextHasCurrentPointNoPoint(t *testing.T) {
 
 // TestContextGetCurrentPointNoPoint verifies error when no current point exists.
 func TestContextGetCurrentPointNoPoint(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	// No current point initially
-	_, _, err = ctx.GetCurrentPoint()
+	_, _, err := ctx.GetCurrentPoint()
 	assert.Error(t, err, "GetCurrentPoint should error when no current point")
 
 	// Set a current point
@@ -668,19 +500,7 @@ func TestContextPathOperationsAfterClose(t *testing.T) {
 
 // TestContextFill verifies that Fill renders and consumes the current path.
 func TestContextFill(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 200, 200)
 
 	// Create a path and fill it
 	ctx.Rectangle(50.0, 50.0, 100.0, 100.0)
@@ -697,19 +517,7 @@ func TestContextFill(t *testing.T) {
 
 // TestContextFillPreserve verifies that FillPreserve renders but keeps the path.
 func TestContextFillPreserve(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 200, 200)
 
 	// Create a path
 	ctx.Rectangle(50.0, 50.0, 100.0, 100.0)
@@ -733,19 +541,7 @@ func TestContextFillPreserve(t *testing.T) {
 
 // TestContextStroke verifies that Stroke renders and consumes the current path.
 func TestContextStroke(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 200, 200)
 
 	// Create a path and stroke it
 	ctx.SetLineWidth(2.0)
@@ -762,19 +558,7 @@ func TestContextStroke(t *testing.T) {
 
 // TestContextStrokePreserve verifies that StrokePreserve renders but keeps the path.
 func TestContextStrokePreserve(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 200, 200)
 
 	// Create a path
 	ctx.SetLineWidth(3.0)
@@ -799,19 +583,7 @@ func TestContextStrokePreserve(t *testing.T) {
 
 // TestContextPaint verifies that Paint paints the current source everywhere.
 func TestContextPaint(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 200, 200)
 
 	// Paint with a solid color
 	ctx.SetSourceRGB(0.5, 0.5, 0.5) // Gray
@@ -830,19 +602,7 @@ func TestContextPaint(t *testing.T) {
 
 // TestContextSetLineWidth verifies that SetLineWidth sets the line width for stroking.
 func TestContextSetLineWidth(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 200, 200)
 
 	// Test various line widths
 	testCases := []struct {
@@ -877,19 +637,7 @@ func TestContextSetLineWidth(t *testing.T) {
 // TestContextGetLineWidth verifies GetLineWidth returns correct values in different scenarios.
 func TestContextGetLineWidth(t *testing.T) {
 	t.Run("Default width on new context", func(t *testing.T) {
-		surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err, "Failed to create surface")
-		defer func() {
-			err := surf.Close()
-			assert.NoError(t, err, "Failed to close surface")
-		}()
-
-		ctx, err := NewContext(surf)
-		require.NoError(t, err, "Failed to create context")
-		defer func() {
-			err := ctx.Close()
-			assert.NoError(t, err, "Failed to close context")
-		}()
+		ctx := newTestContext(t, 100, 100)
 
 		// Default line width should be 2.0
 		width := ctx.GetLineWidth()
@@ -897,19 +645,7 @@ func TestContextGetLineWidth(t *testing.T) {
 	})
 
 	t.Run("Returns set width", func(t *testing.T) {
-		surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err, "Failed to create surface")
-		defer func() {
-			err := surf.Close()
-			assert.NoError(t, err, "Failed to close surface")
-		}()
-
-		ctx, err := NewContext(surf)
-		require.NoError(t, err, "Failed to create context")
-		defer func() {
-			err := ctx.Close()
-			assert.NoError(t, err, "Failed to close context")
-		}()
+		ctx := newTestContext(t, 100, 100)
 
 		// Test various widths
 		testWidths := []float64{1.0, 5.0, 10.0, 0.5, 100.0}
@@ -921,19 +657,7 @@ func TestContextGetLineWidth(t *testing.T) {
 	})
 
 	t.Run("Negative width clamped to zero", func(t *testing.T) {
-		surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err, "Failed to create surface")
-		defer func() {
-			err := surf.Close()
-			assert.NoError(t, err, "Failed to close surface")
-		}()
-
-		ctx, err := NewContext(surf)
-		require.NoError(t, err, "Failed to create context")
-		defer func() {
-			err := ctx.Close()
-			assert.NoError(t, err, "Failed to close context")
-		}()
+		ctx := newTestContext(t, 100, 100)
 
 		// Set negative width - Cairo should clamp to 0
 		ctx.SetLineWidth(-5.0)
@@ -996,19 +720,7 @@ func TestContextRenderAfterClose(t *testing.T) {
 
 // TestContextIntegrationFillStroke is an integration test combining path operations with rendering.
 func TestContextIntegrationFillStroke(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 300, 300)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 300, 300)
 
 	// Integration test: Create path, set color, and fill
 	ctx.NewPath()
@@ -1044,19 +756,7 @@ func TestContextIntegrationFillStroke(t *testing.T) {
 
 // TestContextSetSource verifies that SetSource sets a pattern as the source.
 func TestContextSetSource(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	t.Run("set_solid_pattern_rgb", func(t *testing.T) {
 		// Create a solid RGB pattern
@@ -1106,19 +806,7 @@ func TestContextSetSource(t *testing.T) {
 
 // TestContextGetSource verifies that GetSource returns the current source pattern.
 func TestContextGetSource(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	t.Run("get_default_source", func(t *testing.T) {
 		// GetSource should work even on a newly created context
@@ -1150,19 +838,7 @@ func TestContextGetSource(t *testing.T) {
 // TestContextGetSourceAfterSetSourceRGB verifies that GetSource returns a SolidPattern
 // after using SetSourceRGB.
 func TestContextGetSourceAfterSetSourceRGB(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	// Test various colors
 	testCases := []struct {
@@ -1201,19 +877,7 @@ func TestContextGetSourceAfterSetSourceRGB(t *testing.T) {
 // TestContextGetSourceAfterSetSourceRGBA verifies that GetSource returns a SolidPattern
 // after using SetSourceRGBA.
 func TestContextGetSourceAfterSetSourceRGBA(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	// Test various colors with alpha
 	testCases := []struct {
@@ -1301,19 +965,7 @@ func TestContextGetSourceAfterClose(t *testing.T) {
 // TestContextSourcePatternIntegration verifies integration between SetSource,
 // GetSource, and drawing operations.
 func TestContextSourcePatternIntegration(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("set_source_and_draw", func(t *testing.T) {
 		// Create a solid pattern
@@ -1427,19 +1079,7 @@ func TestContextSourcePatternIntegration(t *testing.T) {
 // - Close the context
 // - If reference counting is correct, no crash/double-free occurs
 func TestContextGetSourceBorrowedReference(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 100, 100)
 
 	t.Run("get_source_without_explicit_close", func(t *testing.T) {
 		// Get the source pattern (borrowed reference from Cairo's perspective)

@@ -148,13 +148,7 @@ func TestContextLineJoin(t *testing.T) {
 // Dash patterns create dashed or dotted lines.
 func TestContextDash(t *testing.T) {
 	t.Run("default dash empty", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Default dash pattern should be empty (solid line)
 		dashes, offset, err := ctx.GetDash()
@@ -164,17 +158,11 @@ func TestContextDash(t *testing.T) {
 	})
 
 	t.Run("set simple dash", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Set simple dash pattern: 10 on, 5 off
 		pattern := []float64{10.0, 5.0}
-		err = ctx.SetDash(pattern, 0.0)
+		err := ctx.SetDash(pattern, 0.0)
 		require.NoError(t, err)
 
 		dashes, offset, err := ctx.GetDash()
@@ -184,18 +172,12 @@ func TestContextDash(t *testing.T) {
 	})
 
 	t.Run("set dash with offset", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Set dash pattern with offset
 		pattern := []float64{10.0, 5.0}
 		offset := 3.5
-		err = ctx.SetDash(pattern, offset)
+		err := ctx.SetDash(pattern, offset)
 		require.NoError(t, err)
 
 		dashes, actualOffset, err := ctx.GetDash()
@@ -205,17 +187,11 @@ func TestContextDash(t *testing.T) {
 	})
 
 	t.Run("set complex dash pattern", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Set complex dash pattern: dash, gap, dot, gap
 		pattern := []float64{15.0, 5.0, 3.0, 5.0}
-		err = ctx.SetDash(pattern, 0.0)
+		err := ctx.SetDash(pattern, 0.0)
 		require.NoError(t, err)
 
 		dashes, offset, err := ctx.GetDash()
@@ -225,17 +201,11 @@ func TestContextDash(t *testing.T) {
 	})
 
 	t.Run("set dash single value", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Single value creates equal on/off pattern
 		pattern := []float64{10.0}
-		err = ctx.SetDash(pattern, 0.0)
+		err := ctx.SetDash(pattern, 0.0)
 		require.NoError(t, err)
 
 		dashes, offset, err := ctx.GetDash()
@@ -245,17 +215,11 @@ func TestContextDash(t *testing.T) {
 	})
 
 	t.Run("clear dash with empty slice", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Set a dash pattern
 		pattern := []float64{10.0, 5.0}
-		err = ctx.SetDash(pattern, 0.0)
+		err := ctx.SetDash(pattern, 0.0)
 		require.NoError(t, err)
 
 		// Clear it with empty slice
@@ -269,17 +233,11 @@ func TestContextDash(t *testing.T) {
 	})
 
 	t.Run("clear dash with nil slice", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Set a dash pattern
 		pattern := []float64{10.0, 5.0}
-		err = ctx.SetDash(pattern, 0.0)
+		err := ctx.SetDash(pattern, 0.0)
 		require.NoError(t, err)
 
 		// Clear it with nil slice
@@ -319,16 +277,10 @@ func TestContextDash(t *testing.T) {
 // TestContextDashEmpty specifically tests empty dash patterns (solid lines).
 func TestContextDashEmpty(t *testing.T) {
 	t.Run("empty dash creates solid line", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Explicitly set empty dash (solid line)
-		err = ctx.SetDash([]float64{}, 0.0)
+		err := ctx.SetDash([]float64{}, 0.0)
 		require.NoError(t, err)
 
 		dashes, offset, err := ctx.GetDash()
@@ -338,16 +290,10 @@ func TestContextDashEmpty(t *testing.T) {
 	})
 
 	t.Run("nil dash creates solid line", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Set nil dash (solid line)
-		err = ctx.SetDash(nil, 0.0)
+		err := ctx.SetDash(nil, 0.0)
 		require.NoError(t, err)
 
 		dashes, offset, err := ctx.GetDash()
@@ -357,17 +303,11 @@ func TestContextDashEmpty(t *testing.T) {
 	})
 
 	t.Run("toggle between dashed and solid", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Start with dashed
 		pattern := []float64{10.0, 5.0}
-		err = ctx.SetDash(pattern, 0.0)
+		err := ctx.SetDash(pattern, 0.0)
 		require.NoError(t, err)
 		dashes, _, err := ctx.GetDash()
 		require.NoError(t, err)
@@ -392,29 +332,17 @@ func TestContextDashEmpty(t *testing.T) {
 // TestContextGetDashCount tests retrieving the number of dashes in the current pattern.
 func TestContextGetDashCount(t *testing.T) {
 	t.Run("default dash count is zero", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		count := ctx.GetDashCount()
 		assert.Equal(t, 0, count, "Default dash count should be 0")
 	})
 
 	t.Run("dash count after setting simple pattern", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		pattern := []float64{10.0, 5.0}
-		err = ctx.SetDash(pattern, 0.0)
+		err := ctx.SetDash(pattern, 0.0)
 		require.NoError(t, err)
 
 		count := ctx.GetDashCount()
@@ -422,16 +350,10 @@ func TestContextGetDashCount(t *testing.T) {
 	})
 
 	t.Run("dash count after setting complex pattern", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		pattern := []float64{15.0, 5.0, 3.0, 5.0}
-		err = ctx.SetDash(pattern, 0.0)
+		err := ctx.SetDash(pattern, 0.0)
 		require.NoError(t, err)
 
 		count := ctx.GetDashCount()
@@ -439,17 +361,11 @@ func TestContextGetDashCount(t *testing.T) {
 	})
 
 	t.Run("dash count after clearing with empty slice", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Set a pattern first
 		pattern := []float64{10.0, 5.0}
-		err = ctx.SetDash(pattern, 0.0)
+		err := ctx.SetDash(pattern, 0.0)
 		require.NoError(t, err)
 		assert.Equal(t, 2, ctx.GetDashCount(), "Should have 2 dashes initially")
 
@@ -462,17 +378,11 @@ func TestContextGetDashCount(t *testing.T) {
 	})
 
 	t.Run("dash count after clearing with nil", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Set a pattern first
 		pattern := []float64{10.0, 5.0}
-		err = ctx.SetDash(pattern, 0.0)
+		err := ctx.SetDash(pattern, 0.0)
 		require.NoError(t, err)
 		assert.Equal(t, 2, ctx.GetDashCount(), "Should have 2 dashes initially")
 
@@ -507,13 +417,7 @@ func TestContextGetDashCount(t *testing.T) {
 // Miter limit controls when to switch from miter to bevel joins for sharp angles.
 func TestContextMiterLimit(t *testing.T) {
 	t.Run("default miter limit", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Default miter limit should be 10.0
 		limit := ctx.GetMiterLimit()
@@ -521,13 +425,7 @@ func TestContextMiterLimit(t *testing.T) {
 	})
 
 	t.Run("set miter limit small", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		ctx.SetMiterLimit(2.0)
 		limit := ctx.GetMiterLimit()
@@ -535,13 +433,7 @@ func TestContextMiterLimit(t *testing.T) {
 	})
 
 	t.Run("set miter limit large", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		ctx.SetMiterLimit(50.0)
 		limit := ctx.GetMiterLimit()
@@ -549,13 +441,7 @@ func TestContextMiterLimit(t *testing.T) {
 	})
 
 	t.Run("set miter limit minimum", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Miter limit of 1.0 (minimum)
 		ctx.SetMiterLimit(1.0)
@@ -564,13 +450,7 @@ func TestContextMiterLimit(t *testing.T) {
 	})
 
 	t.Run("change miter limit multiple times", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		ctx.SetMiterLimit(5.0)
 		assert.InDelta(t, 5.0, ctx.GetMiterLimit(), 0.001)
@@ -604,19 +484,13 @@ func TestContextMiterLimit(t *testing.T) {
 // TestContextLineStyleCombinations tests various combinations of line style settings.
 func TestContextLineStyleCombinations(t *testing.T) {
 	t.Run("set all line styles", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Set all line style properties
 		ctx.SetLineWidth(5.0)
 		ctx.SetLineCap(LineCapRound)
 		ctx.SetLineJoin(LineJoinBevel)
-		err = ctx.SetDash([]float64{10.0, 5.0}, 2.0)
+		err := ctx.SetDash([]float64{10.0, 5.0}, 2.0)
 		require.NoError(t, err)
 		ctx.SetMiterLimit(8.0)
 
@@ -634,18 +508,12 @@ func TestContextLineStyleCombinations(t *testing.T) {
 	})
 
 	t.Run("line styles persist across save restore", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Set initial line styles
 		ctx.SetLineCap(LineCapRound)
 		ctx.SetLineJoin(LineJoinBevel)
-		err = ctx.SetDash([]float64{10.0, 5.0}, 0.0)
+		err := ctx.SetDash([]float64{10.0, 5.0}, 0.0)
 		require.NoError(t, err)
 		ctx.SetMiterLimit(5.0)
 
@@ -679,18 +547,12 @@ func TestContextLineStyleCombinations(t *testing.T) {
 	})
 
 	t.Run("line styles independent of path operations", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Set line styles
 		ctx.SetLineCap(LineCapRound)
 		ctx.SetLineJoin(LineJoinRound)
-		err = ctx.SetDash([]float64{10.0, 5.0}, 0.0)
+		err := ctx.SetDash([]float64{10.0, 5.0}, 0.0)
 		require.NoError(t, err)
 
 		// Perform path operations
@@ -709,13 +571,7 @@ func TestContextLineStyleCombinations(t *testing.T) {
 	})
 
 	t.Run("different line cap and join combinations", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Test various combinations
 		combinations := []struct {
@@ -743,13 +599,7 @@ func TestContextLineStyleCombinations(t *testing.T) {
 	})
 
 	t.Run("dash pattern with different widths", func(t *testing.T) {
-		surface, err := surface.NewImageSurface(surface.FormatARGB32, 100, 100)
-		require.NoError(t, err)
-		defer surface.Close()
-
-		ctx, err := NewContext(surface)
-		require.NoError(t, err)
-		defer ctx.Close()
+		ctx := newTestContext(t, 100, 100)
 
 		// Set dash pattern with varying widths
 		patterns := [][]float64{
@@ -760,7 +610,7 @@ func TestContextLineStyleCombinations(t *testing.T) {
 		}
 
 		for _, pattern := range patterns {
-			err = ctx.SetDash(pattern, 0.0)
+			err := ctx.SetDash(pattern, 0.0)
 			require.NoError(t, err)
 
 			dashes, _, err := ctx.GetDash()

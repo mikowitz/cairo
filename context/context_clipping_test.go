@@ -12,13 +12,7 @@ import (
 
 // TestContextClip verifies that clipping restricts drawing to the clip region.
 func TestContextClip(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err)
-	defer surf.Close()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err)
-	defer ctx.Close()
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("BasicClip", func(t *testing.T) {
 		// Create a rectangular clip region
@@ -54,13 +48,7 @@ func TestContextClip(t *testing.T) {
 
 // TestContextClipPreserve verifies that ClipPreserve preserves the path.
 func TestContextClipPreserve(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err)
-	defer surf.Close()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err)
-	defer ctx.Close()
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("PreservesPath", func(t *testing.T) {
 		// Create a path
@@ -93,13 +81,7 @@ func TestContextClipPreserve(t *testing.T) {
 
 // TestContextClipExtents verifies extents calculation for clip region.
 func TestContextClipExtents(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 400, 400)
-	require.NoError(t, err)
-	defer surf.Close()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err)
-	defer ctx.Close()
+	ctx := newTestContext(t, 400, 400)
 
 	t.Run("InitialExtents", func(t *testing.T) {
 		// Initial clip extents should be entire surface
@@ -145,13 +127,7 @@ func TestContextClipExtents(t *testing.T) {
 
 // TestContextInClip verifies point-in-clip testing.
 func TestContextInClip(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err)
-	defer surf.Close()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err)
-	defer ctx.Close()
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("AllPointsInClipInitially", func(t *testing.T) {
 		// Before any clipping, all points should be in clip
@@ -196,13 +172,7 @@ func TestContextInClip(t *testing.T) {
 
 // TestContextResetClip verifies clip region clearing.
 func TestContextResetClip(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err)
-	defer surf.Close()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err)
-	defer ctx.Close()
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("ResetAfterClip", func(t *testing.T) {
 		// Set a clip region
@@ -248,13 +218,7 @@ func TestContextResetClip(t *testing.T) {
 
 // TestContextNestedClips verifies clip intersection behavior.
 func TestContextNestedClips(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err)
-	defer surf.Close()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err)
-	defer ctx.Close()
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("IntersectingClips", func(t *testing.T) {
 		// First clip: 0,0 to 150,150
@@ -320,13 +284,7 @@ func TestContextNestedClips(t *testing.T) {
 
 // TestContextClipWithTransform verifies clipping with transformations.
 func TestContextClipWithTransform(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 400, 400)
-	require.NoError(t, err)
-	defer surf.Close()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err)
-	defer ctx.Close()
+	ctx := newTestContext(t, 400, 400)
 
 	t.Run("ClipWithTranslation", func(t *testing.T) {
 		ctx.IdentityMatrix()

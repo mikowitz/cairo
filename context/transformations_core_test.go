@@ -6,26 +6,13 @@ import (
 
 	"github.com/mikowitz/cairo/matrix"
 	"github.com/mikowitz/cairo/status"
-	"github.com/mikowitz/cairo/surface"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 // TestContextTranslate verifies translation transformations.
 func TestContextTranslate(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("simple_translation", func(t *testing.T) {
 		ctx.IdentityMatrix() // Reset to identity
@@ -81,19 +68,7 @@ func TestContextTranslate(t *testing.T) {
 
 // TestContextScale verifies scaling transformations.
 func TestContextScale(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("uniform_scaling", func(t *testing.T) {
 		ctx.IdentityMatrix()
@@ -155,19 +130,7 @@ func TestContextScale(t *testing.T) {
 
 // TestContextRotate verifies rotation transformations.
 func TestContextRotate(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("ninety_degree_rotation", func(t *testing.T) {
 		ctx.IdentityMatrix()
@@ -234,19 +197,7 @@ func TestContextRotate(t *testing.T) {
 
 // TestContextTransform verifies custom matrix transformations.
 func TestContextTransform(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("transform_with_translation_matrix", func(t *testing.T) {
 		ctx.IdentityMatrix()
@@ -335,19 +286,7 @@ func TestContextTransform(t *testing.T) {
 
 // TestContextTransformationsCombined verifies complex transformation sequences.
 func TestContextTransformationsCombined(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 300, 300)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx := newTestContext(t, 300, 300)
 
 	t.Run("translate_then_scale", func(t *testing.T) {
 		ctx.IdentityMatrix()
