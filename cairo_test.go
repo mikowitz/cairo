@@ -194,6 +194,61 @@ func TestOperatorDefaultIsOver(t *testing.T) {
 	assert.Equal(t, cairo.OperatorOver, ctx.GetOperator())
 }
 
+// TestSlantReexport verifies that the Slant type and constants are re-exported
+// correctly from the root cairo package.
+func TestSlantReexport(t *testing.T) {
+	tests := []struct {
+		name  string
+		slant cairo.Slant
+	}{
+		{"SlantNormal", cairo.SlantNormal},
+		{"SlantItalic", cairo.SlantItalic},
+		{"SlantOblique", cairo.SlantOblique},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_ = tt.slant
+		})
+	}
+}
+
+// TestWeightReexport verifies that the Weight type and constants are re-exported
+// correctly from the root cairo package.
+func TestWeightReexport(t *testing.T) {
+	tests := []struct {
+		name   string
+		weight cairo.Weight
+	}{
+		{"WeightNormal", cairo.WeightNormal},
+		{"WeightBold", cairo.WeightBold},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_ = tt.weight
+		})
+	}
+}
+
+// TestSelectFontFaceViaRootPackage verifies that SelectFontFace works using
+// re-exported Slant and Weight constants from the root cairo package.
+func TestSelectFontFaceViaRootPackage(t *testing.T) {
+	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 100, 100)
+	require.NoError(t, err)
+	defer func() { _ = surf.Close() }()
+
+	ctx, err := cairo.NewContext(surf)
+	require.NoError(t, err)
+	defer func() { _ = ctx.Close() }()
+
+	ctx.SelectFontFace("sans-serif", cairo.SlantNormal, cairo.WeightNormal)
+	ctx.SelectFontFace("serif", cairo.SlantItalic, cairo.WeightBold)
+	ctx.SelectFontFace("monospace", cairo.SlantOblique, cairo.WeightNormal)
+
+	assert.Equal(t, 0, int(ctx.Status()))
+}
+
 // TestSurfaceLifecycle demonstrates proper resource management
 func TestSurfaceLifecycle(t *testing.T) {
 	// Create a surface
