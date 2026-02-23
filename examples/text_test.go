@@ -3,8 +3,6 @@
 package examples
 
 import (
-	"image"
-	"image/color"
 	"path/filepath"
 	"testing"
 
@@ -61,24 +59,10 @@ func TestTextRendersVisibleContent(t *testing.T) {
 		row := row
 		t.Run(row.name, func(t *testing.T) {
 			require.True(t,
-				regionHasNonBackgroundPixels(img, 20, row.y0, 350, row.y1),
+				RegionHasNonBackgroundPixels(img, 20, row.y0, 350, row.y1),
 				"text region %q should contain rendered glyphs (non-white pixels)", row.name,
 			)
 		})
 	}
 }
 
-// regionHasNonBackgroundPixels returns true if any pixel in the rectangle
-// [x0,x1] × [y0,y1] differs significantly from white (the background color).
-func regionHasNonBackgroundPixels(img image.Image, x0, y0, x1, y1 int) bool {
-	bounds := img.Bounds()
-	for y := y0; y <= y1 && y < bounds.Max.Y; y++ {
-		for x := x0; x <= x1 && x < bounds.Max.X; x++ {
-			px := color.NRGBAModel.Convert(img.At(x, y)).(color.NRGBA)
-			if px.R < 250 || px.G < 250 || px.B < 250 {
-				return true
-			}
-		}
-	}
-	return false
-}

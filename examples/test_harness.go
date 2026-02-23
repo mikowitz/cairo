@@ -282,3 +282,19 @@ func CheckFileSize(t *testing.T, path string, minBytes, maxBytes int64) bool {
 	t.Logf("File %s size is reasonable: %d bytes", path, size)
 	return true
 }
+
+// RegionHasNonBackgroundPixels returns true if any pixel in the rectangle
+// [x0,x1] × [y0,y1] differs significantly from white (the background color).
+// Use this for structural tests on images with a white background.
+func RegionHasNonBackgroundPixels(img image.Image, x0, y0, x1, y1 int) bool {
+	bounds := img.Bounds()
+	for y := y0; y <= y1 && y < bounds.Max.Y; y++ {
+		for x := x0; x <= x1 && x < bounds.Max.X; x++ {
+			px := color.NRGBAModel.Convert(img.At(x, y)).(color.NRGBA)
+			if px.R < 250 || px.G < 250 || px.B < 250 {
+				return true
+			}
+		}
+	}
+	return false
+}

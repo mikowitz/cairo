@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/mikowitz/cairo"
+	"github.com/mikowitz/cairo/status"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -194,43 +195,6 @@ func TestOperatorDefaultIsOver(t *testing.T) {
 	assert.Equal(t, cairo.OperatorOver, ctx.GetOperator())
 }
 
-// TestSlantReexport verifies that the Slant type and constants are re-exported
-// correctly from the root cairo package.
-func TestSlantReexport(t *testing.T) {
-	tests := []struct {
-		name  string
-		slant cairo.Slant
-	}{
-		{"SlantNormal", cairo.SlantNormal},
-		{"SlantItalic", cairo.SlantItalic},
-		{"SlantOblique", cairo.SlantOblique},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_ = tt.slant
-		})
-	}
-}
-
-// TestWeightReexport verifies that the Weight type and constants are re-exported
-// correctly from the root cairo package.
-func TestWeightReexport(t *testing.T) {
-	tests := []struct {
-		name   string
-		weight cairo.Weight
-	}{
-		{"WeightNormal", cairo.WeightNormal},
-		{"WeightBold", cairo.WeightBold},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_ = tt.weight
-		})
-	}
-}
-
 // TestSelectFontFaceViaRootPackage verifies that SelectFontFace works using
 // re-exported Slant and Weight constants from the root cairo package.
 func TestSelectFontFaceViaRootPackage(t *testing.T) {
@@ -246,7 +210,7 @@ func TestSelectFontFaceViaRootPackage(t *testing.T) {
 	ctx.SelectFontFace("serif", cairo.SlantItalic, cairo.WeightBold)
 	ctx.SelectFontFace("monospace", cairo.SlantOblique, cairo.WeightNormal)
 
-	assert.Equal(t, 0, int(ctx.Status()))
+	assert.Equal(t, status.Success, ctx.Status())
 }
 
 // TestSurfaceLifecycle demonstrates proper resource management
