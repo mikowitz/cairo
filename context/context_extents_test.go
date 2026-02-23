@@ -13,7 +13,7 @@ import (
 
 // TestContextFillExtents verifies that FillExtents returns the bounding box of the fill area.
 func TestContextFillExtents(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	ctx.Rectangle(10, 20, 80, 60)
 	x1, y1, x2, y2 := ctx.FillExtents()
@@ -26,7 +26,7 @@ func TestContextFillExtents(t *testing.T) {
 
 // TestContextStrokeExtents verifies that StrokeExtents includes stroke width in its bounding box.
 func TestContextStrokeExtents(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	ctx.SetLineWidth(4.0)
 	ctx.Rectangle(10, 20, 80, 60)
@@ -41,7 +41,7 @@ func TestContextStrokeExtents(t *testing.T) {
 
 // TestContextPathExtents verifies that PathExtents returns the path bounding box.
 func TestContextPathExtents(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	ctx.Rectangle(15, 25, 70, 50)
 	x1, y1, x2, y2 := ctx.PathExtents()
@@ -74,7 +74,7 @@ func TestContextExtentsAfterClose(t *testing.T) {
 
 // TestContextInFill verifies point-in-fill detection.
 func TestContextInFill(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	ctx.Rectangle(20, 20, 100, 100)
 	assert.True(t, ctx.InFill(50, 50))
@@ -84,7 +84,7 @@ func TestContextInFill(t *testing.T) {
 
 // TestContextInStroke verifies point-in-stroke detection.
 func TestContextInStroke(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	ctx.SetLineWidth(10.0)
 	ctx.MoveTo(10, 50)
@@ -112,7 +112,7 @@ func TestContextInAfterClose(t *testing.T) {
 // TestContextFillRuleWindingVsEvenOdd shows that two overlapping sub-paths produce
 // different fill results depending on the fill rule.
 func TestContextFillRuleWindingVsEvenOdd(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	// Two overlapping rectangles; intersection is at (60,60)-(100,100)
 	ctx.Rectangle(20, 20, 80, 80) // (20,20) to (100,100)

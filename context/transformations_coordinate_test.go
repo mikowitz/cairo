@@ -9,7 +9,7 @@ import (
 
 // TestContextCoordinateConversion verifies user/device space conversions.
 func TestContextCoordinateConversion(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("user_to_device_identity", func(t *testing.T) {
 		ctx.IdentityMatrix()

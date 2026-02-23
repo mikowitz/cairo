@@ -9,7 +9,7 @@ import (
 // An arc is a portion of a circle from angle1 to angle2 (in radians),
 // drawn counter-clockwise from the positive x-axis.
 func TestContextArc(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("full_circle", func(t *testing.T) {
 		// Create a full circle using Arc with 0 to 2π
@@ -48,7 +48,7 @@ func TestContextArc(t *testing.T) {
 // TestContextArcNegative verifies negative arc (clockwise arc).
 // ArcNegative draws arcs in the clockwise direction.
 func TestContextArcNegative(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("clockwise_arc", func(t *testing.T) {
 		// Create a clockwise arc from π to 0
@@ -79,7 +79,7 @@ func TestContextArcNegative(t *testing.T) {
 // CurveTo adds a cubic Bezier curve from the current point to (x3, y3),
 // using (x1, y1) and (x2, y2) as control points.
 func TestContextCurveTo(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("simple_curve", func(t *testing.T) {
 		// Draw a simple S-curve
@@ -122,7 +122,7 @@ func TestContextCurveTo(t *testing.T) {
 // Relative operations (RelMoveTo, RelLineTo, RelCurveTo) use offsets from the
 // current point rather than absolute coordinates.
 func TestContextRelativeOperations(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("rel_move_to", func(t *testing.T) {
 		// Draw disconnected lines using RelMoveTo
@@ -197,7 +197,7 @@ func TestContextRelativeOperations(t *testing.T) {
 // TestContextCircle verifies that Arc can create a complete circle.
 // This is a common use case: drawing a full circle from 0 to 2π.
 func TestContextCircle(t *testing.T) {
-	ctx, _ := newTestContext(t, 300, 300)
+	ctx := newTestContext(t, 300, 300)
 
 	t.Run("filled_circle", func(t *testing.T) {
 		// Draw a filled circle

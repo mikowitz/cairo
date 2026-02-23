@@ -12,7 +12,7 @@ import (
 
 // TestContextTranslate verifies translation transformations.
 func TestContextTranslate(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("simple_translation", func(t *testing.T) {
 		ctx.IdentityMatrix() // Reset to identity
@@ -68,7 +68,7 @@ func TestContextTranslate(t *testing.T) {
 
 // TestContextScale verifies scaling transformations.
 func TestContextScale(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("uniform_scaling", func(t *testing.T) {
 		ctx.IdentityMatrix()
@@ -130,7 +130,7 @@ func TestContextScale(t *testing.T) {
 
 // TestContextRotate verifies rotation transformations.
 func TestContextRotate(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("ninety_degree_rotation", func(t *testing.T) {
 		ctx.IdentityMatrix()
@@ -197,7 +197,7 @@ func TestContextRotate(t *testing.T) {
 
 // TestContextTransform verifies custom matrix transformations.
 func TestContextTransform(t *testing.T) {
-	ctx, _ := newTestContext(t, 200, 200)
+	ctx := newTestContext(t, 200, 200)
 
 	t.Run("transform_with_translation_matrix", func(t *testing.T) {
 		ctx.IdentityMatrix()
@@ -286,7 +286,7 @@ func TestContextTransform(t *testing.T) {
 
 // TestContextTransformationsCombined verifies complex transformation sequences.
 func TestContextTransformationsCombined(t *testing.T) {
-	ctx, _ := newTestContext(t, 300, 300)
+	ctx := newTestContext(t, 300, 300)
 
 	t.Run("translate_then_scale", func(t *testing.T) {
 		ctx.IdentityMatrix()

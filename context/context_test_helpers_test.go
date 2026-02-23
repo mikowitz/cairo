@@ -12,7 +12,7 @@ import (
 
 // newTestContext creates a Context backed by an ImageSurface of the given dimensions.
 // Cleanup is registered via t.Cleanup; callers need not close ctx or surf manually.
-func newTestContext(t *testing.T, width, height int) (*Context, *surface.ImageSurface) {
+func newTestContext(t *testing.T, width, height int) *Context {
 	t.Helper()
 	surf, err := surface.NewImageSurface(surface.FormatARGB32, width, height)
 	require.NoError(t, err)
@@ -22,5 +22,5 @@ func newTestContext(t *testing.T, width, height int) (*Context, *surface.ImageSu
 		_ = ctx.Close()
 		_ = surf.Close()
 	})
-	return ctx, surf
+	return ctx
 }

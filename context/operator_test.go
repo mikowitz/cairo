@@ -13,7 +13,7 @@ import (
 
 // TestContextOperatorDefault verifies that the default compositing operator is OperatorOver.
 func TestContextOperatorDefault(t *testing.T) {
-	ctx, _ := newTestContext(t, 100, 100)
+	ctx := newTestContext(t, 100, 100)
 
 	assert.Equal(t, OperatorOver, ctx.GetOperator())
 }
@@ -57,7 +57,7 @@ func TestContextSetOperator(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx, _ := newTestContext(t, 100, 100)
+			ctx := newTestContext(t, 100, 100)
 
 			ctx.SetOperator(tt.op)
 			assert.Equal(t, tt.op, ctx.GetOperator())
@@ -67,7 +67,7 @@ func TestContextSetOperator(t *testing.T) {
 
 // TestContextGetOperator tests getting the current operator after setting it.
 func TestContextGetOperator(t *testing.T) {
-	ctx, _ := newTestContext(t, 100, 100)
+	ctx := newTestContext(t, 100, 100)
 
 	ctx.SetOperator(OperatorAdd)
 	op := ctx.GetOperator()
