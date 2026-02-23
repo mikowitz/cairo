@@ -3,29 +3,13 @@ package context
 import (
 	"math"
 	"testing"
-
-	"github.com/mikowitz/cairo/surface"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // TestContextArc verifies arc path creation.
 // An arc is a portion of a circle from angle1 to angle2 (in radians),
 // drawn counter-clockwise from the positive x-axis.
 func TestContextArc(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx, _ := newTestContext(t, 200, 200)
 
 	t.Run("full_circle", func(t *testing.T) {
 		// Create a full circle using Arc with 0 to 2π
@@ -64,19 +48,7 @@ func TestContextArc(t *testing.T) {
 // TestContextArcNegative verifies negative arc (clockwise arc).
 // ArcNegative draws arcs in the clockwise direction.
 func TestContextArcNegative(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx, _ := newTestContext(t, 200, 200)
 
 	t.Run("clockwise_arc", func(t *testing.T) {
 		// Create a clockwise arc from π to 0
@@ -107,19 +79,7 @@ func TestContextArcNegative(t *testing.T) {
 // CurveTo adds a cubic Bezier curve from the current point to (x3, y3),
 // using (x1, y1) and (x2, y2) as control points.
 func TestContextCurveTo(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx, _ := newTestContext(t, 200, 200)
 
 	t.Run("simple_curve", func(t *testing.T) {
 		// Draw a simple S-curve
@@ -162,19 +122,7 @@ func TestContextCurveTo(t *testing.T) {
 // Relative operations (RelMoveTo, RelLineTo, RelCurveTo) use offsets from the
 // current point rather than absolute coordinates.
 func TestContextRelativeOperations(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx, _ := newTestContext(t, 200, 200)
 
 	t.Run("rel_move_to", func(t *testing.T) {
 		// Draw disconnected lines using RelMoveTo
@@ -249,19 +197,7 @@ func TestContextRelativeOperations(t *testing.T) {
 // TestContextCircle verifies that Arc can create a complete circle.
 // This is a common use case: drawing a full circle from 0 to 2π.
 func TestContextCircle(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 300, 300)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx, _ := newTestContext(t, 300, 300)
 
 	t.Run("filled_circle", func(t *testing.T) {
 		// Draw a filled circle

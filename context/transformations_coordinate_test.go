@@ -4,26 +4,12 @@ import (
 	"math"
 	"testing"
 
-	"github.com/mikowitz/cairo/surface"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 // TestContextCoordinateConversion verifies user/device space conversions.
 func TestContextCoordinateConversion(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx, _ := newTestContext(t, 200, 200)
 
 	t.Run("user_to_device_identity", func(t *testing.T) {
 		ctx.IdentityMatrix()

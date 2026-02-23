@@ -14,19 +14,7 @@ import (
 
 // TestContextGetSetMatrix verifies getting and setting the transformation matrix.
 func TestContextGetSetMatrix(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx, _ := newTestContext(t, 200, 200)
 
 	t.Run("get_identity_matrix", func(t *testing.T) {
 		ctx.IdentityMatrix()
@@ -169,19 +157,7 @@ func TestContextGetSetMatrix(t *testing.T) {
 
 // TestContextIdentityMatrix verifies identity matrix reset.
 func TestContextIdentityMatrix(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx, _ := newTestContext(t, 200, 200)
 
 	t.Run("reset_after_translate", func(t *testing.T) {
 		ctx.Translate(10.0, 20.0)
@@ -276,19 +252,7 @@ func TestContextIdentityMatrix(t *testing.T) {
 // 1. The pointer to become invalid when the stack is reused
 // 2. The finalizer to attempt C.free() on stack memory (undefined behavior)
 func TestContextGetMatrixMemorySafety(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer func() {
-		err := surf.Close()
-		assert.NoError(t, err, "Failed to close surface")
-	}()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer func() {
-		err := ctx.Close()
-		assert.NoError(t, err, "Failed to close context")
-	}()
+	ctx, _ := newTestContext(t, 200, 200)
 
 	t.Run("matrix_pointer_remains_valid_after_stack_reuse", func(t *testing.T) {
 		// Set up a non-identity transformation
@@ -424,13 +388,7 @@ func TestContextGetMatrixMemorySafety(t *testing.T) {
 //   - Current buggy implementation: FAILS with incorrect values
 //   - After fix (heap allocation): PASSES with correct values
 func TestContextGetMatrixStackCorruption(t *testing.T) {
-	surf, err := surface.NewImageSurface(surface.FormatARGB32, 200, 200)
-	require.NoError(t, err, "Failed to create surface")
-	defer surf.Close()
-
-	ctx, err := NewContext(surf)
-	require.NoError(t, err, "Failed to create context")
-	defer ctx.Close()
+	ctx, _ := newTestContext(t, 200, 200)
 
 	// Set up a known transformation: translate(100, 200) then scale(2, 3)
 	ctx.IdentityMatrix()
