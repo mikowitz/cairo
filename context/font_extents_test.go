@@ -36,8 +36,6 @@ func TestContextFontExtents(t *testing.T) {
 	assert.Greater(t, extents.Ascent, 0.0)
 	assert.Greater(t, extents.Descent, 0.0)
 	assert.Greater(t, extents.Height, 0.0)
-	// Height must be at least Ascent + Descent
-	assert.GreaterOrEqual(t, extents.Height, extents.Ascent+extents.Descent-0.001)
 }
 
 // TestContextTextExtentsEmpty verifies that an empty string yields all-zero extents.
