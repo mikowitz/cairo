@@ -36,18 +36,22 @@ func GenerateTextExtents(outputPath string) error {
 		_ = ctx.Close()
 	}()
 
-	// White background
 	ctx.SetSourceRGB(1, 1, 1)
 	ctx.Paint()
-
 	ctx.SelectFontFace("sans-serif", font.SlantNormal, font.WeightNormal)
 
-	// --- Section 1: Text alignment ---
-	//
-	// A faint vertical guide line at x=250 marks the alignment axis.
-	// Left-aligned text starts at x=20; centered text is positioned so its
-	// ink midpoint falls on x=250; right-aligned text ends its advance at x=480.
+	drawAlignmentSection(ctx)
+	drawMultiLineSection(ctx)
+	drawBoundingBoxSection(ctx)
 
+	surface.Flush()
+	return surface.WriteToPNG(outputPath)
+}
+
+// drawAlignmentSection renders left-, center-, and right-aligned text relative to a
+// vertical guide line at x=250, demonstrating how TextExtents positions text precisely.
+func drawAlignmentSection(ctx *cairo.Context) {
+	// Faint vertical guide line at x=250 marks the alignment axis.
 	ctx.SetSourceRGBA(0.75, 0.75, 0.75, 1.0)
 	ctx.SetLineWidth(1.0)
 	ctx.MoveTo(250, 20)
@@ -61,27 +65,26 @@ func GenerateTextExtents(outputPath string) error {
 
 	ctx.SetFontSize(16.0)
 
-	// Left-aligned
+	// Left-aligned: start at x=20.
 	ctx.MoveTo(20, 65)
 	ctx.ShowText("Left aligned")
 
-	// Center-aligned: shift so ink midpoint lands on x=250
+	// Center-aligned: shift so ink midpoint lands on x=250.
 	centerText := "Centered text"
 	te := ctx.TextExtents(centerText)
 	ctx.MoveTo(250-te.XBearing-te.Width/2, 110)
 	ctx.ShowText(centerText)
 
-	// Right-aligned: shift so advance end lands at x=480
+	// Right-aligned: shift so advance end lands at x=480.
 	rightText := "Right aligned"
 	te = ctx.TextExtents(rightText)
 	ctx.MoveTo(480-te.XAdvance, 155)
 	ctx.ShowText(rightText)
+}
 
-	// --- Section 2: Multi-line text with FontExtents.Height ---
-	//
-	// FontExtents.Height gives the recommended baseline-to-baseline distance.
-	// Each successive line's y is incremented by that value.
-
+// drawMultiLineSection renders four lines of text using FontExtents.Height as the
+// baseline-to-baseline distance, demonstrating consistent multi-line spacing.
+func drawMultiLineSection(ctx *cairo.Context) {
 	ctx.SetSourceRGB(0, 0, 0)
 	ctx.SetFontSize(11.0)
 	ctx.MoveTo(5, 198)
@@ -90,24 +93,24 @@ func GenerateTextExtents(outputPath string) error {
 	ctx.SetFontSize(16.0)
 	fe := ctx.FontExtents()
 
-	multiLines := []string{
+	lines := []string{
 		"First line of text",
 		"Second line of text",
 		"Third line of text",
 		"Fourth line of text",
 	}
 	startY := 222.0
-	for i, line := range multiLines {
+	for i, line := range lines {
 		ctx.MoveTo(20, startY+float64(i)*fe.Height)
 		ctx.ShowText(line)
 	}
+}
 
-	// --- Section 3: Ink bounding box around text ---
-	//
-	// TextExtents.XBearing / YBearing give the offset from the origin (MoveTo
-	// point) to the top-left corner of the ink box. Width and Height give its
-	// dimensions. A small red dot marks the baseline origin.
-
+// drawBoundingBoxSection renders text with its ink bounding box drawn as a red outline
+// and a red dot at the baseline origin, demonstrating TextExtents bearing and size fields.
+func drawBoundingBoxSection(ctx *cairo.Context) {
+	// XBearing / YBearing give the offset from the origin (MoveTo point) to the
+	// top-left corner of the ink box. Width and Height give its dimensions.
 	ctx.SetSourceRGB(0, 0, 0)
 	ctx.SetFontSize(11.0)
 	ctx.MoveTo(5, 328)
@@ -116,20 +119,17 @@ func GenerateTextExtents(outputPath string) error {
 	ctx.SetFontSize(22.0)
 	boxText := "Bounding Box"
 	bx, by := 20.0, 375.0
-	te = ctx.TextExtents(boxText)
+	te := ctx.TextExtents(boxText)
 	ctx.MoveTo(bx, by)
 	ctx.ShowText(boxText)
 
-	// Red outline of the ink bounding box
+	// Red outline of the ink bounding box.
 	ctx.SetSourceRGB(1, 0, 0)
 	ctx.SetLineWidth(1.5)
 	ctx.Rectangle(bx+te.XBearing, by+te.YBearing, te.Width, te.Height)
 	ctx.Stroke()
 
-	// Red dot at the baseline origin (MoveTo point)
+	// Red dot at the baseline origin (MoveTo point).
 	ctx.Arc(bx, by, 3, 0, 2*math.Pi)
 	ctx.Fill()
-
-	surface.Flush()
-	return surface.WriteToPNG(outputPath)
 }
