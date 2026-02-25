@@ -381,12 +381,12 @@ func contextTextPath(ptr ContextPtr, text string) {
 	C.cairo_text_path(ptr, cText)
 }
 
-func contextTextExtents(ptr ContextPtr, text string) *font.TextExtents {
+func contextTextExtents(ptr ContextPtr, text string) font.TextExtents {
 	cText := C.CString(text)
 	defer C.free(unsafe.Pointer(cText))
 	var extents C.cairo_text_extents_t
 	C.cairo_text_extents(ptr, cText, &extents)
-	return &font.TextExtents{
+	return font.TextExtents{
 		XBearing: float64(extents.x_bearing),
 		YBearing: float64(extents.y_bearing),
 		Width:    float64(extents.width),
@@ -396,10 +396,10 @@ func contextTextExtents(ptr ContextPtr, text string) *font.TextExtents {
 	}
 }
 
-func contextFontExtents(ptr ContextPtr) *font.FontExtents {
+func contextFontExtents(ptr ContextPtr) font.FontExtents {
 	var extents C.cairo_font_extents_t
 	C.cairo_font_extents(ptr, &extents)
-	return &font.FontExtents{
+	return font.FontExtents{
 		Ascent:      float64(extents.ascent),
 		Descent:     float64(extents.descent),
 		Height:      float64(extents.height),

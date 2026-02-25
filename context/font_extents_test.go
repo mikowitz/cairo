@@ -40,7 +40,7 @@ func TestContextFontExtents(t *testing.T) {
 	assert.GreaterOrEqual(t, extents.Height, extents.Ascent+extents.Descent-0.001)
 }
 
-// TestContextTextExtentsEmpty verifies that an empty string yields zero advance and zero width.
+// TestContextTextExtentsEmpty verifies that an empty string yields all-zero extents.
 func TestContextTextExtentsEmpty(t *testing.T) {
 	ctx := newTestContext(t, 200, 100)
 	ctx.SelectFontFace("sans-serif", font.SlantNormal, font.WeightNormal)
@@ -48,8 +48,12 @@ func TestContextTextExtentsEmpty(t *testing.T) {
 
 	extents := ctx.TextExtents("")
 
+	assert.Equal(t, 0.0, extents.XBearing)
+	assert.Equal(t, 0.0, extents.YBearing)
 	assert.Equal(t, 0.0, extents.Width)
+	assert.Equal(t, 0.0, extents.Height)
 	assert.Equal(t, 0.0, extents.XAdvance)
+	assert.Equal(t, 0.0, extents.YAdvance)
 }
 
 // TestContextExtentsWithDifferentFonts verifies that different font faces give different metrics.
@@ -78,7 +82,7 @@ func TestContextTextExtentsClosedContext(t *testing.T) {
 	require.NoError(t, ctx.Close())
 
 	extents := ctx.TextExtents("Hello")
-	assert.Equal(t, &font.TextExtents{}, extents)
+	assert.Equal(t, font.TextExtents{}, extents)
 }
 
 // TestContextFontExtentsClosedContext verifies FontExtents returns zero-value on a closed context.
@@ -92,5 +96,5 @@ func TestContextFontExtentsClosedContext(t *testing.T) {
 	require.NoError(t, ctx.Close())
 
 	extents := ctx.FontExtents()
-	assert.Equal(t, &font.FontExtents{}, extents)
+	assert.Equal(t, font.FontExtents{}, extents)
 }

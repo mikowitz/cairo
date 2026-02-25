@@ -116,10 +116,9 @@ func GenerateTextExtents(outputPath string) error {
 	ctx.SetFontSize(22.0)
 	boxText := "Bounding Box"
 	bx, by := 20.0, 375.0
+	te = ctx.TextExtents(boxText)
 	ctx.MoveTo(bx, by)
 	ctx.ShowText(boxText)
-
-	te = ctx.TextExtents(boxText)
 
 	// Red outline of the ink bounding box
 	ctx.SetSourceRGB(1, 0, 0)

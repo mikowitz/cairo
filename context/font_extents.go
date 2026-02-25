@@ -17,12 +17,12 @@ import "github.com/mikowitz/cairo/font"
 //   - Draw bounding box: use XBearing, YBearing, Width, Height relative to the current point
 //
 // If the context has been closed, TextExtents returns a zero-value [font.TextExtents].
-func (c *Context) TextExtents(text string) *font.TextExtents {
+func (c *Context) TextExtents(text string) font.TextExtents {
 	c.RLock()
 	defer c.RUnlock()
 
 	if c.ptr == nil {
-		return &font.TextExtents{}
+		return font.TextExtents{}
 	}
 	return contextTextExtents(c.ptr, text)
 }
@@ -37,12 +37,12 @@ func (c *Context) TextExtents(text string) *font.TextExtents {
 //   - Space below baseline: extents.Descent
 //
 // If the context has been closed, FontExtents returns a zero-value [font.FontExtents].
-func (c *Context) FontExtents() *font.FontExtents {
+func (c *Context) FontExtents() font.FontExtents {
 	c.RLock()
 	defer c.RUnlock()
 
 	if c.ptr == nil {
-		return &font.FontExtents{}
+		return font.FontExtents{}
 	}
 	return contextFontExtents(c.ptr)
 }

@@ -57,7 +57,6 @@ func TestTextExtentsRendersVisibleContent(t *testing.T) {
 	}
 
 	for _, sec := range sections {
-		sec := sec
 		t.Run(sec.name, func(t *testing.T) {
 			require.True(t,
 				RegionHasNonBackgroundPixels(img, sec.x0, sec.y0, sec.x1, sec.y1),
