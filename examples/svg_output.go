@@ -11,7 +11,6 @@ import (
 
 	"github.com/mikowitz/cairo"
 	"github.com/mikowitz/cairo/font"
-	"github.com/mikowitz/cairo/surface"
 )
 
 // GenerateSVGOutput creates an SVG file demonstrating Cairo's SVG surface capabilities.
@@ -31,7 +30,7 @@ func GenerateSVGOutput(outputPath string) error {
 		h = 400.0
 	)
 
-	svg, err := surface.NewSVGSurface(outputPath, w, h)
+	svg, err := cairo.NewSVGSurface(outputPath, w, h)
 	if err != nil {
 		return fmt.Errorf("failed to create SVG surface: %w", err)
 	}
