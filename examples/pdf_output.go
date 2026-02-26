@@ -163,7 +163,7 @@ func drawPDFGradientsPage(ctx *cairo.Context, w, h float64) error {
 	vGrad.AddColorStopRGB(0.0, 0.0, 0.6, 0.3)
 	vGrad.AddColorStopRGB(1.0, 0.8, 1.0, 0.2)
 	ctx.SetSource(vGrad)
-	ctx.Rectangle(50, 620, w-100, h-680)
+	ctx.Rectangle(50, 620, w-100, h-680) // height = pageH(792) - 680 = 112pt for US Letter
 	ctx.Fill()
 
 	return nil
