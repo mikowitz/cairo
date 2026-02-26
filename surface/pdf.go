@@ -25,6 +25,7 @@ func NewPDFSurface(filename string, widthPt, heightPt float64) (*PDFSurface, err
 	ptr := pdfSurfaceCreate(filename, widthPt, heightPt)
 	st := surfaceStatus(ptr)
 	if st != status.Success {
+		surfaceClose(ptr)
 		return nil, st
 	}
 	return &PDFSurface{BaseSurface: newBaseSurface(ptr)}, nil
