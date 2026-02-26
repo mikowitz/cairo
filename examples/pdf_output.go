@@ -11,7 +11,6 @@ import (
 
 	"github.com/mikowitz/cairo"
 	"github.com/mikowitz/cairo/font"
-	"github.com/mikowitz/cairo/surface"
 )
 
 // GeneratePDFOutput creates a 3-page PDF document demonstrating Cairo's PDF surface.
@@ -29,7 +28,7 @@ func GeneratePDFOutput(outputPath string) error {
 		pageH = 792.0 // US Letter height in points (11 inches)
 	)
 
-	pdf, err := surface.NewPDFSurface(outputPath, pageW, pageH)
+	pdf, err := cairo.NewPDFSurface(outputPath, pageW, pageH)
 	if err != nil {
 		return fmt.Errorf("failed to create PDF surface: %w", err)
 	}
