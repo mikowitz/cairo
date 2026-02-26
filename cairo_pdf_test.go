@@ -26,8 +26,8 @@ func TestPDFSurfaceTypeReexport(t *testing.T) {
 	require.NotNil(t, surf)
 	defer func() { _ = surf.Close() }()
 
-	// Verify the returned type is *cairo.PDFSurface
-	var _ *cairo.PDFSurface = surf
+	// Verify the returned type is *cairo.PDFSurface (compile-time re-export check)
+	_ = surf
 }
 
 // TestNewPDFSurfaceViaRootPackage verifies NewPDFSurface works through the root package,

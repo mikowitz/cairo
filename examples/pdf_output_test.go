@@ -40,7 +40,7 @@ func TestPDFOutputValidPDFHeader(t *testing.T) {
 	err := GeneratePDFOutput(outputPath)
 	require.NoError(t, err, "GeneratePDFOutput failed")
 
-	data, err := os.ReadFile(outputPath)
+	data, err := os.ReadFile(outputPath) //nolint:gosec // path is from t.TempDir(), not user input
 	require.NoError(t, err, "failed to read PDF file")
 
 	require.GreaterOrEqual(t, len(data), 5, "PDF file is too small to contain magic bytes")
@@ -59,7 +59,7 @@ func TestPDFOutputSubstantialSize(t *testing.T) {
 	err := GeneratePDFOutput(outputPath)
 	require.NoError(t, err, "GeneratePDFOutput failed")
 
-	data, err := os.ReadFile(outputPath)
+	data, err := os.ReadFile(outputPath) //nolint:gosec // path is from t.TempDir(), not user input
 	require.NoError(t, err, "failed to read PDF file")
 
 	require.GreaterOrEqual(t, len(data), 10000,

@@ -115,57 +115,78 @@ func drawPDFGradientsPage(ctx *cairo.Context, w, h float64) error {
 	ctx.MoveTo(50, 60)
 	ctx.ShowText("Page 2: Gradients")
 
-	// Horizontal rainbow linear gradient
-	linear, err := cairo.NewLinearGradient(50, 0, w-50, 0)
+	if err := drawLinearRainbow(ctx, w); err != nil {
+		return err
+	}
+	if err := drawRadialWarmSphere(ctx, w); err != nil {
+		return err
+	}
+	if err := drawRadialBlueGlow(ctx, w); err != nil {
+		return err
+	}
+	return drawVerticalGradientBar(ctx, w, h)
+}
+
+// drawLinearRainbow draws a horizontal red-green-blue gradient bar.
+func drawLinearRainbow(ctx *cairo.Context, w float64) error {
+	g, err := cairo.NewLinearGradient(50, 0, w-50, 0)
 	if err != nil {
 		return fmt.Errorf("failed to create linear gradient: %w", err)
 	}
-	defer func() { _ = linear.Close() }()
-	linear.AddColorStopRGB(0.0, 1.0, 0.0, 0.0)
-	linear.AddColorStopRGB(0.5, 0.0, 1.0, 0.0)
-	linear.AddColorStopRGB(1.0, 0.0, 0.0, 1.0)
-	ctx.SetSource(linear)
+	defer func() { _ = g.Close() }()
+	g.AddColorStopRGB(0.0, 1.0, 0.0, 0.0)
+	g.AddColorStopRGB(0.5, 0.0, 1.0, 0.0)
+	g.AddColorStopRGB(1.0, 0.0, 0.0, 1.0)
+	ctx.SetSource(g)
 	ctx.Rectangle(50, 100, w-100, 140)
 	ctx.Fill()
+	return nil
+}
 
-	// Radial gradient: warm sphere
-	radial, err := cairo.NewRadialGradient(w/4, 390, 0, w/4, 390, 120)
+// drawRadialWarmSphere draws a warm-toned radial gradient circle.
+func drawRadialWarmSphere(ctx *cairo.Context, w float64) error {
+	g, err := cairo.NewRadialGradient(w/4, 390, 0, w/4, 390, 120)
 	if err != nil {
 		return fmt.Errorf("failed to create radial gradient: %w", err)
 	}
-	defer func() { _ = radial.Close() }()
-	radial.AddColorStopRGB(0.0, 1.0, 1.0, 0.8)
-	radial.AddColorStopRGB(0.5, 1.0, 0.5, 0.0)
-	radial.AddColorStopRGB(1.0, 0.4, 0.0, 0.0)
-	ctx.SetSource(radial)
+	defer func() { _ = g.Close() }()
+	g.AddColorStopRGB(0.0, 1.0, 1.0, 0.8)
+	g.AddColorStopRGB(0.5, 1.0, 0.5, 0.0)
+	g.AddColorStopRGB(1.0, 0.4, 0.0, 0.0)
+	ctx.SetSource(g)
 	ctx.Arc(w/4, 390, 120, 0, 2*math.Pi)
 	ctx.Fill()
+	return nil
+}
 
-	// Radial gradient with transparency: blue glow
-	radialFade, err := cairo.NewRadialGradient(3*w/4, 390, 0, 3*w/4, 390, 120)
+// drawRadialBlueGlow draws a blue radial gradient that fades to transparent.
+func drawRadialBlueGlow(ctx *cairo.Context, w float64) error {
+	g, err := cairo.NewRadialGradient(3*w/4, 390, 0, 3*w/4, 390, 120)
 	if err != nil {
-		return fmt.Errorf("failed to create fading gradient: %w", err)
+		return fmt.Errorf("failed to create radial gradient: %w", err)
 	}
-	defer func() { _ = radialFade.Close() }()
-	radialFade.AddColorStopRGBA(0.0, 0.2, 0.4, 1.0, 1.0)
-	radialFade.AddColorStopRGBA(0.6, 0.4, 0.2, 1.0, 0.7)
-	radialFade.AddColorStopRGBA(1.0, 0.8, 0.0, 0.5, 0.0)
-	ctx.SetSource(radialFade)
+	defer func() { _ = g.Close() }()
+	g.AddColorStopRGBA(0.0, 0.2, 0.4, 1.0, 1.0)
+	g.AddColorStopRGBA(0.6, 0.4, 0.2, 1.0, 0.7)
+	g.AddColorStopRGBA(1.0, 0.8, 0.0, 0.5, 0.0)
+	ctx.SetSource(g)
 	ctx.Arc(3*w/4, 390, 120, 0, 2*math.Pi)
 	ctx.Fill()
+	return nil
+}
 
-	// Vertical gradient bar
-	vGrad, err := cairo.NewLinearGradient(0, 620, 0, h-60)
+// drawVerticalGradientBar draws a vertical green-to-yellow gradient rectangle at the page bottom.
+func drawVerticalGradientBar(ctx *cairo.Context, w, h float64) error {
+	g, err := cairo.NewLinearGradient(0, 620, 0, h-60)
 	if err != nil {
 		return fmt.Errorf("failed to create vertical gradient: %w", err)
 	}
-	defer func() { _ = vGrad.Close() }()
-	vGrad.AddColorStopRGB(0.0, 0.0, 0.6, 0.3)
-	vGrad.AddColorStopRGB(1.0, 0.8, 1.0, 0.2)
-	ctx.SetSource(vGrad)
+	defer func() { _ = g.Close() }()
+	g.AddColorStopRGB(0.0, 0.0, 0.6, 0.3)
+	g.AddColorStopRGB(1.0, 0.8, 1.0, 0.2)
+	ctx.SetSource(g)
 	ctx.Rectangle(50, 620, w-100, h-680) // height = pageH(792) - 680 = 112pt for US Letter
 	ctx.Fill()
-
 	return nil
 }
 
