@@ -143,6 +143,7 @@ The core functionality is now fully implemented and tested. You can:
 - ✅ **Thread-safe operations** with proper locking throughout
 - ✅ **Memory management** with finalizers and explicit Close() methods
 - ✅ **PDF surface** for vector PDF output (requires Cairo PDF backend, `cairo-pdf` pkg-config)
+- ✅ **SVG surface** for web-compatible vector output (requires Cairo SVG backend, `cairo-svg` pkg-config)
 - ✅ **Comprehensive tests** with >80% coverage
 - ✅ **Full documentation** with examples and guides
 
@@ -179,7 +180,7 @@ The library will continue to expand with additional Cairo features:
 ### Phase 4: Additional Surface Types
 
 - [x] PDF surface for vector output
-- [ ] SVG surface for web graphics
+- [x] SVG surface for web graphics
 - [ ] Recording surface for operation capture
 - [ ] Platform-specific surfaces (if needed)
 
