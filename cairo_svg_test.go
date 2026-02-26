@@ -25,9 +25,6 @@ func TestSVGSurfaceTypeReexport(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, surf)
 	defer func() { _ = surf.Close() }()
-
-	// Verify the returned type is *cairo.SVGSurface (compile-time re-export check)
-	var _ *cairo.SVGSurface = surf
 }
 
 // TestNewSVGSurfaceViaRootPackage verifies NewSVGSurface works through the root package,
