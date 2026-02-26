@@ -13,6 +13,7 @@ func NewImageSurface(format Format, width, height int) (*ImageSurface, error) {
 	st := surfaceStatus(ptr)
 
 	if st != status.Success {
+		surfaceClose(ptr)
 		return nil, st
 	}
 

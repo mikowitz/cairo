@@ -46,7 +46,7 @@ while needing Cairo's 2D graphics capabilities.
 
 ### System Dependencies
 
-- **Cairo**: Version 1.18 or higher
+- **Cairo**: Version 1.18 or higher (includes PDF backend by default on most platforms)
 - **pkg-config**: Required for build configuration
 
 ### Go Version
@@ -142,6 +142,7 @@ The core functionality is now fully implemented and tested. You can:
 - ✅ **State management** via Save/Restore
 - ✅ **Thread-safe operations** with proper locking throughout
 - ✅ **Memory management** with finalizers and explicit Close() methods
+- ✅ **PDF surface** for vector PDF output (requires Cairo PDF backend, `cairo-pdf` pkg-config)
 - ✅ **Comprehensive tests** with >80% coverage
 - ✅ **Full documentation** with examples and guides
 
@@ -177,7 +178,7 @@ The library will continue to expand with additional Cairo features:
 
 ### Phase 4: Additional Surface Types
 
-- [ ] PDF surface for vector output
+- [x] PDF surface for vector output
 - [ ] SVG surface for web graphics
 - [ ] Recording surface for operation capture
 - [ ] Platform-specific surfaces (if needed)
