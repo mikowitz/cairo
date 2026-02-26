@@ -87,7 +87,7 @@ func TestSVGSurfaceRestrictToVersion(t *testing.T) {
 	s.RestrictToVersion(SVGVersion11)
 }
 
-// TestSVGSurfaceDocumentUnit verifies that SetDocumentUnit can be called with all unit types.
+// TestSVGSurfaceDocumentUnit verifies that SetDocumentUnit and GetDocumentUnit round-trip correctly.
 func TestSVGSurfaceDocumentUnit(t *testing.T) {
 	dir := t.TempDir()
 	filename := filepath.Join(dir, "test.svg")
@@ -103,6 +103,7 @@ func TestSVGSurfaceDocumentUnit(t *testing.T) {
 	}
 	for _, unit := range units {
 		s.SetDocumentUnit(unit)
+		assert.Equal(t, unit, s.GetDocumentUnit(), "GetDocumentUnit should return the unit set by SetDocumentUnit")
 	}
 
 	s.Flush()

@@ -21,6 +21,10 @@ func svgSurfaceSetDocumentUnit(ptr SurfacePtr, unit SVGUnit) {
 	C.cairo_svg_surface_set_document_unit(ptr, C.cairo_svg_unit_t(unit))
 }
 
+func svgSurfaceGetDocumentUnit(ptr SurfacePtr) SVGUnit {
+	return SVGUnit(C.cairo_svg_surface_get_document_unit(ptr))
+}
+
 func svgSurfaceRestrictToVersion(ptr SurfacePtr, version SVGVersion) {
 	C.cairo_svg_surface_restrict_to_version(ptr, C.cairo_svg_version_t(version))
 }

@@ -106,3 +106,13 @@ func (s *SVGSurface) SetDocumentUnit(unit SVGUnit) {
 	}
 	svgSurfaceSetDocumentUnit(s.ptr, unit)
 }
+
+// GetDocumentUnit returns the unit currently set for coordinates in the SVG document.
+func (s *SVGSurface) GetDocumentUnit() SVGUnit {
+	s.RLock()
+	defer s.RUnlock()
+	if s.ptr == nil {
+		return SVGUnitUser
+	}
+	return svgSurfaceGetDocumentUnit(s.ptr)
+}
