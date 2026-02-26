@@ -64,6 +64,34 @@ func TestNewSVGSurfaceInvalidPathViaRootPackage(t *testing.T) {
 	assert.Nil(t, surf)
 }
 
+// TestSVGVersionsViaRootPackage verifies SVGVersions returns supported versions via the root package.
+func TestSVGVersionsViaRootPackage(t *testing.T) {
+	versions := cairo.SVGVersions()
+	require.NotEmpty(t, versions)
+	assert.Contains(t, versions, cairo.SVGVersion11)
+	assert.Contains(t, versions, cairo.SVGVersion12)
+}
+
+// TestSVGVersionToStringViaRootPackage verifies SVGVersionToString via the root package.
+func TestSVGVersionToStringViaRootPackage(t *testing.T) {
+	assert.Equal(t, "SVG 1.1", cairo.SVGVersionToString(cairo.SVGVersion11))
+	assert.Equal(t, "SVG 1.2", cairo.SVGVersionToString(cairo.SVGVersion12))
+}
+
+// TestSVGSurfaceRestrictToVersionViaRootPackage verifies RestrictToVersion works via the root package.
+func TestSVGSurfaceRestrictToVersionViaRootPackage(t *testing.T) {
+	dir := t.TempDir()
+	filename := filepath.Join(dir, "output.svg")
+
+	surf, err := cairo.NewSVGSurface(filename, 600, 400)
+	require.NoError(t, err)
+	require.NotNil(t, surf)
+
+	surf.RestrictToVersion(cairo.SVGVersion11)
+
+	require.NoError(t, surf.Close())
+}
+
 // TestSVGUnitConstantsReexport verifies all SVGUnit constants are accessible via
 // the root cairo package.
 func TestSVGUnitConstantsReexport(t *testing.T) {

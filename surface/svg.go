@@ -7,10 +7,34 @@ package surface
 
 import "github.com/mikowitz/cairo/status"
 
+// SVGVersion specifies the SVG specification version for generated SVG output.
+// These values correspond directly to Cairo's cairo_svg_version_t enum.
+//
+//go:generate sh -c "stringer -type=SVGVersion -tags '!nosvg' && printf '//go:build !nosvg\n\n' | cat - svgversion_string.go > /tmp/_svg_tmp.go && mv /tmp/_svg_tmp.go svgversion_string.go"
+type SVGVersion int
+
+const (
+	// SVGVersion11 generates output conforming to SVG version 1.1.
+	SVGVersion11 SVGVersion = iota
+	// SVGVersion12 generates output conforming to SVG version 1.2.
+	SVGVersion12
+)
+
+// SVGVersions returns the list of SVG versions supported by the Cairo library.
+func SVGVersions() []SVGVersion {
+	return svgGetVersions()
+}
+
+// SVGVersionToString returns the human-readable name of the SVG version
+// (e.g., "SVG 1.1" or "SVG 1.2"). Returns an empty string for unknown versions.
+func SVGVersionToString(version SVGVersion) string {
+	return svgVersionToString(version)
+}
+
 // SVGUnit specifies the unit for coordinates in an SVG document.
 // These values correspond directly to Cairo's cairo_svg_unit_t enum.
 //
-//go:generate stringer -type=SVGUnit -tags "!nosvg"
+//go:generate sh -c "stringer -type=SVGUnit -tags '!nosvg' && printf '//go:build !nosvg\n\n' | cat - svgunit_string.go > /tmp/_svg_tmp.go && mv /tmp/_svg_tmp.go svgunit_string.go"
 type SVGUnit int
 
 const (
@@ -57,6 +81,18 @@ func NewSVGSurface(filename string, widthPt, heightPt float64) (*SVGSurface, err
 		return nil, st
 	}
 	return &SVGSurface{BaseSurface: newBaseSurface(ptr)}, nil
+}
+
+// RestrictToVersion restricts the generated SVG output to the given version.
+// Must be called before any drawing operations; it has no effect on already-emitted output.
+// Use SVGVersions to query which versions are available.
+func (s *SVGSurface) RestrictToVersion(version SVGVersion) {
+	s.Lock()
+	defer s.Unlock()
+	if s.ptr == nil {
+		return
+	}
+	svgSurfaceRestrictToVersion(s.ptr, version)
 }
 
 // SetDocumentUnit sets the unit used for coordinates in the SVG document.

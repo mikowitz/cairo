@@ -49,6 +49,44 @@ func TestNewSVGSurfaceInvalidPath(t *testing.T) {
 	require.Error(t, err)
 }
 
+// TestSVGVersions verifies that SVGVersions returns a non-empty list of supported versions.
+func TestSVGVersions(t *testing.T) {
+	versions := SVGVersions()
+	require.NotEmpty(t, versions, "SVGVersions should return at least one version")
+
+	// Cairo currently supports SVG 1.1 and 1.2
+	assert.Contains(t, versions, SVGVersion11)
+	assert.Contains(t, versions, SVGVersion12)
+}
+
+// TestSVGVersionToString verifies that SVGVersionToString returns human-readable strings.
+func TestSVGVersionToString(t *testing.T) {
+	assert.Equal(t, "SVG 1.1", SVGVersionToString(SVGVersion11))
+	assert.Equal(t, "SVG 1.2", SVGVersionToString(SVGVersion12))
+}
+
+// TestSVGSurfaceRestrictToVersion verifies that RestrictToVersion can be called with all versions.
+func TestSVGSurfaceRestrictToVersion(t *testing.T) {
+	dir := t.TempDir()
+	filename := filepath.Join(dir, "test.svg")
+
+	s, err := NewSVGSurface(filename, 400, 300)
+	require.NoError(t, err)
+	require.NotNil(t, s)
+
+	// Should be callable for each supported version without panicking.
+	for _, v := range SVGVersions() {
+		s.RestrictToVersion(v)
+	}
+
+	s.Flush()
+	err = s.Close()
+	require.NoError(t, err)
+
+	// RestrictToVersion on a closed surface should be a no-op, not a panic.
+	s.RestrictToVersion(SVGVersion11)
+}
+
 // TestSVGSurfaceDocumentUnit verifies that SetDocumentUnit can be called with all unit types.
 func TestSVGSurfaceDocumentUnit(t *testing.T) {
 	dir := t.TempDir()

@@ -1,5 +1,5 @@
-// ABOUTME: Re-exports SVGSurface type, SVGUnit type and constants, and NewSVGSurface
-// ABOUTME: constructor from the surface package for use via the root cairo package.
+// ABOUTME: Re-exports SVGSurface, SVGUnit, SVGVersion types/constants, and NewSVGSurface/SVGVersions
+// ABOUTME: helpers from the surface package for use via the root cairo package.
 
 //go:build !nosvg
 
@@ -43,6 +43,28 @@ const (
 	// SVGUnitPercent uses percentage units relative to the SVG viewport.
 	SVGUnitPercent SVGUnit = surface.SVGUnitPercent
 )
+
+// SVGVersion specifies the SVG specification version for generated SVG output.
+// Pass one of the SVGVersion constants to SVGSurface.RestrictToVersion.
+type SVGVersion = surface.SVGVersion
+
+const (
+	// SVGVersion11 generates output conforming to SVG version 1.1.
+	SVGVersion11 SVGVersion = surface.SVGVersion11
+	// SVGVersion12 generates output conforming to SVG version 1.2.
+	SVGVersion12 SVGVersion = surface.SVGVersion12
+)
+
+// SVGVersions returns the list of SVG versions supported by the Cairo library.
+func SVGVersions() []SVGVersion {
+	return surface.SVGVersions()
+}
+
+// SVGVersionToString returns the human-readable name of the SVG version
+// (e.g., "SVG 1.1" or "SVG 1.2"). Returns an empty string for unknown versions.
+func SVGVersionToString(version SVGVersion) string {
+	return surface.SVGVersionToString(version)
+}
 
 // NewSVGSurface creates a new SVG surface writing to filename.
 // widthPt and heightPt set the dimensions in points (1/72 inch).

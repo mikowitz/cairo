@@ -1,5 +1,5 @@
-// ABOUTME: CGO bindings for Cairo SVG surface creation and document unit configuration.
-// ABOUTME: Wraps cairo_svg_surface_create and cairo_svg_surface_set_document_unit.
+// ABOUTME: CGO bindings for Cairo SVG surface creation, document unit, and version configuration.
+// ABOUTME: Wraps cairo_svg_surface_create, cairo_svg_surface_set_document_unit, and version APIs.
 
 //go:build !nosvg
 
@@ -19,4 +19,31 @@ func svgSurfaceCreate(filename string, widthPt, heightPt float64) SurfacePtr {
 
 func svgSurfaceSetDocumentUnit(ptr SurfacePtr, unit SVGUnit) {
 	C.cairo_svg_surface_set_document_unit(ptr, C.cairo_svg_unit_t(unit))
+}
+
+func svgSurfaceRestrictToVersion(ptr SurfacePtr, version SVGVersion) {
+	C.cairo_svg_surface_restrict_to_version(ptr, C.cairo_svg_version_t(version))
+}
+
+func svgGetVersions() []SVGVersion {
+	var versions *C.cairo_svg_version_t
+	var numVersions C.int
+	C.cairo_svg_get_versions(&versions, &numVersions)
+	if numVersions == 0 || versions == nil {
+		return nil
+	}
+	cSlice := unsafe.Slice(versions, int(numVersions))
+	result := make([]SVGVersion, int(numVersions))
+	for i, v := range cSlice {
+		result[i] = SVGVersion(v)
+	}
+	return result
+}
+
+func svgVersionToString(version SVGVersion) string {
+	cStr := C.cairo_svg_version_to_string(C.cairo_svg_version_t(version))
+	if cStr == nil {
+		return ""
+	}
+	return C.GoString(cStr)
 }
