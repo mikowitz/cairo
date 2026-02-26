@@ -47,6 +47,10 @@ func imageSurfaceCreate(format Format, width, height int) SurfacePtr {
 	)
 }
 
+func surfaceShowPage(ptr SurfacePtr) {
+	C.cairo_surface_show_page(ptr)
+}
+
 func surfaceWriteToPNG(ptr SurfacePtr, filepath string) error {
 	cFilepath := C.CString(filepath)
 	defer C.free(unsafe.Pointer(cFilepath))

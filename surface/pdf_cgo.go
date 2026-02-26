@@ -1,5 +1,5 @@
-// ABOUTME: CGO bindings for Cairo PDF surface creation and page management.
-// ABOUTME: Wraps cairo_pdf_surface_create, cairo_pdf_surface_set_size, and cairo_surface_show_page.
+// ABOUTME: CGO bindings for Cairo PDF surface creation and page size management.
+// ABOUTME: Wraps cairo_pdf_surface_create and cairo_pdf_surface_set_size.
 
 //go:build !nopdf
 
@@ -19,8 +19,4 @@ func pdfSurfaceCreate(filename string, widthPt, heightPt float64) SurfacePtr {
 
 func pdfSurfaceSetSize(ptr SurfacePtr, widthPt, heightPt float64) {
 	C.cairo_pdf_surface_set_size(ptr, C.double(widthPt), C.double(heightPt))
-}
-
-func surfaceShowPage(ptr SurfacePtr) {
-	C.cairo_surface_show_page(ptr)
 }
