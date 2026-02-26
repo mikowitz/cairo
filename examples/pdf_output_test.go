@@ -47,11 +47,12 @@ func TestPDFOutputValidPDFHeader(t *testing.T) {
 	require.Equal(t, "%PDF-", string(data[:5]), "file does not begin with PDF magic bytes")
 }
 
-// TestPDFOutputMultiPage verifies that the generated PDF contains multiple pages
-// by checking that the file is large enough for 3 pages of drawing content.
-// Cairo embeds all page content inline, so a 3-page document with gradients and
-// text should be substantially larger than a minimal PDF.
-func TestPDFOutputMultiPage(t *testing.T) {
+// TestPDFOutputSubstantialSize verifies that the generated PDF is large enough to
+// represent 3 pages of drawing content. Cairo uses compressed object streams
+// (PDF 1.5+ ObjStm), so page dictionaries are not visible as raw text and page
+// count cannot be verified without a PDF parsing library. File size is used as a
+// proxy: a 3-page document with shapes, gradients, and text should be at least 10KB.
+func TestPDFOutputSubstantialSize(t *testing.T) {
 	tempDir := t.TempDir()
 	outputPath := filepath.Join(tempDir, "output.pdf")
 
@@ -61,7 +62,6 @@ func TestPDFOutputMultiPage(t *testing.T) {
 	data, err := os.ReadFile(outputPath)
 	require.NoError(t, err, "failed to read PDF file")
 
-	// A 3-page PDF with shapes, gradients, and text should be at least 10KB
 	require.GreaterOrEqual(t, len(data), 10000,
 		"PDF file is too small for a 3-page document with drawing content",
 	)
