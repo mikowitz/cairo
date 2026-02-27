@@ -5,7 +5,11 @@
 
 package surface
 
-import "github.com/mikowitz/cairo/status"
+import (
+	"sync"
+
+	"github.com/mikowitz/cairo/status"
+)
 
 // SVGVersion specifies the SVG specification version for generated SVG output.
 // These values correspond directly to Cairo's cairo_svg_version_t enum.
@@ -20,9 +24,18 @@ const (
 	SVGVersion12
 )
 
+var (
+	svgVersionsOnce   sync.Once
+	svgVersionsResult []SVGVersion
+)
+
 // SVGVersions returns the list of SVG versions supported by the Cairo library.
+// The result is cached after the first call; Cairo's supported versions are fixed at build time.
 func SVGVersions() []SVGVersion {
-	return svgGetVersions()
+	svgVersionsOnce.Do(func() {
+		svgVersionsResult = svgGetVersions()
+	})
+	return svgVersionsResult
 }
 
 // SVGVersionToString returns the human-readable name of the SVG version
