@@ -8,6 +8,16 @@ package surface
 // #cgo pkg-config: cairo-svg
 // #include <cairo-svg.h>
 // #include <stdlib.h>
+//
+// // _svgGetVersionsList fills buf with supported SVG version identifiers and
+// // returns the count. buf must have room for at least 16 entries.
+// static int _svgGetVersionsList(cairo_svg_version_t *buf) {
+//     cairo_svg_version_t const *v;
+//     int n = 0;
+//     cairo_svg_get_versions(&v, &n);
+//     for (int i = 0; i < n; i++) { buf[i] = v[i]; }
+//     return n;
+// }
 import "C"
 import "unsafe"
 
@@ -30,16 +40,11 @@ func svgSurfaceRestrictToVersion(ptr SurfacePtr, version SVGVersion) {
 }
 
 func svgGetVersions() []SVGVersion {
-	var versions *C.cairo_svg_version_t
-	var numVersions C.int
-	C.cairo_svg_get_versions(&versions, &numVersions)
-	if numVersions == 0 || versions == nil {
-		return nil
-	}
-	cSlice := unsafe.Slice(versions, int(numVersions))
-	result := make([]SVGVersion, int(numVersions))
-	for i, v := range cSlice {
-		result[i] = SVGVersion(v)
+	var buf [16]C.cairo_svg_version_t
+	count := int(C._svgGetVersionsList(&buf[0]))
+	result := make([]SVGVersion, count)
+	for i := range result {
+		result[i] = SVGVersion(buf[i])
 	}
 	return result
 }
