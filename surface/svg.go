@@ -10,7 +10,7 @@ import "github.com/mikowitz/cairo/status"
 // SVGVersion specifies the SVG specification version for generated SVG output.
 // These values correspond directly to Cairo's cairo_svg_version_t enum.
 //
-//go:generate sh -c "stringer -type=SVGVersion -tags '!nosvg' && printf '//go:build !nosvg\n\n' | cat - svgversion_string.go > /tmp/_svg_tmp.go && mv /tmp/_svg_tmp.go svgversion_string.go"
+//go:generate sh -c "stringer -type=SVGVersion -tags '!nosvg' && awk '/^package /{print \"//go:build !nosvg\"; print \"\"; print; next}1' svgversion_string.go > /tmp/_svg_tmp.go && mv /tmp/_svg_tmp.go svgversion_string.go"
 type SVGVersion int
 
 const (
@@ -34,7 +34,7 @@ func SVGVersionToString(version SVGVersion) string {
 // SVGUnit specifies the unit for coordinates in an SVG document.
 // These values correspond directly to Cairo's cairo_svg_unit_t enum.
 //
-//go:generate sh -c "stringer -type=SVGUnit -tags '!nosvg' && printf '//go:build !nosvg\n\n' | cat - svgunit_string.go > /tmp/_svg_tmp.go && mv /tmp/_svg_tmp.go svgunit_string.go"
+//go:generate sh -c "stringer -type=SVGUnit -tags '!nosvg' && awk '/^package /{print \"//go:build !nosvg\"; print \"\"; print; next}1' svgunit_string.go > /tmp/_svg_tmp.go && mv /tmp/_svg_tmp.go svgunit_string.go"
 type SVGUnit int
 
 const (
