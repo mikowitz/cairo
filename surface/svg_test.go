@@ -65,25 +65,35 @@ func TestSVGVersionToString(t *testing.T) {
 	assert.Equal(t, "SVG 1.2", SVGVersionToString(SVGVersion12))
 }
 
-// TestSVGSurfaceRestrictToVersion verifies that RestrictToVersion can be called with all versions.
+// TestSVGSurfaceRestrictToVersion verifies that RestrictToVersion produces a valid SVG
+// for each supported version and is a no-op when called on a closed surface.
+// Cairo does not add a version attribute to the <svg> element; the restriction
+// controls which SVG features Cairo is permitted to emit, not the header content.
 func TestSVGSurfaceRestrictToVersion(t *testing.T) {
-	dir := t.TempDir()
-	filename := filepath.Join(dir, "test.svg")
-
-	s, err := NewSVGSurface(filename, 400, 300)
-	require.NoError(t, err)
-	require.NotNil(t, s)
-
-	// Should be callable for each supported version without panicking.
 	for _, v := range SVGVersions() {
-		s.RestrictToVersion(v)
+		t.Run(v.String(), func(t *testing.T) {
+			dir := t.TempDir()
+			filename := filepath.Join(dir, "test.svg")
+
+			s, err := NewSVGSurface(filename, 100, 100)
+			require.NoError(t, err)
+			s.RestrictToVersion(v)
+			require.NoError(t, s.Close())
+
+			data, err := os.ReadFile(filename) //nolint:gosec // filename is from t.TempDir()
+			require.NoError(t, err)
+			assert.Contains(t, string(data), "<svg", "output should contain SVG root element")
+
+			var parsed interface{}
+			assert.NoError(t, xml.Unmarshal(data, &parsed), "output should be well-formed XML")
+		})
 	}
 
-	s.Flush()
-	err = s.Close()
-	require.NoError(t, err)
-
 	// RestrictToVersion on a closed surface should be a no-op, not a panic.
+	dir := t.TempDir()
+	s, err := NewSVGSurface(filepath.Join(dir, "test.svg"), 100, 100)
+	require.NoError(t, err)
+	require.NoError(t, s.Close())
 	s.RestrictToVersion(SVGVersion11)
 }
 
