@@ -92,27 +92,26 @@ func TestSVGSurfaceRestrictToVersionViaRootPackage(t *testing.T) {
 	require.NoError(t, surf.Close())
 }
 
-// TestSVGUnitConstantsReexport verifies all SVGUnit constants are accessible via
-// the root cairo package.
+// TestSVGUnitConstantsReexport verifies all SVGUnit constants are accessible via the root
+// cairo package and have the exact numeric values Cairo's cairo_svg_unit_t enum defines.
 func TestSVGUnitConstantsReexport(t *testing.T) {
-	units := []cairo.SVGUnit{
-		cairo.SVGUnitUser,
-		cairo.SVGUnitEm,
-		cairo.SVGUnitEx,
-		cairo.SVGUnitPx,
-		cairo.SVGUnitIn,
-		cairo.SVGUnitCm,
-		cairo.SVGUnitMm,
-		cairo.SVGUnitPt,
-		cairo.SVGUnitPc,
-		cairo.SVGUnitPercent,
-	}
-	assert.Len(t, units, 10)
+	// These numeric values must match cairo_svg_unit_t in <cairo-svg.h>.
+	assert.Equal(t, cairo.SVGUnit(0), cairo.SVGUnitUser)
+	assert.Equal(t, cairo.SVGUnit(1), cairo.SVGUnitEm)
+	assert.Equal(t, cairo.SVGUnit(2), cairo.SVGUnitEx)
+	assert.Equal(t, cairo.SVGUnit(3), cairo.SVGUnitPx)
+	assert.Equal(t, cairo.SVGUnit(4), cairo.SVGUnitIn)
+	assert.Equal(t, cairo.SVGUnit(5), cairo.SVGUnitCm)
+	assert.Equal(t, cairo.SVGUnit(6), cairo.SVGUnitMm)
+	assert.Equal(t, cairo.SVGUnit(7), cairo.SVGUnitPt)
+	assert.Equal(t, cairo.SVGUnit(8), cairo.SVGUnitPc)
+	assert.Equal(t, cairo.SVGUnit(9), cairo.SVGUnitPercent)
+}
 
-	// Verify they are distinct values
-	seen := make(map[cairo.SVGUnit]bool)
-	for _, u := range units {
-		assert.False(t, seen[u], "duplicate SVGUnit value: %v", u)
-		seen[u] = true
-	}
+// TestSVGVersionConstantsReexport verifies SVGVersion constants have the exact numeric
+// values Cairo's cairo_svg_version_t enum defines.
+func TestSVGVersionConstantsReexport(t *testing.T) {
+	// These numeric values must match cairo_svg_version_t in <cairo-svg.h>.
+	assert.Equal(t, cairo.SVGVersion(0), cairo.SVGVersion11)
+	assert.Equal(t, cairo.SVGVersion(1), cairo.SVGVersion12)
 }
