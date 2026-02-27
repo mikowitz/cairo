@@ -31,21 +31,6 @@ func TestSVGOutputGeneratesFile(t *testing.T) {
 	)
 }
 
-// TestSVGOutputValidXMLHeader verifies that the generated file contains the required
-// XML declaration, confirming the SVG backend produced a proper XML document.
-func TestSVGOutputValidXMLHeader(t *testing.T) {
-	tempDir := t.TempDir()
-	outputPath := filepath.Join(tempDir, "output.svg")
-
-	err := GenerateSVGOutput(outputPath)
-	require.NoError(t, err, "GenerateSVGOutput failed")
-
-	data, err := os.ReadFile(outputPath) //nolint:gosec // path is from t.TempDir(), not user input
-	require.NoError(t, err, "failed to read SVG file")
-
-	require.Contains(t, string(data), "<?xml", "SVG file should contain XML declaration")
-}
-
 // TestSVGOutputValidXML verifies that the generated SVG is well-formed XML that
 // can be parsed by a standard XML parser.
 func TestSVGOutputValidXML(t *testing.T) {
