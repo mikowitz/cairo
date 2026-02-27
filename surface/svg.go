@@ -121,6 +121,7 @@ func (s *SVGSurface) SetDocumentUnit(unit SVGUnit) {
 }
 
 // GetDocumentUnit returns the unit currently set for coordinates in the SVG document.
+// Returns SVGUnitUser if called on a closed surface.
 func (s *SVGSurface) GetDocumentUnit() SVGUnit {
 	s.RLock()
 	defer s.RUnlock()
