@@ -168,19 +168,19 @@ func ExampleNewLinearGradient() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer surface.Close()
 
 	ctx, err := cairo.NewContext(surface)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer ctx.Close()
 
 	// Create a horizontal gradient from red (left) to blue (right)
 	grad, err := cairo.NewLinearGradient(0, 0, 300, 0)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer surface.Close()
+	defer ctx.Close()
 	defer grad.Close()
 
 	grad.AddColorStopRGB(0.0, 1, 0, 0) // Red at start
