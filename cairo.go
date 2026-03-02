@@ -897,7 +897,7 @@ type LineJoin = context.LineJoin
 
 const (
 	// LineJoinMiter uses a sharp (angled) corner. If the miter would extend beyond
-	// the miter limit (as set by [Context.SetMiterLimit]), a bevel join is used instead.
+	// the miter limit (as set by Context.SetMiterLimit), a bevel join is used instead.
 	LineJoinMiter LineJoin = iota
 
 	// LineJoinRound uses a rounded join, with the center of the circle at the join point.
@@ -909,7 +909,7 @@ const (
 )
 
 // FillRule controls which areas of a self-intersecting path are considered "inside"
-// and therefore filled when calling [Context.Fill] or [Context.FillPreserve].
+// and therefore filled when calling Context.Fill or Context.FillPreserve.
 //
 // The winding and even-odd rules produce different results for complex paths
 // that intersect themselves, such as stars or compound shapes.
@@ -1038,7 +1038,7 @@ const (
 	OperatorHslLuminosity Operator = context.OperatorHslLuminosity
 )
 
-// Slant specifies the slant style of a font face used with [Context.SelectFontFace].
+// Slant specifies the slant style of a font face used with Context.SelectFontFace.
 //
 // Results are platform-dependent; the host OS font system determines which font
 // is actually selected for a given family and slant combination.
@@ -1055,7 +1055,7 @@ const (
 	SlantOblique Slant = font.SlantOblique
 )
 
-// Weight specifies the weight (boldness) of a font face used with [Context.SelectFontFace].
+// Weight specifies the weight (boldness) of a font face used with Context.SelectFontFace.
 //
 // Results are platform-dependent; the host OS font system determines which font
 // is actually selected for a given family and weight combination.
