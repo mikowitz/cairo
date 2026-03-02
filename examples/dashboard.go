@@ -44,7 +44,7 @@ func GenerateDashboard(outputPath string) error {
 
 // drawDashboard renders the full dashboard onto ctx using the supplied dimensions.
 // Keeping the drawing logic separate allows both PNG and PDF surfaces to reuse it.
-func drawDashboard(ctx *cairo.Context, w, h float64) { //nolint:funlen
+func drawDashboard(ctx *cairo.Context, w, h float64) {
 	// Light gray background
 	ctx.SetSourceRGB(0.94, 0.94, 0.96)
 	ctx.Paint()
@@ -82,7 +82,7 @@ type pieSegment struct {
 
 // drawBarChart renders a vertical bar chart inside a white panel at (x, y, cw, ch).
 // Each bar uses a vertical gradient fill from a lighter shade to the base color.
-func drawBarChart(ctx *cairo.Context, x, y, cw, ch float64) { //nolint:funlen
+func drawBarChart(ctx *cairo.Context, x, y, cw, ch float64) {
 	// White panel
 	ctx.SetSourceRGB(1, 1, 1)
 	ctx.Rectangle(x, y, cw, ch)
@@ -199,7 +199,7 @@ func drawLineChart(ctx *cairo.Context, x, y, cw, ch float64) {
 // drawPieChart renders a four-segment pie chart centered at (cx, cy) with radius r.
 // Each slice has a radial gradient and is bordered in white. A legend is drawn to
 // the right listing each category label.
-func drawPieChart(ctx *cairo.Context, cx, cy, r float64) { //nolint:funlen
+func drawPieChart(ctx *cairo.Context, cx, cy, r float64) {
 	ctx.SetSourceRGB(0.20, 0.20, 0.20)
 	ctx.SelectFontFace("sans-serif", font.SlantNormal, font.WeightBold)
 	ctx.SetFontSize(r * 0.40)

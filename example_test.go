@@ -89,12 +89,12 @@ func ExampleNewContext() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer surface.Close()
 
 	ctx, err := cairo.NewContext(surface)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer surface.Close()
 	defer ctx.Close()
 
 	fmt.Printf("Context status: %v\n", ctx.Status())
@@ -109,12 +109,12 @@ func ExampleContext_Arc() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer surface.Close()
 
 	ctx, err := cairo.NewContext(surface)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer surface.Close()
 	defer ctx.Close()
 
 	// Paint a white background
@@ -138,12 +138,12 @@ func ExampleContext_Save() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer surface.Close()
 
 	ctx, err := cairo.NewContext(surface)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer surface.Close()
 	defer ctx.Close()
 
 	ctx.SetLineWidth(2)

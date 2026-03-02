@@ -24,7 +24,7 @@ func TestDashboardPDFGeneratesFile(t *testing.T) {
 	require.True(t, CheckFileSize(t, outputPath, 1000, 5_000_000), "PDF file size out of expected range")
 
 	// Confirm the output begins with the PDF magic bytes.
-	data, err := os.ReadFile(outputPath)
+	data, err := os.ReadFile(outputPath) //nolint:gosec
 	require.NoError(t, err)
 	require.True(t, len(data) >= 5 && string(data[:5]) == "%PDF-", "file does not start with PDF magic bytes")
 
