@@ -5,7 +5,10 @@
 
 package cairo
 
-import "github.com/mikowitz/cairo/surface"
+import (
+	"github.com/mikowitz/cairo/status"
+	"github.com/mikowitz/cairo/surface"
+)
 
 // SVGSurface is a surface that writes drawing operations to an SVG file.
 // Dimensions are specified in points, where 1 point equals 1/72 of an inch.
@@ -73,5 +76,12 @@ func SVGVersionToString(version SVGVersion) string {
 // Requires the Cairo SVG backend. On Debian/Ubuntu: libcairo2-dev.
 // On macOS: brew install cairo (includes SVG support by default).
 func NewSVGSurface(filename string, widthPt, heightPt float64) (*SVGSurface, error) {
-	return surface.NewSVGSurface(filename, widthPt, heightPt)
+	surf, err := surface.NewSVGSurface(filename, widthPt, heightPt)
+	if err != nil {
+		if st, ok := err.(status.Status); ok {
+			return nil, &SurfaceError{Status: st, SurfaceType: "svg"}
+		}
+		return nil, err
+	}
+	return surf, nil
 }

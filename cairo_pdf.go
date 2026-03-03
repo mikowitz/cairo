@@ -5,7 +5,10 @@
 
 package cairo
 
-import "github.com/mikowitz/cairo/surface"
+import (
+	"github.com/mikowitz/cairo/status"
+	"github.com/mikowitz/cairo/surface"
+)
 
 // PDFSurface is a surface that writes drawing operations to a PDF file.
 // Dimensions are specified in points, where 1 point equals 1/72 of an inch.
@@ -25,5 +28,12 @@ type PDFSurface = surface.PDFSurface
 // Requires the Cairo PDF backend. On Debian/Ubuntu: libcairo2-dev.
 // On macOS: brew install cairo (includes PDF support by default).
 func NewPDFSurface(filename string, widthPt, heightPt float64) (*PDFSurface, error) {
-	return surface.NewPDFSurface(filename, widthPt, heightPt)
+	surf, err := surface.NewPDFSurface(filename, widthPt, heightPt)
+	if err != nil {
+		if st, ok := err.(status.Status); ok {
+			return nil, &SurfaceError{Status: st, SurfaceType: "pdf"}
+		}
+		return nil, err
+	}
+	return surf, nil
 }

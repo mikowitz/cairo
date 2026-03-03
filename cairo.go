@@ -6,6 +6,7 @@ import (
 	"github.com/mikowitz/cairo/context"
 	"github.com/mikowitz/cairo/font"
 	"github.com/mikowitz/cairo/pattern"
+	"github.com/mikowitz/cairo/status"
 	"github.com/mikowitz/cairo/surface"
 )
 
@@ -58,7 +59,14 @@ type Surface = surface.Surface
 // The surface should be closed with Close() when finished to release Cairo resources.
 // A finalizer is registered as a safety net, but explicit cleanup is recommended.
 func NewImageSurface(format Format, width, height int) (*surface.ImageSurface, error) {
-	return surface.NewImageSurface(format, width, height)
+	surf, err := surface.NewImageSurface(format, width, height)
+	if err != nil {
+		if st, ok := err.(status.Status); ok {
+			return nil, &SurfaceError{Status: st, SurfaceType: "image"}
+		}
+		return nil, err
+	}
+	return surf, nil
 }
 
 // Context is the main object used for drawing operations in Cairo.
@@ -269,7 +277,14 @@ type Context = context.Context
 //
 //	// Use ctx for drawing operations...
 func NewContext(surface Surface) (*Context, error) {
-	return context.NewContext(surface)
+	ctx, err := context.NewContext(surface)
+	if err != nil {
+		if st, ok := err.(status.Status); ok {
+			return nil, &ContextError{Status: st, Operation: "create"}
+		}
+		return nil, err
+	}
+	return ctx, nil
 }
 
 // Pattern is the interface that all Cairo pattern types implement.
@@ -358,7 +373,14 @@ type Pattern = pattern.Pattern
 //   - Apply transformations to the pattern
 //   - Store patterns for later use
 func NewSolidPatternRGB(r, g, b float64) (*pattern.SolidPattern, error) {
-	return pattern.NewSolidPatternRGB(r, g, b)
+	p, err := pattern.NewSolidPatternRGB(r, g, b)
+	if err != nil {
+		if st, ok := err.(status.Status); ok {
+			return nil, &PatternError{Status: st, PatternType: "solid"}
+		}
+		return nil, err
+	}
+	return p, nil
 }
 
 // NewSolidPatternRGBA creates a new solid pattern with an RGBA color including transparency.
@@ -399,7 +421,14 @@ func NewSolidPatternRGB(r, g, b float64) (*pattern.SolidPattern, error) {
 //   - Apply transformations to the pattern
 //   - Store patterns for later use
 func NewSolidPatternRGBA(r, g, b, a float64) (*pattern.SolidPattern, error) {
-	return pattern.NewSolidPatternRGBA(r, g, b, a)
+	p, err := pattern.NewSolidPatternRGBA(r, g, b, a)
+	if err != nil {
+		if st, ok := err.(status.Status); ok {
+			return nil, &PatternError{Status: st, PatternType: "solid"}
+		}
+		return nil, err
+	}
+	return p, nil
 }
 
 // LinearGradient represents a gradient pattern that transitions colors along a line.
@@ -582,7 +611,14 @@ type RadialGradient = pattern.RadialGradient
 //	ctx.SetSource(gradient)
 //	ctx.Paint()  // Creates fade-out effect
 func NewLinearGradient(x0, y0, x1, y1 float64) (*LinearGradient, error) {
-	return pattern.NewLinearGradient(x0, y0, x1, y1)
+	g, err := pattern.NewLinearGradient(x0, y0, x1, y1)
+	if err != nil {
+		if st, ok := err.(status.Status); ok {
+			return nil, &PatternError{Status: st, PatternType: "linear"}
+		}
+		return nil, err
+	}
+	return g, nil
 }
 
 // NewRadialGradient creates a new radial gradient pattern between two circles.
@@ -656,7 +692,14 @@ func NewLinearGradient(x0, y0, x1, y1 float64) (*LinearGradient, error) {
 //	ctx.Arc(150, 150, 100, 0, 2*math.Pi)
 //	ctx.Fill()  // Creates glow effect
 func NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1 float64) (*RadialGradient, error) {
-	return pattern.NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1)
+	g, err := pattern.NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1)
+	if err != nil {
+		if st, ok := err.(status.Status); ok {
+			return nil, &PatternError{Status: st, PatternType: "radial"}
+		}
+		return nil, err
+	}
+	return g, nil
 }
 
 // SurfacePattern represents a pattern based on a Cairo surface (image).
@@ -800,7 +843,14 @@ type SurfacePattern = pattern.SurfacePattern
 //	ctx.Rectangle(0, 0, 400, 300)
 //	ctx.Fill()
 func NewSurfacePattern(surface Surface) (*SurfacePattern, error) {
-	return pattern.NewSurfacePattern(surfaceAdapter{surface})
+	p, err := pattern.NewSurfacePattern(surfaceAdapter{surface})
+	if err != nil {
+		if st, ok := err.(status.Status); ok {
+			return nil, &PatternError{Status: st, PatternType: "surface"}
+		}
+		return nil, err
+	}
+	return p, nil
 }
 
 // surfaceAdapter adapts surface.Surface to work with pattern.NewSurfacePattern.
