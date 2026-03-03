@@ -18,6 +18,7 @@ Go bindings to Cairo's powerful vector graphics capabilities.
 - [Installation](#installation)
 - [Quick Example](#quick-example)
 - [Features](#features)
+- [Error Handling](#error-handling)
 - [Performance](#performance)
 - [Comparison to Other Go Graphics Libraries](#comparison-to-other-go-graphics-libraries)
 - [Troubleshooting](#troubleshooting)
@@ -194,6 +195,106 @@ func main() {
 - All types are safe for concurrent use (`sync.RWMutex` internally)
 - Explicit `Close()` methods for deterministic resource release
 - Finalizers as a safety net against leaks
+
+## Error Handling
+
+Go-Cairo uses a hybrid error model that mirrors Cairo's own design.
+
+### Three Error Patterns
+
+**1. Constructors and I/O return `(result, error)`**
+
+```go
+surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 400, 400)
+if err != nil {
+    // err is *cairo.SurfaceError
+}
+
+ctx, err := cairo.NewContext(surf)
+if err != nil {
+    // err is *cairo.ContextError
+}
+```
+
+**2. Drawing operations record status internally**
+
+`Fill`, `Stroke`, `Paint`, and similar operations do not return errors. Check
+the context status after a sequence of drawing calls:
+
+```go
+ctx.MoveTo(10, 10)
+ctx.LineTo(90, 90)
+ctx.Stroke()
+
+if s := ctx.Status(); s != status.Success {
+    return fmt.Errorf("drawing failed: %v", s)
+}
+```
+
+**3. Getters that can fail return `(value, error)`**
+
+```go
+x, y, err := ctx.GetCurrentPoint()
+if err != nil {
+    // err wraps status.NoCurrentPoint — call MoveTo first
+}
+```
+
+### Structured Error Types
+
+The three constructor error types carry extra context alongside the Cairo
+status code:
+
+| Type | Extra field | Example message |
+|------|-------------|-----------------|
+| `*SurfaceError` | `SurfaceType` | `cairo surface error (image): invalid format` |
+| `*ContextError` | `Operation` | `cairo context error (create): null pointer` |
+| `*PatternError` | `PatternType` | `cairo pattern error (linear): invalid matrix` |
+
+All three implement `Unwrap()`, so the full `errors.Is`/`errors.As` chain works.
+
+### Checking Errors with `errors.Is`
+
+Use `errors.Is` to match a specific Cairo status anywhere in the error chain:
+
+```go
+import "github.com/mikowitz/cairo/status"
+
+surf, err := cairo.NewImageSurface(cairo.Format(-1), 400, 400)
+if errors.Is(err, status.InvalidFormat) {
+    // Use a valid format constant such as cairo.FormatARGB32
+}
+```
+
+### Inspecting Errors with `errors.As`
+
+Use `errors.As` to retrieve the structured error and read its context field:
+
+```go
+var surfErr *cairo.SurfaceError
+if errors.As(err, &surfErr) {
+    fmt.Printf("surface type: %s, status: %v\n", surfErr.SurfaceType, surfErr.Status)
+}
+
+var ctxErr *cairo.ContextError
+if errors.As(err, &ctxErr) {
+    fmt.Printf("operation: %s, status: %v\n", ctxErr.Operation, ctxErr.Status)
+}
+```
+
+### Common Errors and Solutions
+
+| Status | Cause | Solution |
+|--------|-------|----------|
+| `status.InvalidFormat` | Invalid surface format constant | Use `FormatARGB32`, `FormatRGB24`, `FormatA8`, or `FormatA1` |
+| `status.NullPointer` | `NewContext` called with a closed or nil surface | Ensure the surface was created successfully and is still open |
+| `status.NoCurrentPoint` | `LineTo`, `Arc`, etc. called before `MoveTo` | Call `MoveTo` to establish a starting point |
+| `status.InvalidRestore` | `Restore` called without a matching `Save` | Balance every `Save` with exactly one `Restore` |
+| `status.SurfaceFinished` | Drawing on a closed surface | Check that `Close` has not been called before drawing is complete |
+| `status.FileNotFound` | Path passed to `WriteToPNG` does not exist | Verify the directory exists and is writable |
+| `status.NoMemory` | Allocation failure, usually a very large surface | Reduce surface dimensions |
+
+See `examples/error_handling.go` for a runnable demonstration of all three patterns.
 
 ## Performance
 
