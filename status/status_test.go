@@ -6,6 +6,33 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestStatusDescriptiveError verifies that Error() includes actionable suggestions
+// for the most common Cairo error statuses.
+func TestStatusDescriptiveError(t *testing.T) {
+	tests := []struct {
+		status   Status
+		contains string
+	}{
+		{NoCurrentPoint, "MoveTo"},
+		{InvalidRestore, "matching pairs"},
+		{SurfaceFinished, "Close"},
+		{NoMemory, "dimensions"},
+		{FileNotFound, "path"},
+		{WriteError, "permissions"},
+		{ReadError, "permissions"},
+		{InvalidFormat, "FormatARGB32"},
+		{InvalidStride, "aligned"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.status.String(), func(t *testing.T) {
+			msg := tt.status.Error()
+			assert.Contains(t, msg, tt.contains,
+				"Error() should include a helpful suggestion for %s", tt.status)
+		})
+	}
+}
+
 // TestStatusSuccess verifies that Success equals 0
 func TestStatusSuccess(t *testing.T) {
 	assert.Equal(t, 0, int(Success), "Success should equal 0")
