@@ -16,7 +16,7 @@ type ErrorHandlingResult struct {
 	InvalidFormatErr error
 	// NilSurfaceErr is the error from creating a context with a nil surface.
 	NilSurfaceErr error
-	// NoCurrentPointErr is the error from querying current point before any MoveTo.
+	// NoCurrentPointErr is the error from querying current point when no path is active.
 	NoCurrentPointErr error
 }
 
@@ -73,7 +73,6 @@ func DemonstrateErrorHandling() (ErrorHandlingResult, error) {
 		}
 	}
 
-	// --- Pattern 3: getter errors for invalid state ---
 	// Create a valid surface and context for the remaining patterns.
 	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 200, 200)
 	if err != nil {
@@ -87,18 +86,7 @@ func DemonstrateErrorHandling() (ErrorHandlingResult, error) {
 	}
 	defer func() { _ = ctx.Close() }()
 
-	// GetCurrentPoint fails when no path exists yet.
-	_, _, err = ctx.GetCurrentPoint()
-	if err != nil {
-		result.NoCurrentPointErr = err
-
-		if !errors.Is(err, status.NoCurrentPoint) {
-			return result, fmt.Errorf("expected NoCurrentPoint status, got: %w", err)
-		}
-	}
-
 	// --- Pattern 2: drawing operation status checking ---
-
 	// Drawing calls like MoveTo, LineTo, Stroke do not return errors.
 	// Check ctx.Status() after a sequence to detect any failure.
 	ctx.MoveTo(10, 10)
@@ -108,6 +96,18 @@ func DemonstrateErrorHandling() (ErrorHandlingResult, error) {
 
 	if s := ctx.Status(); s != status.Success {
 		return result, fmt.Errorf("drawing failed: %v", s)
+	}
+
+	// --- Pattern 3: getter errors for invalid state ---
+	// Stroke clears the current path and current point, so GetCurrentPoint
+	// now returns NoCurrentPoint — the same failure as before any MoveTo.
+	_, _, err = ctx.GetCurrentPoint()
+	if err != nil {
+		result.NoCurrentPointErr = err
+
+		if !errors.Is(err, status.NoCurrentPoint) {
+			return result, fmt.Errorf("expected NoCurrentPoint status, got: %w", err)
+		}
 	}
 
 	return result, nil
