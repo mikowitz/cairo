@@ -33,6 +33,7 @@ func (e *SurfaceError) Unwrap() error {
 // Is reports whether target matches this error.
 // It matches if target is a *SurfaceError with the same Status,
 // and either target.SurfaceType is empty or equals e.SurfaceType.
+// An empty target.SurfaceType acts as a wildcard and matches any surface type.
 func (e *SurfaceError) Is(target error) bool {
 	t, ok := target.(*SurfaceError)
 	if !ok {
@@ -69,6 +70,7 @@ func (e *ContextError) Unwrap() error {
 // Is reports whether target matches this error.
 // It matches if target is a *ContextError with the same Status,
 // and either target.Operation is empty or equals e.Operation.
+// An empty target.Operation acts as a wildcard and matches any operation.
 func (e *ContextError) Is(target error) bool {
 	t, ok := target.(*ContextError)
 	if !ok {
@@ -105,6 +107,7 @@ func (e *PatternError) Unwrap() error {
 // Is reports whether target matches this error.
 // It matches if target is a *PatternError with the same Status,
 // and either target.PatternType is empty or equals e.PatternType.
+// An empty target.PatternType acts as a wildcard and matches any pattern type.
 func (e *PatternError) Is(target error) bool {
 	t, ok := target.(*PatternError)
 	if !ok {
