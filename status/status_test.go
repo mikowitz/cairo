@@ -22,6 +22,9 @@ func TestStatusDescriptiveError(t *testing.T) {
 		{ReadError, "permissions"},
 		{InvalidFormat, "FormatARGB32"},
 		{InvalidStride, "aligned"},
+		{SurfaceTypeMismatch, "different surface type"},
+		{PatternTypeMismatch, "different pattern type"},
+		{InvalidMatrix, "degenerate"},
 	}
 
 	for _, tt := range tests {
