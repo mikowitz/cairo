@@ -44,16 +44,6 @@ func (e *SurfaceError) Is(target error) bool {
 	return e.Status == t.Status
 }
 
-// As finds the first error in the chain that matches target.
-func (e *SurfaceError) As(target any) bool {
-	t, ok := target.(**SurfaceError)
-	if ok {
-		*t = e
-		return true
-	}
-	return false
-}
-
 // ContextError represents an error that occurred during a context drawing operation.
 // It wraps a status.Status value and includes the operation name for additional context.
 type ContextError struct {
@@ -88,16 +78,6 @@ func (e *ContextError) Is(target error) bool {
 		return false
 	}
 	return e.Status == t.Status
-}
-
-// As finds the first error in the chain that matches target.
-func (e *ContextError) As(target any) bool {
-	t, ok := target.(**ContextError)
-	if ok {
-		*t = e
-		return true
-	}
-	return false
 }
 
 // PatternError represents an error that occurred during a pattern operation.
@@ -136,12 +116,3 @@ func (e *PatternError) Is(target error) bool {
 	return e.Status == t.Status
 }
 
-// As finds the first error in the chain that matches target.
-func (e *PatternError) As(target any) bool {
-	t, ok := target.(**PatternError)
-	if ok {
-		*t = e
-		return true
-	}
-	return false
-}
