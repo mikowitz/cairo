@@ -20,6 +20,7 @@ Go bindings to Cairo's powerful vector graphics capabilities.
 - [Features](#features)
 - [Error Handling](#error-handling)
 - [Performance](#performance)
+- [Concurrency](#concurrency)
 - [Comparison to Other Go Graphics Libraries](#comparison-to-other-go-graphics-libraries)
 - [Troubleshooting](#troubleshooting)
 - [FAQ](#faq)
@@ -326,6 +327,101 @@ Benchmarks (run `go test -bench=. -benchmem ./...` on your hardware):
 | `NewContext` | ~1 µs |
 | `Fill` (simple rectangle) | ~1 µs |
 | `WriteToPNG` (400×400) | ~2 ms |
+
+## Concurrency
+
+Every `Context`, `Surface`, and `Pattern` embeds a `sync.RWMutex`. Each method
+acquires the appropriate lock automatically, so concurrent calls are safe. However,
+the *pattern* in which you share objects across goroutines determines both correctness
+and performance.
+
+### Safe Patterns
+
+**One context per goroutine (recommended)**
+
+Give each goroutine its own surface and context. No contention occurs and goroutines
+draw fully in parallel:
+
+```go
+var wg sync.WaitGroup
+for i := 0; i < workers; i++ {
+    wg.Add(1)
+    go func(id int) {
+        defer wg.Done()
+        surf, _ := cairo.NewImageSurface(cairo.FormatARGB32, 400, 400)
+        defer surf.Close()
+        ctx, _ := cairo.NewContext(surf)
+        defer ctx.Close()
+        // draw with ctx — no shared state, no lock contention
+        ctx.SetSourceRGBA(0.2, 0.4, 0.8, 1.0)
+        ctx.Rectangle(0, 0, 400, 400)
+        ctx.Fill()
+        surf.WriteToPNG(fmt.Sprintf("tile_%d.png", id))
+    }(i)
+}
+wg.Wait()
+```
+
+**Concurrent reads from a shared pattern**
+
+Multiple goroutines may safely read a shared `Pattern` simultaneously. Accessors
+(`GetType`, `Status`, `GetColorStopCount`, etc.) take a read lock and do not block
+each other:
+
+```go
+gradient, _ := cairo.NewLinearGradient(0, 0, 400, 0)
+gradient.AddColorStopRGB(0, 1, 0, 0)
+gradient.AddColorStopRGB(1, 0, 0, 1)
+defer gradient.Close()
+// gradient is safe to pass to many goroutines for reading
+```
+
+### Unsafe Patterns to Avoid
+
+**Interleaved multi-step path operations on a shared context**
+
+Individual method calls are serialised, but the lock is released between calls.
+When goroutines share a context, their path steps interleave:
+
+```go
+// UNSAFE: path state between calls is not protected
+go func() { ctx.MoveTo(0, 0); ctx.LineTo(100, 100); ctx.Stroke() }()
+go func() { ctx.MoveTo(50, 50); ctx.LineTo(150, 0); ctx.Stroke() }()
+```
+
+If you need to share a context, guard multi-step sequences with your own `sync.Mutex`
+around the whole path-and-render group.
+
+**Relying on drawing order across goroutines with a shared context**
+
+Operations on a shared context are serialised but in non-deterministic order. Designs
+that require a specific draw order (background before foreground, etc.) must be
+coordinated externally.
+
+### Performance Implications
+
+Benchmarks (from `benchmarks/concurrent_bench_test.go`):
+
+| Pattern | Typical time/op |
+|---------|-----------------|
+| Single-threaded drawing | ~28 µs |
+| Shared context, 8 goroutines | ~32 µs (lock contention erases gains) |
+| Per-goroutine context, 8 goroutines | ~4 µs (scales linearly) |
+
+Key takeaways:
+
+- **Shared contexts serialise drawing.** Lock contention at 8× parallelism gives
+  about the same throughput as single-threaded use.
+- **Per-goroutine contexts scale linearly.** This is the recommended pattern for
+  parallel rendering workloads.
+- **Read-heavy pattern use scales well.** Multiple goroutines holding read locks on
+  a shared `Pattern` run concurrently; only writes serialise.
+
+Run the benchmarks on your hardware:
+
+```bash
+go test -bench=BenchmarkConcurrent -benchmem ./benchmarks/
+```
 
 ## Comparison to Other Go Graphics Libraries
 
