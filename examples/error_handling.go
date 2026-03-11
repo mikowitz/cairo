@@ -74,7 +74,7 @@ func DemonstrateErrorHandling() (ErrorHandlingResult, error) {
 		}
 	}
 
-	// --- Pattern 2: getter errors for invalid state ---
+	// --- Pattern 3: getter errors for invalid state ---
 
 	// Create a valid surface and context for the remaining patterns.
 	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 200, 200)
@@ -99,7 +99,7 @@ func DemonstrateErrorHandling() (ErrorHandlingResult, error) {
 		}
 	}
 
-	// --- Pattern 3: drawing operation status checking ---
+	// --- Pattern 2: drawing operation status checking ---
 
 	// Drawing calls like MoveTo, LineTo, Stroke do not return errors.
 	// Check ctx.Status() after a sequence to detect any failure.
