@@ -65,6 +65,16 @@ func TestNoCurrentPointErrorIsStatusCheck(t *testing.T) {
 		"errors.Is should match NoCurrentPoint status")
 }
 
+func TestNoCurrentPointErrorIsRawStatus(t *testing.T) {
+	result, err := DemonstrateErrorHandling()
+	require.NoError(t, err)
+
+	var st status.Status
+	require.True(t, errors.As(result.NoCurrentPointErr, &st),
+		"getter errors are raw status.Status values, not wrapped error types")
+	assert.Equal(t, status.NoCurrentPoint, st)
+}
+
 func TestErrorMessageIncludesContext(t *testing.T) {
 	result, err := DemonstrateErrorHandling()
 	require.NoError(t, err)

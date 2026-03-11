@@ -240,6 +240,10 @@ if err != nil {
 }
 ```
 
+> Note: getter errors are raw `status.Status` values. Unlike constructor errors, they
+> are not wrapped in `*SurfaceError` or `*ContextError`. Use `errors.Is(err, status.X)`
+> or a `status.Status` type assertion directly.
+
 ### Structured Error Types
 
 The three constructor error types carry extra context alongside the Cairo
