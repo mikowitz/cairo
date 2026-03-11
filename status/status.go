@@ -64,6 +64,11 @@ const (
 	LastStatus
 )
 
+// Error returns the status name followed by an actionable suggestion for
+// common statuses (e.g. "NoCurrentPoint: call MoveTo before path operations
+// like LineTo or Arc"). For statuses with no suggestion, it returns only the
+// status name (e.g. "NullPointer"). Do not match on the exact string returned
+// by Error(); use errors.Is instead.
 func (s Status) Error() string {
 	base := s.toString()
 	if suggestion := statusSuggestion(s); suggestion != "" {
