@@ -3,7 +3,6 @@
 //go:generate stringer -type=Status
 package status
 
-
 // Status is used to indicate errors that can occur when using
 // Cairo. In some cases it is returned directly by functions.
 // But when using `Context`, the last error, if any, is stored
@@ -107,4 +106,3 @@ func statusSuggestion(s Status) string {
 	}
 	return ""
 }
-
