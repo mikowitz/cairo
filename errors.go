@@ -116,3 +116,29 @@ func (e *PatternError) Is(target error) bool {
 	return e.Status == t.Status
 }
 
+// wrapSurfaceErr converts a status.Status error into a *SurfaceError with the
+// given surface type. Non-status errors pass through unchanged.
+func wrapSurfaceErr(err error, surfaceType string) error {
+	if st, ok := err.(status.Status); ok {
+		return &SurfaceError{Status: st, SurfaceType: surfaceType}
+	}
+	return err
+}
+
+// wrapContextErr converts a status.Status error into a *ContextError with the
+// given operation name. Non-status errors pass through unchanged.
+func wrapContextErr(err error, operation string) error {
+	if st, ok := err.(status.Status); ok {
+		return &ContextError{Status: st, Operation: operation}
+	}
+	return err
+}
+
+// wrapPatternErr converts a status.Status error into a *PatternError with the
+// given pattern type. Non-status errors pass through unchanged.
+func wrapPatternErr(err error, patternType string) error {
+	if st, ok := err.(status.Status); ok {
+		return &PatternError{Status: st, PatternType: patternType}
+	}
+	return err
+}

@@ -6,7 +6,6 @@ import (
 	"github.com/mikowitz/cairo/context"
 	"github.com/mikowitz/cairo/font"
 	"github.com/mikowitz/cairo/pattern"
-	"github.com/mikowitz/cairo/status"
 	"github.com/mikowitz/cairo/surface"
 )
 
@@ -61,10 +60,7 @@ type Surface = surface.Surface
 func NewImageSurface(format Format, width, height int) (*surface.ImageSurface, error) {
 	surf, err := surface.NewImageSurface(format, width, height)
 	if err != nil {
-		if st, ok := err.(status.Status); ok {
-			return nil, &SurfaceError{Status: st, SurfaceType: "image"}
-		}
-		return nil, err
+		return nil, wrapSurfaceErr(err, "image")
 	}
 	return surf, nil
 }
@@ -279,10 +275,7 @@ type Context = context.Context
 func NewContext(surface Surface) (*Context, error) {
 	ctx, err := context.NewContext(surface)
 	if err != nil {
-		if st, ok := err.(status.Status); ok {
-			return nil, &ContextError{Status: st, Operation: "create"}
-		}
-		return nil, err
+		return nil, wrapContextErr(err, "create")
 	}
 	return ctx, nil
 }
@@ -375,10 +368,7 @@ type Pattern = pattern.Pattern
 func NewSolidPatternRGB(r, g, b float64) (*pattern.SolidPattern, error) {
 	p, err := pattern.NewSolidPatternRGB(r, g, b)
 	if err != nil {
-		if st, ok := err.(status.Status); ok {
-			return nil, &PatternError{Status: st, PatternType: "solid"}
-		}
-		return nil, err
+		return nil, wrapPatternErr(err, "solid")
 	}
 	return p, nil
 }
@@ -423,10 +413,7 @@ func NewSolidPatternRGB(r, g, b float64) (*pattern.SolidPattern, error) {
 func NewSolidPatternRGBA(r, g, b, a float64) (*pattern.SolidPattern, error) {
 	p, err := pattern.NewSolidPatternRGBA(r, g, b, a)
 	if err != nil {
-		if st, ok := err.(status.Status); ok {
-			return nil, &PatternError{Status: st, PatternType: "solid"}
-		}
-		return nil, err
+		return nil, wrapPatternErr(err, "solid")
 	}
 	return p, nil
 }
@@ -613,10 +600,7 @@ type RadialGradient = pattern.RadialGradient
 func NewLinearGradient(x0, y0, x1, y1 float64) (*LinearGradient, error) {
 	g, err := pattern.NewLinearGradient(x0, y0, x1, y1)
 	if err != nil {
-		if st, ok := err.(status.Status); ok {
-			return nil, &PatternError{Status: st, PatternType: "linear"}
-		}
-		return nil, err
+		return nil, wrapPatternErr(err, "linear")
 	}
 	return g, nil
 }
@@ -694,10 +678,7 @@ func NewLinearGradient(x0, y0, x1, y1 float64) (*LinearGradient, error) {
 func NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1 float64) (*RadialGradient, error) {
 	g, err := pattern.NewRadialGradient(cx0, cy0, radius0, cx1, cy1, radius1)
 	if err != nil {
-		if st, ok := err.(status.Status); ok {
-			return nil, &PatternError{Status: st, PatternType: "radial"}
-		}
-		return nil, err
+		return nil, wrapPatternErr(err, "radial")
 	}
 	return g, nil
 }
@@ -845,10 +826,7 @@ type SurfacePattern = pattern.SurfacePattern
 func NewSurfacePattern(surface Surface) (*SurfacePattern, error) {
 	p, err := pattern.NewSurfacePattern(surfaceAdapter{surface})
 	if err != nil {
-		if st, ok := err.(status.Status); ok {
-			return nil, &PatternError{Status: st, PatternType: "surface"}
-		}
-		return nil, err
+		return nil, wrapPatternErr(err, "surface")
 	}
 	return p, nil
 }
