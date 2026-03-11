@@ -38,7 +38,6 @@ func DemonstrateErrorHandling() (ErrorHandlingResult, error) {
 	var result ErrorHandlingResult
 
 	// --- Pattern 1: constructor errors with errors.Is and errors.As ---
-
 	// Attempt to create a surface with an invalid format.
 	// NewImageSurface wraps the failure in a *cairo.SurfaceError.
 	_, err := cairo.NewImageSurface(cairo.Format(-1), 100, 100)
@@ -75,19 +74,18 @@ func DemonstrateErrorHandling() (ErrorHandlingResult, error) {
 	}
 
 	// --- Pattern 3: getter errors for invalid state ---
-
 	// Create a valid surface and context for the remaining patterns.
 	surf, err := cairo.NewImageSurface(cairo.FormatARGB32, 200, 200)
 	if err != nil {
 		return result, fmt.Errorf("creating surface: %w", err)
 	}
-	defer surf.Close()
+	defer func() { _ = surf.Close() }()
 
 	ctx, err := cairo.NewContext(surf)
 	if err != nil {
 		return result, fmt.Errorf("creating context: %w", err)
 	}
-	defer ctx.Close()
+	defer func() { _ = ctx.Close() }()
 
 	// GetCurrentPoint fails when no path exists yet.
 	_, _, err = ctx.GetCurrentPoint()
