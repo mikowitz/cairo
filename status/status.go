@@ -3,7 +3,6 @@
 //go:generate stringer -type=Status
 package status
 
-import "fmt"
 
 // Status is used to indicate errors that can occur when using
 // Cairo. In some cases it is returned directly by functions.
@@ -109,9 +108,3 @@ func statusSuggestion(s Status) string {
 	return ""
 }
 
-func (s Status) ToError() error {
-	if s == Success {
-		return nil
-	}
-	return fmt.Errorf("%v", s)
-}

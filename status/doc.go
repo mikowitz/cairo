@@ -137,6 +137,5 @@ The only recovery is to close the object and create a new one.
   2. Use defer for Close() immediately after successful construction
   3. Check Status() before expensive operations or before saving results
   4. Wrap errors with context using fmt.Errorf("context: %w", err)
-  5. Use Status.ToError() to convert status to standard error if needed
 */
 package status

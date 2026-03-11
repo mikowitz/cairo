@@ -170,51 +170,6 @@ func TestStatusError(t *testing.T) {
 	}
 }
 
-// TestStatusToError verifies that ToError() returns nil for Success and error for others
-func TestStatusToError(t *testing.T) {
-	// Success should return nil
-	t.Run("Success", func(t *testing.T) {
-		err := Success.ToError()
-		assert.NoError(t, err, "Success.ToError() should return nil")
-	})
-
-	// All other statuses should return an error
-	tests := []struct {
-		name   string
-		status Status
-	}{
-		{"NoMemory", NoMemory},
-		{"InvalidRestore", InvalidRestore},
-		{"InvalidPopGroup", InvalidPopGroup},
-		{"NoCurrentPoint", NoCurrentPoint},
-		{"InvalidMatrix", InvalidMatrix},
-		{"InvalidStatus", InvalidStatus},
-		{"NullPointer", NullPointer},
-		{"InvalidString", InvalidString},
-		{"InvalidPathData", InvalidPathData},
-		{"ReadError", ReadError},
-		{"WriteError", WriteError},
-		{"SurfaceFinished", SurfaceFinished},
-		{"SurfaceTypeMismatch", SurfaceTypeMismatch},
-		{"PatternTypeMismatch", PatternTypeMismatch},
-		{"InvalidContent", InvalidContent},
-		{"InvalidFormat", InvalidFormat},
-		{"InvalidVisual", InvalidVisual},
-		{"FileNotFound", FileNotFound},
-		{"InvalidDash", InvalidDash},
-		{"InvalidDscComment", InvalidDscComment},
-		{"InvalidIndex", InvalidIndex},
-		{"ClipNotRepresentable", ClipNotRepresentable},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.status.ToError()
-			assert.Error(t, err, "ToError() should return non-nil error")
-		})
-	}
-}
-
 // TestCGOStatusConversion verifies round-trip conversion between C and Go status codes
 func TestCGOStatusConversion(t *testing.T) {
 	tests := []struct {
