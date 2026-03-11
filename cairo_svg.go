@@ -73,5 +73,9 @@ func SVGVersionToString(version SVGVersion) string {
 // Requires the Cairo SVG backend. On Debian/Ubuntu: libcairo2-dev.
 // On macOS: brew install cairo (includes SVG support by default).
 func NewSVGSurface(filename string, widthPt, heightPt float64) (*SVGSurface, error) {
-	return surface.NewSVGSurface(filename, widthPt, heightPt)
+	surf, err := surface.NewSVGSurface(filename, widthPt, heightPt)
+	if err != nil {
+		return nil, wrapSurfaceErr(err, "svg")
+	}
+	return surf, nil
 }

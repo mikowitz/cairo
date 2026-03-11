@@ -180,7 +180,10 @@ func (c *Context) SetDash(dashes []float64, offset float64) error {
 		return status.InvalidDash
 	}
 
-	return contextSetDash(c.ptr, dashes, offset).ToError()
+	if st := contextSetDash(c.ptr, dashes, offset); st != status.Success {
+		return st
+	}
+	return nil
 }
 
 func anyNegative(s []float64) bool {

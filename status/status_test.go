@@ -6,6 +6,36 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TestStatusDescriptiveError verifies that Error() includes actionable suggestions
+// for the most common Cairo error statuses.
+func TestStatusDescriptiveError(t *testing.T) {
+	tests := []struct {
+		status   Status
+		contains string
+	}{
+		{NoCurrentPoint, "MoveTo"},
+		{InvalidRestore, "matching pairs"},
+		{SurfaceFinished, "Close"},
+		{NoMemory, "dimensions"},
+		{FileNotFound, "path"},
+		{WriteError, "permissions"},
+		{ReadError, "permissions"},
+		{InvalidFormat, "FormatARGB32"},
+		{InvalidStride, "aligned"},
+		{SurfaceTypeMismatch, "different surface type"},
+		{PatternTypeMismatch, "different pattern type"},
+		{InvalidMatrix, "degenerate"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.status.String(), func(t *testing.T) {
+			msg := tt.status.Error()
+			assert.Contains(t, msg, tt.contains,
+				"Error() should include a helpful suggestion for %s", tt.status)
+		})
+	}
+}
+
 // TestStatusSuccess verifies that Success equals 0
 func TestStatusSuccess(t *testing.T) {
 	assert.Equal(t, 0, int(Success), "Success should equal 0")
@@ -136,51 +166,6 @@ func TestStatusError(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			errMsg := tt.status.Error()
 			assert.NotEmpty(t, errMsg, "Error() should return non-empty string")
-		})
-	}
-}
-
-// TestStatusToError verifies that ToError() returns nil for Success and error for others
-func TestStatusToError(t *testing.T) {
-	// Success should return nil
-	t.Run("Success", func(t *testing.T) {
-		err := Success.ToError()
-		assert.NoError(t, err, "Success.ToError() should return nil")
-	})
-
-	// All other statuses should return an error
-	tests := []struct {
-		name   string
-		status Status
-	}{
-		{"NoMemory", NoMemory},
-		{"InvalidRestore", InvalidRestore},
-		{"InvalidPopGroup", InvalidPopGroup},
-		{"NoCurrentPoint", NoCurrentPoint},
-		{"InvalidMatrix", InvalidMatrix},
-		{"InvalidStatus", InvalidStatus},
-		{"NullPointer", NullPointer},
-		{"InvalidString", InvalidString},
-		{"InvalidPathData", InvalidPathData},
-		{"ReadError", ReadError},
-		{"WriteError", WriteError},
-		{"SurfaceFinished", SurfaceFinished},
-		{"SurfaceTypeMismatch", SurfaceTypeMismatch},
-		{"PatternTypeMismatch", PatternTypeMismatch},
-		{"InvalidContent", InvalidContent},
-		{"InvalidFormat", InvalidFormat},
-		{"InvalidVisual", InvalidVisual},
-		{"FileNotFound", FileNotFound},
-		{"InvalidDash", InvalidDash},
-		{"InvalidDscComment", InvalidDscComment},
-		{"InvalidIndex", InvalidIndex},
-		{"ClipNotRepresentable", ClipNotRepresentable},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := tt.status.ToError()
-			assert.Error(t, err, "ToError() should return non-nil error")
 		})
 	}
 }

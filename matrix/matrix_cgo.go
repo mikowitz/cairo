@@ -106,7 +106,10 @@ func matrixTransformDistance(m *Matrix, dx, dy float64) (float64, float64) {
 func matrixInvert(m *Matrix) error {
 	st := status.Status(C.cairo_matrix_invert(m.ptr))
 	m.updateFromC()
-	return st.ToError()
+	if st == status.Success {
+		return nil
+	}
+	return st
 }
 
 func matrixMultiply(m, n *Matrix) *Matrix {

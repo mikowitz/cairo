@@ -25,5 +25,9 @@ type PDFSurface = surface.PDFSurface
 // Requires the Cairo PDF backend. On Debian/Ubuntu: libcairo2-dev.
 // On macOS: brew install cairo (includes PDF support by default).
 func NewPDFSurface(filename string, widthPt, heightPt float64) (*PDFSurface, error) {
-	return surface.NewPDFSurface(filename, widthPt, heightPt)
+	surf, err := surface.NewPDFSurface(filename, widthPt, heightPt)
+	if err != nil {
+		return nil, wrapSurfaceErr(err, "pdf")
+	}
+	return surf, nil
 }
